@@ -8,14 +8,6 @@ const MERCHANT_API_KEY = process.env.MERCHANT_API_KEY || 'default-merchant-key';
  * This is the new real-time payment flow
  */
 exports.directWalletTransfer = async (req, res) => {
-    const apiKey = req.header('x-api-key');
-    if (apiKey !== MERCHANT_API_KEY) {
-        return res.status(401).json({
-            success: false,
-            message: 'Invalid API Key'
-        });
-    }
-
     const { fromUserId, toWalletId, amount, referenceId, orderId } = req.body;
 
     // Validation
@@ -182,13 +174,14 @@ exports.directWalletTransfer = async (req, res) => {
     }
 };
 
-exports.createPaymentRequestExternal = async (req, res) => {
-    const apiKey = req.header('x-api-key');
-    if (apiKey !== MERCHANT_API_KEY) {
-        return res.status(401).json({ message: 'Invalid API Key' });
-    }
+    } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+}
+};
 
-    const { amount, referenceId, merchantId, callbackUrl } = req.body;
+exports.createPaymentRequestExternal = async (req, res) => {
+    const { amount, referenceId, merchantId, callbackUrl, preferredMethod } = req.body;
 
     if (!amount || !merchantId) {
         return res.status(400).json({ message: 'Amount and merchantId are required' });
@@ -209,10 +202,13 @@ exports.createPaymentRequestExternal = async (req, res) => {
             [merchantId, amount, referenceId, token, expiresAt, callbackUrl]
         );
 
+        // Calculate deployment URL
+        const BASE_URL = process.env.FRONTEND_URL || 'https://payment-gateway-beta-two.vercel.app';
+
         res.json({
             success: true,
             data: {
-                paymentUrl: `http://localhost:5173/scan?token=${token}`, // Link to the wallet app scan page with token
+                paymentUrl: `${BASE_URL}/scan?token=${token}${preferredMethod ? `&method=${preferredMethod}` : ''}`,
                 token: token,
                 qrData: JSON.stringify({
                     token,
@@ -230,12 +226,72 @@ exports.createPaymentRequestExternal = async (req, res) => {
     }
 };
 
-exports.checkPaymentStatus = async (req, res) => {
-    const apiKey = req.header('x-api-key');
-    if (apiKey !== MERCHANT_API_KEY) {
-        return res.status(401).json({ message: 'Invalid API Key' });
-    }
+exports.fulfillExternalPayment = async (req, res) => {
+    const { token, paymentMethod, paymentDetails } = req.body;
 
+    const { client, release } = await db.getTransaction();
+
+    try {
+        await client.query('BEGIN');
+
+        // 1. Get and validate request
+        const request = await client.query('SELECT * FROM payment_requests WHERE token = $1 FOR UPDATE', [token]);
+        if (request.rows.length === 0) throw new Error('Invalid payment token');
+
+        const reqData = request.rows[0];
+        if (reqData.status !== 'PENDING') throw new Error('Payment already processed or expired');
+        if (new Date(reqData.expires_at) < new Date()) {
+            await client.query('UPDATE payment_requests SET status = $1 WHERE token = $2', ['EXPIRED', token]);
+            throw new Error('Payment request expired');
+        }
+
+        const { amount, receiver_id, reference_id } = reqData;
+
+        // 2. Simulate external payment processing (Card/UPI/etc)
+        // In reality, you'd call Stripe/Razorpay here.
+        console.log(`Processing ${paymentMethod} payment for ${amount}...`);
+
+        // 3. Credit merchant's ZenWallet
+        await client.query('UPDATE wallets SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2', [amount, receiver_id]);
+
+        // 4. Record transaction (sender_id is null for external payments)
+        const transaction = await client.query(
+            `INSERT INTO transactions (receiver_id, amount, type, status, reference_id, created_at) 
+             VALUES ($1, $2, $3, $4, $5, NOW()) 
+             RETURNING id, created_at`,
+            [receiver_id, amount, 'PAYMENT', 'SUCCESS', reference_id]
+        );
+
+        // 5. Mark request as completed
+        await client.query('UPDATE payment_requests SET status = $1 WHERE token = $2', ['COMPLETED', token]);
+
+        await client.query('COMMIT');
+
+        // 6. Notify merchant via WebSocket
+        const io = req.app.get('io');
+        io.to(reference_id).emit('payment-success', {
+            referenceId: reference_id,
+            amount,
+            status: 'SUCCESS',
+            timestamp: transaction.rows[0].created_at
+        });
+
+        res.json({
+            success: true,
+            message: 'External payment successful',
+            transactionId: transaction.rows[0].id
+        });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Fulfill external error:', err);
+        res.status(400).json({ success: false, message: err.message });
+    } finally {
+        release();
+    }
+};
+
+exports.checkPaymentStatus = async (req, res) => {
     const { token } = req.params;
 
     try {
@@ -250,11 +306,6 @@ exports.checkPaymentStatus = async (req, res) => {
     }
 };
 exports.verifyPaymentByReference = async (req, res) => {
-    const apiKey = req.header('x-api-key');
-    if (apiKey !== MERCHANT_API_KEY) {
-        return res.status(401).json({ message: 'Invalid API Key' });
-    }
-
     const { merchantId, referenceId } = req.query;
 
     if (!merchantId || !referenceId) {
