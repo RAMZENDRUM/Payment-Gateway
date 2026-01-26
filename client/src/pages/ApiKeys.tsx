@@ -16,6 +16,8 @@ interface AppData {
     created_at: string;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+
 export default function ApiKeys() {
     const { token } = useAuth();
     const [apps, setApps] = useState<AppData[]>([]);
@@ -29,7 +31,7 @@ export default function ApiKeys() {
 
     const fetchApps = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/apps', {
+            const res = await axios.get(`${API_URL}/apps`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setApps(res.data);
@@ -48,7 +50,7 @@ export default function ApiKeys() {
         }
         setGenerating(true);
         try {
-            await axios.post('http://localhost:5000/api/apps',
+            await axios.post(`${API_URL}/apps`,
                 { name: newAppName },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -65,7 +67,7 @@ export default function ApiKeys() {
     const deleteKey = async (id: string) => {
         if (!confirm('Are you sure? This will break any integration using this key.')) return;
         try {
-            await axios.delete(`http://localhost:5000/api/apps/${id}`, {
+            await axios.delete(`${API_URL}/apps/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('App deleted');
