@@ -18,6 +18,7 @@ interface AuthContextType {
     register: (email: string, password: string, fullName: string) => Promise<void>;
     logout: () => void;
     fetchUser: () => Promise<void>;
+    token: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,13 +27,15 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.on
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
+    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const storedToken = localStorage.getItem('token');
+        if (storedToken) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+            setToken(storedToken);
             fetchUser();
         } else {
             setLoading(false);
@@ -54,8 +57,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const login = async (email: string, password: string) => {
         try {
             const res = await axios.post(`${API_URL}/auth/login`, { email, password });
-            localStorage.setItem('token', res.data.token);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
+            const authToken = res.data.token;
+            localStorage.setItem('token', authToken);
+            setToken(authToken);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
             setUser(res.data.user);
             toast.success('Logged in successfully');
             navigate('/dashboard');
@@ -68,8 +73,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const register = async (email: string, password: string, fullName: string) => {
         try {
             const res = await axios.post(`${API_URL}/auth/register`, { email, password, fullName });
-            localStorage.setItem('token', res.data.token);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
+            const authToken = res.data.token;
+            localStorage.setItem('token', authToken);
+            setToken(authToken);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
             setUser(res.data.user);
             toast.success('Account created!');
             navigate('/dashboard');
@@ -81,6 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const logout = () => {
         localStorage.removeItem('token');
+        setToken(null);
         delete axios.defaults.headers.common['Authorization'];
         setUser(null);
         navigate('/login');
@@ -88,7 +96,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, loading, login, register, logout, fetchUser }}>
+        <AuthContext.Provider value={{ user, setUser, loading, login, register, logout, fetchUser, token }}>
             {children}
         </AuthContext.Provider>
     );
