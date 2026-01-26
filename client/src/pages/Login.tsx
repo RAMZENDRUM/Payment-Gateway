@@ -163,125 +163,132 @@ export default function Login() {
             />
 
             {/* Header */}
-            <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-6 py-4 border-b border-zinc-800/80 z-10">
-                <span className="text-xs tracking-[0.14em] uppercase text-zinc-400">
+            <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-8 py-6 border-b border-zinc-800/80 z-10">
+                <span className="text-sm font-bold tracking-[0.14em] uppercase text-zinc-300">
                     ZENWALLET
                 </span>
                 <Button
                     variant="outline"
-                    className="h-9 rounded-lg border-zinc-800 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/80"
+                    className="h-10 rounded-lg border-zinc-800 bg-zinc-900 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
                 >
-                    <span className="mr-2">Contact</span>
+                    <span className="mr-2 text-sm">Contact Support</span>
                     <ArrowRight className="h-4 w-4" />
                 </Button>
             </header>
 
             {/* Centered Login Card */}
-            <div className="min-h-screen h-full w-full grid place-items-center px-4 relative z-10">
-                <Card className="card-animate w-full max-w-sm border-zinc-800 bg-zinc-900/70 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/60">
-                    <CardHeader className="space-y-1">
-                        <CardTitle className="text-2xl">Welcome back</CardTitle>
-                        <CardDescription className="text-zinc-400">
-                            Sign in to your account
+            <div className="min-h-screen h-full w-full grid place-items-center px-4 relative z-10 py-20">
+                <Card className="card-animate w-full max-w-[440px] border-zinc-800 bg-zinc-900/90 backdrop-blur-xl shadow-2xl">
+                    <CardHeader className="space-y-3 pb-8">
+                        <CardTitle className="text-3xl font-bold tracking-tight text-white">Welcome back</CardTitle>
+                        <CardDescription className="text-base text-zinc-400">
+                            Enter your credentials to access your account
                         </CardDescription>
                     </CardHeader>
 
-                    <CardContent className="grid gap-5">
-                        <form onSubmit={handleSubmit} className="grid gap-5">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email" className="text-zinc-300">
-                                    Email
+                    <CardContent className="grid gap-6">
+                        <form onSubmit={handleSubmit} className="grid gap-6">
+                            <div className="grid gap-2.5">
+                                <Label htmlFor="email" className="text-[15px] font-medium text-zinc-300">
+                                    Email address
                                 </Label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                                <div className="relative group">
+                                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500 group-focus-within:text-zinc-300 transition-colors" />
                                     <Input
                                         id="email"
                                         type="email"
-                                        placeholder="you@example.com"
+                                        placeholder="name@company.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="pl-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600"
+                                        className="pl-11 h-12 bg-zinc-950/50 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500 text-base"
                                         required
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password" className="text-zinc-300">
+                            <div className="grid gap-2.5">
+                                <Label htmlFor="password" className="text-[15px] font-medium text-zinc-300">
                                     Password
                                 </Label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                                <div className="relative group">
+                                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500 group-focus-within:text-zinc-300 transition-colors" />
                                     <Input
                                         id="password"
                                         type={showPassword ? "text" : "password"}
-                                        placeholder="••••••••"
+                                        placeholder="••••••••••••"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="pl-10 pr-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600"
+                                        className="pl-11 pr-11 h-12 bg-zinc-950/50 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500 text-base"
                                         required
                                     />
                                     <button
                                         type="button"
                                         aria-label={showPassword ? "Hide password" : "Show password"}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-zinc-400 hover:text-zinc-200"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
                                         onClick={() => setShowPassword((v) => !v)}
                                     >
                                         {showPassword ? (
-                                            <EyeOff className="h-4 w-4" />
+                                            <EyeOff className="h-5 w-5" />
                                         ) : (
-                                            <Eye className="h-4 w-4" />
+                                            <Eye className="h-5 w-5" />
                                         )}
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between pt-1">
+                                <div className="flex items-center gap-2.5">
                                     <Checkbox
                                         id="remember"
-                                        className="border-zinc-700 data-[state=checked]:bg-zinc-50 data-[state=checked]:text-zinc-900"
+                                        className="border-zinc-700 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 w-5 h-5 rounded-[4px]"
                                     />
-                                    <Label htmlFor="remember" className="text-zinc-400">
+                                    <Label htmlFor="remember" className="text-sm text-zinc-400 font-normal cursor-pointer">
                                         Remember me
                                     </Label>
                                 </div>
-                                <Link to="/forgot-password" size="sm" className="text-sm text-zinc-300 hover:text-zinc-100">
+                                <Link to="/forgot-password" size="sm" className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
                                     Forgot password?
                                 </Link>
                             </div>
 
-                            <Button disabled={loading} type="submit" className="w-full h-10 rounded-lg bg-zinc-50 text-zinc-900 hover:bg-zinc-200">
-                                {loading ? 'Signing in...' : 'Continue'}
+                            <Button disabled={loading} type="submit" className="w-full h-12 text-base font-semibold rounded-lg bg-white text-zinc-950 hover:bg-zinc-200 transition-all shadow-lg shadow-zinc-950/50">
+                                {loading ? 'Signing in...' : 'Sign in to account'}
                             </Button>
                         </form>
 
-                        <div className="relative">
+                        <div className="relative my-2">
                             <Separator className="bg-zinc-800" />
-                            <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-zinc-900/70 px-2 text-[11px] uppercase tracking-widest text-zinc-500">
-                                or
+                            <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-zinc-900 px-3 text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-600">
+                                Or continue with
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-4">
                             <Button
                                 variant="outline"
-                                className="h-10 rounded-lg border-zinc-800 bg-zinc-950 text-zinc-50 hover:bg-zinc-900/80"
+                                className="h-11 rounded-lg border-zinc-800 bg-zinc-950 text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all hover:border-zinc-700"
                             >
-                                <Github className="h-4 w-4 mr-2" />
+                                <Github className="h-5 w-5 mr-2.5" />
                                 GitHub
                             </Button>
                             <Button
                                 variant="outline"
-                                className="h-10 rounded-lg border-zinc-800 bg-zinc-950 text-zinc-50 hover:bg-zinc-900/80"
+                                className="h-11 rounded-lg border-zinc-800 bg-zinc-950 text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all hover:border-zinc-700"
                             >
-                                <Chrome className="h-4 w-4 mr-2" />
+                                <Chrome className="h-5 w-5 mr-2.5" />
                                 Google
                             </Button>
                         </div>
                     </CardContent>
 
-
+                    <CardFooter className="flex flex-col gap-4 pb-8 pt-2">
+                        <div className="text-center text-sm text-zinc-500">
+                            Don't have an account yet?{' '}
+                            <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-medium hover:underline transition-all">
+                                Sign up now
+                            </Link>
+                        </div>
+                    </CardFooter>
                 </Card>
             </div>
         </section>

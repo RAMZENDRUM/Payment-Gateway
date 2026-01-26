@@ -4,45 +4,155 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-wallet-key-2026';
 
+const mailUtils = require('../utils/mail');
+
+// Helper to generate a random 16-digit card number (Luhn algorithm not strictly enforced for demo)
+// Helper to generate a unique 8-digit UPI ID
+function generateUpiId() {
+    const digits = Math.floor(10000000 + Math.random() * 90000000).toString();
+    return `${digits}@zenwallet`;
+}
+
+// Helper to generate a random 16-digit card number in the format 0605 xxxx xxxx 2212
+function generateCardNumber() {
+    let middle = '';
+    for (let i = 0; i < 8; i++) {
+        middle += Math.floor(Math.random() * 10);
+    }
+    return `0605${middle}2212`;
+}
+
+async function ensureVirtualCard(client, userId) {
+    // Check if card exists
+    const res = await client.query('SELECT * FROM virtual_cards WHERE user_id = $1', [userId]);
+    if (res.rows.length > 0) {
+        return res.rows[0];
+    }
+
+    // Create new card
+    const cardNumber = generateCardNumber();
+    const cvv = Math.floor(100 + Math.random() * 900).toString(); // 3 digits
+    const expiryDate = new Date();
+    expiryDate.setFullYear(expiryDate.getFullYear() + 5); // 5 years validity
+    const expiryMonth = (expiryDate.getMonth() + 1).toString().padStart(2, '0');
+    const expiryYear = expiryDate.getFullYear().toString();
+
+    const newCard = await client.query(
+        `INSERT INTO virtual_cards (user_id, card_number, cvv, expiry_month, expiry_year)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING *`,
+        [userId, cardNumber, cvv, expiryMonth, expiryYear]
+    );
+    return newCard.rows[0];
+}
+
 exports.register = async (req, res) => {
-    const { email, password, fullName } = req.body;
+    const { email, password, fullName, phoneNumber, purpose } = req.body;
+
+    try {
+        // 1. Check if user exists
+        const existingUser = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+
+        if (existingUser.rows.length > 0) {
+            if (existingUser.rows[0].is_verified) {
+                return res.status(400).json({ message: 'A verified account with this email already exists' });
+            } else {
+                // Remove old unverified user to prevent unique constraint errors later
+                await db.query('DELETE FROM users WHERE email = $1', [email]);
+            }
+        }
+
+        // 2. Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // 3. Generate OTP
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpiry = new Date(Date.now() + 10 * 60000); // 10 minutes
+
+        // 4. Save to pending_users (Upsert: if already pending, update with new details and OTP)
+        await db.query(
+            `INSERT INTO pending_users (email, password, full_name, phone_number, purpose, otp_code, otp_expiry)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             ON CONFLICT (email) DO UPDATE SET
+                password = EXCLUDED.password,
+                full_name = EXCLUDED.full_name,
+                phone_number = EXCLUDED.phone_number,
+                purpose = EXCLUDED.purpose,
+                otp_code = EXCLUDED.otp_code,
+                otp_expiry = EXCLUDED.otp_expiry,
+                created_at = CURRENT_TIMESTAMP`,
+            [email, hashedPassword, fullName, phoneNumber, purpose, otpCode, otpExpiry]
+        );
+
+        // 5. Send OTP via email
+        await mailUtils.sendOTP(email, otpCode);
+
+        res.status(201).json({
+            message: 'OTP sent! Please check your email to verify your account.',
+            email: email
+        });
+    } catch (err) {
+        console.error('Registration Error:', err);
+        res.status(500).json({ message: 'Server error during registration' });
+    }
+};
+
+exports.verifyOtp = async (req, res) => {
+    const { email, otp } = req.body;
     const { client, query, release } = await db.getTransaction();
 
     try {
         await client.query('BEGIN');
 
-        // Check if user exists
-        const userExists = await client.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userExists.rows.length > 0) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create user
-        const newUser = await client.query(
-            'INSERT INTO users (email, password, full_name) VALUES ($1, $2, $3) RETURNING id, email, full_name',
-            [email, hashedPassword, fullName]
+        // 1. Find the pending registration
+        const pendingResult = await client.query(
+            'SELECT * FROM pending_users WHERE email = $1 AND otp_code = $2 AND otp_expiry > NOW()',
+            [email, otp]
         );
 
-        const userId = newUser.rows[0].id;
+        if (pendingResult.rows.length === 0) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
 
-        // Create wallet with initial balance (e.g., 100 bonus coins)
-        await client.query('INSERT INTO wallets (user_id, balance) VALUES ($1, $2)', [userId, 100]);
+        const pendingUser = pendingResult.rows[0];
+
+        // 2. Upsert into main users table (Move from pending)
+        const upiId = generateUpiId();
+        const newUserResult = await client.query(
+            `INSERT INTO users (email, password, full_name, phone_number, purpose, upi_id, is_verified) 
+             VALUES ($1, $2, $3, $4, $5, $6, TRUE)
+             ON CONFLICT (email) DO UPDATE SET
+                password = EXCLUDED.password,
+                full_name = EXCLUDED.full_name,
+                phone_number = EXCLUDED.phone_number,
+                purpose = EXCLUDED.purpose,
+                upi_id = COALESCE(users.upi_id, EXCLUDED.upi_id),
+                is_verified = TRUE
+             RETURNING id, email, upi_id`,
+            [pendingUser.email, pendingUser.password, pendingUser.full_name, pendingUser.phone_number, pendingUser.purpose, upiId]
+        );
+
+        const userId = newUserResult.rows[0].id;
+
+        // 3. Ensure wallet exists (Upsert: if wallet exists, do nothing, otherwise create with 100)
+        await client.query(
+            'INSERT INTO wallets (user_id, balance) VALUES ($1, $2) ON CONFLICT (user_id) DO NOTHING',
+            [userId, 100]
+        );
+
+        // 4. Generate Virtual Card
+        await ensureVirtualCard(client, userId);
+
+        // 5. Delete from pending_users
+        await client.query('DELETE FROM pending_users WHERE email = $1', [email]);
 
         await client.query('COMMIT');
 
-        const token = jwt.sign({ id: userId, email }, JWT_SECRET, { expiresIn: '24h' });
-
-        res.status(201).json({
-            token,
-            user: newUser.rows[0]
-        });
+        res.json({ message: 'Account verified successfully! You can now login.' });
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Verification Error Details:', err);
+        res.status(500).json({ message: 'Server error during verification' });
     } finally {
         release();
     }
@@ -57,10 +167,17 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
+        if (!user.rows[0].is_verified) {
+            return res.status(403).json({ message: 'Account not verified. Please verify your OTP first.' });
+        }
+
         const isMatch = await bcrypt.compare(password, user.rows[0].password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
+
+        // Ensure user has a virtual card (for legacy users)
+        const card = await ensureVirtualCard(db, user.rows[0].id);
 
         const token = jwt.sign({ id: user.rows[0].id, email }, JWT_SECRET, { expiresIn: '24h' });
 
@@ -69,7 +186,14 @@ exports.login = async (req, res) => {
             user: {
                 id: user.rows[0].id,
                 email: user.rows[0].email,
-                fullName: user.rows[0].full_name
+                full_name: user.rows[0].full_name,
+                upi_id: user.rows[0].upi_id,
+                virtualCard: {
+                    cardNumber: card.card_number,
+                    cvv: card.cvv,
+                    expiryMonth: card.expiry_month,
+                    expiryYear: card.expiry_year
+                }
             }
         });
     } catch (err) {
@@ -78,13 +202,116 @@ exports.login = async (req, res) => {
     }
 };
 
-exports.getMe = async (req, res) => {
+
+exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const user = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpiry = new Date(Date.now() + 10 * 60000);
+
+        await db.query(
+            'UPDATE users SET otp_code = $1, otp_expiry = $2 WHERE email = $3',
+            [otpCode, otpExpiry, email]
+        );
+
+        await mailUtils.sendForgotPasswordOTP(email, otpCode);
+
+        res.json({ message: 'Reset OTP sent to your email.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
     try {
         const user = await db.query(
-            'SELECT u.id, u.email, u.full_name, w.balance FROM users u JOIN wallets w ON u.id = w.user_id WHERE u.id = $1',
+            'SELECT * FROM users WHERE email = $1 AND otp_code = $2 AND otp_expiry > NOW()',
+            [email, otp]
+        );
+
+        if (user.rows.length === 0) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await db.query(
+            'UPDATE users SET password = $1, otp_code = NULL, otp_expiry = NULL WHERE email = $2',
+            [hashedPassword, email]
+        );
+
+        res.json({ message: 'Password reset successfully. You can now login.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.verifyPassword = async (req, res) => {
+    const { password } = req.body;
+    try {
+        const user = await db.query('SELECT password FROM users WHERE id = $1', [req.user.id]);
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.rows[0].password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Incorrect password' });
+        }
+
+        res.json({ verified: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getMe = async (req, res) => {
+    try {
+        const userResult = await db.query(
+            'SELECT u.id, u.email, u.full_name, u.upi_id, w.balance FROM users u JOIN wallets w ON u.id = w.user_id WHERE u.id = $1',
             [req.user.id]
         );
-        res.json(user.rows[0]);
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        let userData = userResult.rows[0];
+
+        // Generate on-the-fly if missing
+        if (!userData.upi_id) {
+            const newUpiId = generateUpiId();
+            await db.query('UPDATE users SET upi_id = $1 WHERE id = $2', [newUpiId, req.user.id]);
+            userData.upi_id = newUpiId;
+        }
+
+        // Fetch card details
+        const card = await ensureVirtualCard(db, req.user.id);
+
+        res.json({
+            id: userData.id,
+            email: userData.email,
+            full_name: userData.full_name,
+            upi_id: userData.upi_id,
+            balance: userData.balance,
+            virtualCard: {
+                cardNumber: card.card_number,
+                cvv: card.cvv,
+                expiryMonth: card.expiry_month,
+                expiryYear: card.expiry_year
+            }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

@@ -12,6 +12,7 @@ model User {
   email             String           @unique
   password          String
   fullName          String
+  upiId             String?          @unique
   wallet            Wallet?
   sentTransfers     Transaction[]    @relation("SentTransfers")
   receivedTransfers Transaction[]    @relation("ReceivedTransfers")

@@ -10,5 +10,7 @@ router.post('/transfer', apiKeyAuth, externalController.directWalletTransfer);
 router.post('/create-request', apiKeyAuth, externalController.createPaymentRequestExternal);
 router.get('/status/:token', externalController.checkPaymentStatus); // Public status check is usually fine, or secure it too? Public is better for polling.
 router.get('/verify-reference', apiKeyAuth, externalController.verifyPaymentByReference);
+router.post('/fulfill-payment', externalController.fulfillExternalPayment);
+router.post('/verify-card', externalController.verifyCard);
 
 module.exports = router;

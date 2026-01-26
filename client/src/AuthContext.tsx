@@ -7,7 +7,14 @@ interface User {
     id: string;
     email: string;
     full_name: string;
+    upi_id?: string;
     balance?: number;
+    virtualCard?: {
+        cardNumber: string;
+        cvv: string;
+        expiryMonth: string;
+        expiryYear: string;
+    };
 }
 
 interface AuthContextType {
@@ -15,7 +22,8 @@ interface AuthContextType {
     setUser: (user: User | null) => void;
     loading: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string, fullName: string) => Promise<void>;
+    register: (email: string, password: string, fullName: string, phoneNumber: string, purpose: string) => Promise<any>;
+    verifyOtp: (email: string, otp: string) => Promise<void>;
     logout: () => void;
     fetchUser: () => Promise<void>;
     token: string | null;
@@ -33,12 +41,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
+
+        // Safety timeout to prevent infinite loading
+        const timeout = setTimeout(() => {
+            setLoading(false);
+        }, 3000);
+
         if (storedToken) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
             setToken(storedToken);
-            fetchUser();
+            fetchUser().finally(() => clearTimeout(timeout));
         } else {
             setLoading(false);
+            clearTimeout(timeout);
         }
     }, []);
 
@@ -70,18 +85,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const register = async (email: string, password: string, fullName: string) => {
+    const register = async (email: string, password: string, fullName: string, phoneNumber: string, purpose: string) => {
         try {
-            const res = await axios.post(`${API_URL}/auth/register`, { email, password, fullName });
-            const authToken = res.data.token;
-            localStorage.setItem('token', authToken);
-            setToken(authToken);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
-            setUser(res.data.user);
-            toast.success('Account created!');
-            navigate('/dashboard');
+            const res = await axios.post(`${API_URL}/auth/register`, { email, password, fullName, phoneNumber, purpose });
+            toast.success(res.data.message || 'OTP sent to your email');
+            return res.data;
         } catch (err) {
             toast.error(err.response?.data?.message || 'Registration failed');
+            throw err;
+        }
+    };
+
+    const verifyOtp = async (email: string, otp: string) => {
+        try {
+            await axios.post(`${API_URL}/auth/verify-otp`, { email, otp });
+            toast.success('Account verified! You can now login.');
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Verification failed');
             throw err;
         }
     };
@@ -96,7 +116,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, loading, login, register, logout, fetchUser, token }}>
+        <AuthContext.Provider value={{ user, setUser, loading, login, register, verifyOtp, logout, fetchUser, token }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,6 +1,9 @@
 const db = require('../utils/db');
 const { v4: uuidv4 } = require('uuid');
 
+const MAX_RECHARGE = 10000;
+const MAX_BALANCE = 500000;
+
 exports.getBalance = async (req, res) => {
     try {
         const balance = await db.query('SELECT balance FROM wallets WHERE user_id = $1', [req.user.id]);
@@ -14,14 +17,12 @@ exports.getBalance = async (req, res) => {
 exports.getTransactions = async (req, res) => {
     try {
         const transactions = await db.query(
-            `SELECT t.*, 
-        u_s.full_name as sender_name, 
-        u_r.full_name as receiver_name 
-       FROM transactions t
-       LEFT JOIN users u_s ON t.sender_id = u_s.id
-       JOIN users u_r ON t.receiver_id = u_r.id
-       WHERE t.sender_id = $1 OR t.receiver_id = $1
-       ORDER BY t.created_at DESC`,
+            `SELECT t.*, u_s.full_name as sender_name, u_r.full_name as receiver_name 
+             FROM transactions t
+             LEFT JOIN users u_s ON t.sender_id = u_s.id
+             JOIN users u_r ON t.receiver_id = u_r.id
+             WHERE t.sender_id = $1 OR t.receiver_id = $1
+             ORDER BY t.created_at DESC`,
             [req.user.id]
         );
         res.json(transactions.rows);
@@ -31,8 +32,34 @@ exports.getTransactions = async (req, res) => {
     }
 };
 
+exports.getTransactionById = async (req, res) => {
+    try {
+        const transaction = await db.query(
+            `SELECT t.*, 
+                COALESCE(u_s.full_name, 'ZenWallet System') as sender_name, 
+                COALESCE(u_s.upi_id, 'system@zenwallet') as sender_upi_id,
+                u_r.full_name as receiver_name, 
+                u_r.upi_id as receiver_upi_id
+             FROM transactions t
+             LEFT JOIN users u_s ON t.sender_id = u_s.id
+             LEFT JOIN users u_r ON t.receiver_id = u_r.id
+             WHERE t.id = $1 AND (t.sender_id = $2 OR t.receiver_id = $2 OR t.sender_id IS NULL AND t.receiver_id = $2)`,
+            [req.params.id, req.user.id]
+        );
+
+        if (transaction.rows.length === 0) {
+            return res.status(404).json({ message: 'Transaction not found' });
+        }
+
+        res.json(transaction.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 exports.sendCoins = async (req, res) => {
-    const { receiverEmail, amount, referenceId } = req.body;
+    const { receiverUpiId, amount, referenceId } = req.body;
     const senderId = req.user.id;
 
     if (amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
@@ -42,10 +69,10 @@ exports.sendCoins = async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // Get receiver
-        const receiver = await client.query('SELECT id FROM users WHERE email = $1', [receiverEmail]);
+        // Get receiver by UPI ID (upi_id column)
+        const receiver = await client.query('SELECT id FROM users WHERE upi_id = $1', [receiverUpiId]);
         if (receiver.rows.length === 0) {
-            throw new Error('Receiver not found');
+            throw new Error('Receiver ZenWallet ID not found');
         }
         const receiverId = receiver.rows[0].id;
 
@@ -62,17 +89,37 @@ exports.sendCoins = async (req, res) => {
         // Deduct from sender
         await client.query('UPDATE wallets SET balance = balance - $1 WHERE user_id = $2', [amount, senderId]);
 
+        // Check receiver balance capacity
+        const receiverWallet = await client.query('SELECT balance FROM wallets WHERE user_id = $1 FOR UPDATE', [receiverId]);
+        if (parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount) > MAX_BALANCE) {
+            throw new Error(`Receiver's wallet cannot hold more than ${MAX_BALANCE} C.`);
+        }
+
         // Credit receiver
         await client.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [amount, receiverId]);
 
         // Record transaction
-        await client.query(
-            'INSERT INTO transactions (sender_id, receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4, $5)',
-            [senderId, receiver_id, amount, 'TRANSFER', referenceId]
+        const txResult = await client.query(
+            'INSERT INTO transactions (sender_id, receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [senderId, receiverId, amount, 'TRANSFER', referenceId]
         );
 
+        const transaction = txResult.rows[0];
+
+        // Fetch names for the receipt
+        const sender = await client.query('SELECT full_name, upi_id FROM users WHERE id = $1', [senderId]);
+
         await client.query('COMMIT');
-        res.json({ message: 'Transfer successful' });
+        res.json({
+            message: 'Transfer successful',
+            transaction: {
+                ...transaction,
+                sender_name: sender.rows[0].full_name,
+                sender_upi_id: sender.rows[0].upi_id,
+                receiver_name: receiver.rows[0].full_name,
+                receiver_upi_id: receiver.rows[0].upi_id
+            }
+        });
     } catch (err) {
         await client.query('ROLLBACK');
         res.status(400).json({ message: err.message });
@@ -135,7 +182,13 @@ exports.fulfillPayment = async (req, res) => {
 
         // Check sender balance
         const senderWallet = await client.query('SELECT balance FROM wallets WHERE user_id = $1 FOR UPDATE', [senderId]);
-        if (senderWallet.rows[0].balance < amount) throw new Error('Insufficient balance');
+        if (parseFloat(senderWallet.rows[0].balance) < parseFloat(amount)) throw new Error('Insufficient balance');
+
+        // Check receiver balance capacity
+        const receiverWallet = await client.query('SELECT balance FROM wallets WHERE user_id = $1 FOR UPDATE', [receiver_id]);
+        if (parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount) > MAX_BALANCE) {
+            throw new Error(`Merchant's wallet is at capacity (Max ${MAX_BALANCE} C).`);
+        }
 
         // Atomic Transfer
         await client.query('UPDATE wallets SET balance = balance - $1 WHERE user_id = $2', [amount, senderId]);
@@ -177,17 +230,40 @@ exports.getPaymentDetails = async (req, res) => {
     }
 };
 
-// Admin/Manual add coins (simplified for this demo)
+// Admin/Manual add coins
 exports.addCoins = async (req, res) => {
     const { userId, amount } = req.body;
-    // In a real app, check for admin role here
+
+    if (amount > MAX_RECHARGE) {
+        return res.status(400).json({ message: `Maximum recharge amount is ${MAX_RECHARGE} C.` });
+    }
+
     try {
+        const wallet = await db.query('SELECT balance FROM wallets WHERE user_id = $1', [userId]);
+        if (parseFloat(wallet.rows[0].balance) + parseFloat(amount) > MAX_BALANCE) {
+            return res.status(400).json({ message: `Wallet balance cannot exceed ${MAX_BALANCE} C.` });
+        }
+
         await db.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [amount, userId]);
-        await db.query(
-            'INSERT INTO transactions (receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4)',
-            [userId, amount, 'RECHARGE', 'Admin Top-up']
+        const txResult = await db.query(
+            'INSERT INTO transactions (receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4) RETURNING *',
+            [userId, amount, 'RECHARGE', 'Asset Top-up']
         );
-        res.json({ message: 'Coins added successfully' });
+
+        const transaction = txResult.rows[0];
+        const user = await db.query('SELECT full_name, upi_id FROM users WHERE id = $1', [userId]);
+
+        res.json({
+            success: true,
+            message: 'Coins added successfully',
+            transaction: {
+                ...transaction,
+                sender_name: 'ZenWallet Treasury',
+                sender_upi_id: 'system@zenwallet',
+                receiver_name: user.rows[0].full_name,
+                receiver_upi_id: user.rows[0].upi_id
+            }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -200,11 +276,17 @@ exports.sandboxFund = async (req, res) => {
     const { amount } = req.body;
 
     // Limit sandbox funding to avoid abuse even in dev? Nah, it's sandbox.
-    if (!amount || amount <= 0 || amount > 1000000) {
-        return res.status(400).json({ message: 'Invalid amount (max 1M)' });
+    // Limit recharge to 10k
+    if (amount > MAX_RECHARGE) {
+        return res.status(400).json({ message: `Maximum recharge amount is ${MAX_RECHARGE} C.` });
     }
 
     try {
+        const wallet = await db.query('SELECT balance FROM wallets WHERE user_id = $1', [userId]);
+        if (parseFloat(wallet.rows[0].balance) + parseFloat(amount) > MAX_BALANCE) {
+            return res.status(400).json({ message: `Wallet balance cannot exceed ${MAX_BALANCE} C.` });
+        }
+
         await db.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [amount, userId]);
         await db.query(
             'INSERT INTO transactions (receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4)',

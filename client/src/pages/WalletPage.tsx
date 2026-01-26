@@ -10,8 +10,8 @@ export default function Wallet() {
     const [copied, setCopied] = React.useState(false);
 
     const handleCopy = () => {
-        if (user?.wallet_id) {
-            navigator.clipboard.writeText(user.wallet_id);
+        if (user?.upi_id) {
+            navigator.clipboard.writeText(user.upi_id);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         }
@@ -24,64 +24,66 @@ export default function Wallet() {
                 <div className="px-8 py-5 bg-[#0f0f10] border-b border-slate-800/30">
                     <div className="flex items-center justify-between max-w-[1600px] mx-auto">
                         <div>
-                            <h1 className="text-xl font-semibold text-white tracking-tight">Wallet</h1>
-                            <p className="text-xs text-slate-500 mt-0.5">Manage your wallet and make transfers</p>
+                            <h1 className="text-xl font-semibold text-white tracking-tight">Financial Hub</h1>
+                            <p className="text-xs text-slate-500 mt-0.5">Your unique cross-platform identification and asset control.</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Main Content */}
-                <div className="px-8 py-6 max-w-[1600px] mx-auto">
-                    {/* Wallet ID Card */}
-                    <div className="bg-[#13131a] rounded-md px-5 py-4 border border-slate-800/30 mb-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Wallet ID</p>
-                                <p className="text-sm text-white font-mono">{user?.wallet_id || '---'}</p>
+                <div className="px-8 py-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <div className="border-pane px-8 py-6 flex items-center justify-between group">
+                        <div className="flex items-center gap-6">
+                            <div className="h-14 w-14 bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5 group-hover:scale-105 transition-transform">
+                                <QrCode className="text-zinc-400" size={24} />
                             </div>
-                            <button
-                                onClick={handleCopy}
-                                className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-md transition-colors flex items-center gap-2"
-                            >
-                                {copied ? <Check size={14} /> : <Copy size={14} />}
-                                {copied ? 'Copied' : 'Copy'}
-                            </button>
+                            <div>
+                                <p className="text-[11px] text-zinc-500 font-medium mb-1.5 leading-none">Global Asset Identifier</p>
+                                <p className="text-xl text-white font-medium tracking-tight">{user?.upi_id || 'Generating ID...'}</p>
+                            </div>
                         </div>
+                        <button
+                            onClick={handleCopy}
+                            className="px-6 py-2.5 bg-white text-black hover:bg-zinc-200 text-xs font-medium rounded-xl transition-all flex items-center gap-2 active:scale-95"
+                        >
+                            {copied ? <Check size={14} /> : <Copy size={14} />}
+                            {copied ? 'Copied' : 'Copy'}
+                        </button>
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <button
                             onClick={() => navigate('/send')}
-                            className="bg-[#13131a] rounded-md px-6 py-8 border border-slate-800/30 hover:border-cyan-500/30 hover:bg-slate-800/20 transition-all text-center group"
+                            className="border-pane py-10 transition-all text-center group hover:bg-emerald-500/[0.02]"
                         >
-                            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
-                                <SendIcon size={20} className="text-cyan-400" />
+                            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-emerald-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <SendIcon size={22} className="text-emerald-500" />
                             </div>
-                            <h3 className="text-sm font-semibold text-white mb-1">Send</h3>
-                            <p className="text-xs text-slate-500">Transfer to another wallet</p>
+                            <h3 className="text-[15px] font-medium text-white mb-2">Send Assets</h3>
+                            <p className="text-[11px] text-zinc-500 leading-relaxed max-w-[160px] mx-auto font-medium">Transfer liquidity to any secure Zen ID worldwide.</p>
                         </button>
 
                         <button
                             onClick={() => navigate('/receive')}
-                            className="bg-[#13131a] rounded-md px-6 py-8 border border-slate-800/30 hover:border-cyan-500/30 hover:bg-slate-800/20 transition-all text-center group"
+                            className="border-pane py-10 transition-all text-center group hover:bg-indigo-500/[0.02]"
                         >
-                            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
-                                <QrCode size={20} className="text-cyan-400" />
+                            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-indigo-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <QrCode size={22} className="text-indigo-400" />
                             </div>
-                            <h3 className="text-sm font-semibold text-white mb-1">Receive</h3>
-                            <p className="text-xs text-slate-500">Generate QR code</p>
+                            <h3 className="text-[15px] font-medium text-white mb-2">My Qr Code</h3>
+                            <p className="text-[11px] text-zinc-500 leading-relaxed max-w-[160px] mx-auto font-medium">Generate a secure uplink for incoming payments.</p>
                         </button>
 
                         <button
                             onClick={() => navigate('/payment')}
-                            className="bg-[#13131a] rounded-md px-6 py-8 border border-slate-800/30 hover:border-cyan-500/30 hover:bg-slate-800/20 transition-all text-center group"
+                            className="border-pane py-10 transition-all text-center group hover:bg-blue-500/[0.02]"
                         >
-                            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
-                                <ArrowDownToLine size={20} className="text-cyan-400" />
+                            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-blue-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <ArrowDownToLine size={22} className="text-blue-400" />
                             </div>
-                            <h3 className="text-sm font-semibold text-white mb-1">Top-up</h3>
-                            <p className="text-xs text-slate-500">Add funds to wallet</p>
+                            <h3 className="text-[15px] font-medium text-white mb-2">Add Capital</h3>
+                            <p className="text-[11px] text-zinc-500 leading-relaxed max-w-[160px] mx-auto font-medium">Inject liquidity into your global node instantly.</p>
                         </button>
                     </div>
                 </div>

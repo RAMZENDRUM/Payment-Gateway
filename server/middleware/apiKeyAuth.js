@@ -2,9 +2,10 @@ const db = require('../utils/db');
 
 const apiKeyAuth = async (req, res, next) => {
     try {
-        // 1. Get API Key from Header (Authorization: Bearer sk_... or X-API-Key)
+        // 1. Get API Key from Header (case-insensitive)
         const authHeader = req.headers['authorization'];
-        const xApiKey = req.headers['x-api-key'];
+        // Check both lowercase and capitalized versions
+        const xApiKey = req.headers['x-api-key'] || req.headers['X-API-Key'];
 
         let apiKey = null;
 
@@ -15,6 +16,7 @@ const apiKeyAuth = async (req, res, next) => {
         }
 
         if (!apiKey) {
+            console.log('[API Key Auth] Missing API Key. Headers:', Object.keys(req.headers));
             return res.status(401).json({ error: 'Missing API Key' });
         }
 

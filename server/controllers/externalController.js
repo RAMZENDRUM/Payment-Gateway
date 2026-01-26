@@ -2,6 +2,7 @@ const db = require('../utils/db');
 const { v4: uuidv4 } = require('uuid');
 
 const MERCHANT_API_KEY = process.env.MERCHANT_API_KEY || 'default-merchant-key';
+const MAX_BALANCE = 500000;
 
 /**
  * DIRECT WALLET TRANSFER (NO QR)
@@ -56,6 +57,15 @@ exports.directWalletTransfer = async (req, res) => {
 
         if (currentBalance < amount) {
             throw new Error('INSUFFICIENT_BALANCE');
+        }
+
+        // 2.5 Check receiver capacity
+        const receiverWallet = await client.query(
+            'SELECT balance FROM wallets WHERE user_id = $1 FOR UPDATE',
+            [toWalletId]
+        );
+        if (parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount) > MAX_BALANCE) {
+            throw new Error('RECEIVER_BALANCE_EXCEEDED');
         }
 
         // 3. Perform atomic transfer
@@ -148,6 +158,10 @@ exports.directWalletTransfer = async (req, res) => {
             case 'SENDER_WALLET_NOT_FOUND':
                 errorMessage = 'Sender wallet not found';
                 statusCode = 404;
+                break;
+            case 'RECEIVER_BALANCE_EXCEEDED':
+                errorMessage = `Receiver's wallet balance cannot exceed ${MAX_BALANCE} C.`;
+                statusCode = 422;
                 break;
             default:
                 errorMessage = err.message;
@@ -245,6 +259,12 @@ exports.fulfillExternalPayment = async (req, res) => {
         // In reality, you'd call Stripe/Razorpay here.
         console.log(`Processing ${paymentMethod} payment for ${amount}...`);
 
+        // 2.5 Check receiver capacity
+        const receiverWallet = await client.query('SELECT balance FROM wallets WHERE user_id = $1 FOR UPDATE', [receiver_id]);
+        if (parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount) > MAX_BALANCE) {
+            throw new Error(`Merchant's wallet is at capacity (Max ${MAX_BALANCE} C).`);
+        }
+
         // 3. Credit merchant's ZenWallet
         await client.query('UPDATE wallets SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2', [amount, receiver_id]);
 
@@ -332,5 +352,42 @@ exports.verifyPaymentByReference = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
+    }
+};
+exports.verifyCard = async (req, res) => {
+    const { cardNumber, cvv, expiryMonth, expiryYear, amount } = req.body;
+
+    if (!cardNumber || !cvv || !expiryMonth || !expiryYear) {
+        return res.status(400).json({ success: false, message: 'Missing card details' });
+    }
+
+    try {
+        const rawCard = cardNumber.replace(/\s/g, "");
+        // Join with wallets to check balance
+        const result = await db.query(
+            `SELECT vc.*, w.balance 
+             FROM virtual_cards vc
+             JOIN wallets w ON vc.user_id = w.user_id
+             WHERE vc.card_number = $1 AND vc.cvv = $2 AND vc.expiry_month = $3 AND vc.expiry_year = $4`,
+            [rawCard, cvv, expiryMonth, expiryYear]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Invalid card details. Card not found in ZenWallet system.' });
+        }
+
+        const card = result.rows[0];
+
+        if (amount && parseFloat(card.balance) < parseFloat(amount)) {
+            return res.status(200).json({
+                success: false,
+                message: `Insufficient funds. Your balance is ${card.balance} C, but this purchase requires ${amount} C.`
+            });
+        }
+
+        res.json({ success: true, message: 'Card verified and balance sufficient' });
+    } catch (err) {
+        console.error('Verify Card Error:', err);
+        res.status(500).json({ success: false, message: 'Server error during card verification' });
     }
 };

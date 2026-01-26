@@ -9,6 +9,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import AppLayout from '@/components/layout/AppLayout';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
 
@@ -44,137 +45,139 @@ export default function Receive() {
     };
 
     return (
-        <div className="min-h-screen w-full bg-[#09090b] text-zinc-50 flex flex-col font-sans">
-            {/* Desktop Navbar / Breadcrumb */}
-            <div className="w-full border-b border-zinc-900 bg-zinc-950/20 px-8 h-16 flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="text-zinc-500 hover:text-zinc-200 transition-colors flex items-center gap-2 text-sm"
-                    >
-                        <ArrowLeft size={16} />
-                        Back to Dashboard
-                    </button>
-                    <div className="h-4 w-[1px] bg-zinc-800" />
-                    <span className="text-sm font-medium text-zinc-400">Wallet</span>
-                    <span className="text-zinc-700">/</span>
-                    <span className="text-sm font-medium text-zinc-100">Receive Coins</span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <span className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold">ZenWallet v1.0</span>
-                </div>
-            </div>
+        <AppLayout title="Receive Coins" subtitle="Generate a security token to receive coins from another user.">
+            <div className="w-full h-full flex items-center justify-center animate-in fade-in duration-700 p-4 lg:p-12">
+                <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-24 items-center animate-in fade-in slide-in-from-bottom-2 duration-700">
 
-            <main className="flex-1 flex flex-col items-center justify-start py-20 px-6">
-                <div className="w-full max-w-[560px]">
-                    <div className="mb-10 text-center">
-                        <h1 className="text-2xl font-medium tracking-tight">Receive Coins</h1>
-                        <p className="text-sm text-zinc-500 mt-2">Generate a security token to receive coins from another user.</p>
-                    </div>
+                    {/* Left Column: Form & Actions */}
+                    <div className="space-y-12 relative">
+                        <div className="absolute -left-20 top-20 w-80 h-80 bg-blue-500/[0.03] rounded-full blur-3xl pointer-events-none" />
 
-                    <AnimatePresence mode="wait">
+                        <div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/5 text-blue-500 text-[11px] font-medium mb-6">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                                Your UPI QR
+                            </div>
+                            <h2 className="text-4xl font-bold text-white tracking-tight mb-4">Receive Money</h2>
+                            <p className="text-zinc-500 text-base font-medium leading-relaxed max-w-sm">
+                                Show this QR code to any ZenWallet or UPI user to receive payments instantly.
+                            </p>
+                        </div>
+
                         {!qrData ? (
                             <motion.form
-                                key="entry"
-                                initial={{ opacity: 0, y: 5 }}
+                                key="entry-form"
+                                initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -5 }}
-                                onSubmit={generateQR}
                                 className="space-y-12"
+                                onSubmit={generateQR}
                             >
-                                {/* Amount Input */}
-                                <div className="space-y-4 text-center">
-                                    <Label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Requested Amount</Label>
-                                    <div className="relative group">
-                                        <input
-                                            type="number"
-                                            required
-                                            min="0.01"
-                                            step="0.01"
-                                            placeholder="0.00"
-                                            autoFocus
-                                            className="w-full bg-transparent border-none p-0 text-7xl font-medium tabular-nums text-zinc-50 text-center focus:outline-none placeholder:text-zinc-800"
-                                            value={amount}
-                                            onChange={(e) => setAmount(e.target.value)}
-                                        />
-                                        <span className="absolute right-0 bottom-3 text-sm font-bold text-zinc-600 tracking-widest">COINS</span>
-                                    </div>
-                                    <div className="h-[1px] w-full bg-zinc-800 group-focus-within:bg-cyan-600/50 transition-colors" />
-                                </div>
-
-                                <div className="flex gap-4 p-5 bg-zinc-900/20 border border-zinc-900/60 rounded-md items-start">
-                                    <Info size={18} className="text-cyan-600/60 mt-0.5 shrink-0" />
-                                    <div className="space-y-1">
-                                        <p className="text-xs font-medium text-zinc-300">Security Token</p>
-                                        <p className="text-[11px] text-zinc-500 leading-normal">
-                                            Creating a payment request generates a single-use secure token valid for 5 minutes.
-                                        </p>
+                                <div className="space-y-12 group">
+                                    <div className="space-y-6">
+                                        <Label className="text-[13px] font-medium text-zinc-500 mb-6 block">Requested Amount</Label>
+                                        <div className="relative group">
+                                            <div className="flex items-baseline gap-4">
+                                                <span className="text-3xl text-zinc-700 font-medium font-sans">₹</span>
+                                                <input
+                                                    type="number"
+                                                    required
+                                                    min="0.01"
+                                                    step="0.01"
+                                                    placeholder="0.00"
+                                                    className="w-full bg-transparent border-none p-0 text-7xl font-semibold tracking-tight text-white focus:outline-none placeholder:text-zinc-800 tabular-nums caret-blue-500"
+                                                    value={amount}
+                                                    onChange={(e) => setAmount(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <Button
                                     disabled={loading}
                                     type="submit"
-                                    className="w-full h-12 bg-cyan-600 hover:bg-cyan-700 text-zinc-950 font-bold text-sm tracking-wide transition-all rounded-md shadow-sm active:scale-[0.99]"
+                                    size="lg"
+                                    className="w-full h-16 bg-white hover:bg-zinc-200 text-black font-semibold text-base rounded-2xl transition-all active:scale-95 shadow-2xl"
                                 >
-                                    {loading ? 'Initializing Server...' : 'Generate New Secure Token'}
+                                    {loading ? 'Creating QR...' : 'Generate Pay QR'}
                                 </Button>
                             </motion.form>
                         ) : (
                             <motion.div
-                                key="result"
-                                initial={{ opacity: 0, scale: 0.99 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="space-y-12 flex flex-col items-center"
+                                key="qr-result-text"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="space-y-12"
                             >
-                                {/* QR Container */}
-                                <div className="p-8 border border-zinc-900 bg-zinc-950/40 rounded-lg relative overflow-hidden group">
-                                    <div className="absolute inset-0 bg-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <div className="bg-white p-4 rounded-md">
-                                        <QRCodeSVG value={qrData} size={220} level="H" />
-                                    </div>
-                                    <div className="mt-6 flex items-center justify-center gap-2 text-cyan-600/80">
-                                        <RefreshCw size={12} className="animate-spin-slow" />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">Valid for 05:00</span>
-                                    </div>
+                                <div>
+                                    <p className="text-[13px] font-medium text-zinc-500 mb-4">Requesting Amount</p>
+                                    <h2 className="text-7xl font-bold text-white tabular-nums tracking-tight">₹{parseFloat(amount).toLocaleString()}</h2>
                                 </div>
 
-                                <div className="text-center space-y-2">
-                                    <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-600">Pending Receipt</p>
-                                    <h2 className="text-4xl font-medium tabular-nums">{parseFloat(amount).toFixed(2)} COINS</h2>
-                                </div>
-
-                                <div className="w-full space-y-4 pt-4 border-t border-zinc-900">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <Button
-                                            variant="outline"
-                                            onClick={copyToken}
-                                            className="h-11 border-zinc-800 bg-transparent text-zinc-400 hover:text-white hover:bg-zinc-900 transition-all rounded-md text-xs font-semibold"
-                                        >
-                                            <Copy size={16} className="mr-2" />
-                                            Copy Token
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            className="h-11 border-zinc-800 bg-transparent text-zinc-400 hover:text-white hover:bg-zinc-900 transition-all rounded-md text-xs font-semibold"
-                                        >
-                                            <Share2 size={16} className="mr-2" />
-                                            Share Link
-                                        </Button>
-                                    </div>
+                                <div className="grid grid-cols-2 gap-6">
                                     <Button
-                                        variant="ghost"
-                                        onClick={() => setQrData(null)}
-                                        className="w-full text-zinc-600 hover:text-zinc-400 text-xs font-medium"
+                                        variant="outline"
+                                        onClick={copyToken}
+                                        className="h-14 bg-white/[0.02] border-zinc-400/10 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-2xl font-semibold text-xs uppercase tracking-widest"
                                     >
-                                        Discard and try again
+                                        <Copy size={16} className="mr-2" />
+                                        Copy Link
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setQrData(null)}
+                                        className="h-14 bg-white/[0.02] border-zinc-400/10 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-2xl font-semibold text-xs uppercase tracking-widest"
+                                    >
+                                        <RefreshCw size={14} className="mr-2" />
+                                        Clear
                                     </Button>
                                 </div>
                             </motion.div>
                         )}
-                    </AnimatePresence>
+                    </div>
+
+                    {/* Right Column: Visual/QR */}
+                    <div className="relative flex items-center justify-center">
+                        <div className="absolute inset-0 bg-blue-500/[0.02] rounded-full blur-3xl opacity-50" />
+
+                        <div className="relative w-full max-w-md aspect-square p-12 flex flex-col items-center justify-center">
+                            <AnimatePresence mode="wait">
+                                {!qrData ? (
+                                    <motion.div
+                                        key="placeholder"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="text-center space-y-6 opacity-40"
+                                    >
+                                        <div className="h-32 w-32 mx-auto border-4 border-dashed border-zinc-700 rounded-2xl flex items-center justify-center">
+                                            <div className="h-24 w-24 bg-zinc-800 rounded-xl" />
+                                        </div>
+                                        <p className="text-sm font-medium">QR Code will appear here</p>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div
+                                        key="qr-code"
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="flex flex-col items-center w-full"
+                                    >
+                                        <div className="p-4 bg-white rounded-3xl shadow-xl shadow-cyan-900/20 mb-8">
+                                            <QRCodeSVG value={qrData} size={240} level="H" />
+                                        </div>
+                                        <div className="flex items-center gap-3 text-cyan-400 bg-cyan-950/30 px-5 py-2.5 rounded-full border border-cyan-500/20">
+                                            <div className="h-2 w-2 bg-cyan-400 rounded-full animate-pulse" />
+                                            <span className="text-xs font-bold tracking-wide uppercase">Live & Valid</span>
+                                            <span className="text-xs font-mono opacity-70">05:00</span>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+
                 </div>
-            </main>
-        </div>
+            </div>
+        </AppLayout>
     );
 }

@@ -4,47 +4,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merchant Store - Event Booking Integration</title>
+    <title>Merchant Store - Checkout Integration</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #08090b;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top right, #1e1b4b, #0f172a, #020617);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
             color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .bg-glow {
+            position: fixed;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(60px);
         }
 
         .glass-card {
-            background: rgba(30, 41, 59, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 2rem;
+            background: rgba(12, 12, 14, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(161, 161, 170, 0.1);
+            border-radius: 2.5rem;
         }
 
-        .btn-primary {
-            background: #4f46e5;
-            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        .inner-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(161, 161, 170, 0.08);
+            border-radius: 1.5rem;
         }
 
-        .btn-primary:hover {
-            background: #6366f1;
+        .btn-pay {
+            background: #ffffff;
+            color: #000000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px -10px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-pay:hover {
+            background: #e4e4e7;
             transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.4);
+            box-shadow: 0 25px 50px -12px rgba(255, 255, 255, 0.15);
         }
 
-        .btn-primary:active {
-            transform: scale(0.95);
+        .btn-pay:active {
+            transform: scale(0.98);
         }
 
         .status-badge {
-            padding: 0.5rem 1.5rem;
-            border-radius: 9999px;
+            padding: 0.5rem 1.25rem;
+            border-radius: 1rem;
             font-weight: 600;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+            letter-spacing: 0.02em;
         }
 
         .dots-animation::after {
@@ -68,125 +89,151 @@
                 content: '...';
             }
         }
+
+        input:focus {
+            outline: none;
+        }
     </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center p-6">
+<body class="min-h-screen flex items-center justify-center p-8">
+    <div class="bg-glow -top-40 -right-40"></div>
+    <div class="bg-glow -bottom-40 -left-40"></div>
 
-    <div class="w-full max-w-xl glass-card p-10 shadow-2xl">
+    <div class="w-full max-w-xl glass-card p-12 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.6)] relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl"></div>
+
         <!-- Header -->
-        <div class="flex items-center gap-4 mb-8">
-            <div
-                class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <div class="flex items-center gap-5 mb-12">
+            <div class="w-14 h-14 bg-white text-black rounded-2xl flex items-center justify-center shadow-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="14" x="2" y="5" rx="2" />
+                    <line x1="2" x2="22" y1="10" y2="10" />
                 </svg>
             </div>
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Event Booking Store</h1>
-                <p class="text-slate-400 text-sm font-medium">Verify External IDs with ZenWallet</p>
+                <h1 class="text-2xl font-bold tracking-tight text-white">Merchant Checkout</h1>
+                <p class="text-zinc-500 text-sm font-medium mt-1">Order processed by ZenWallet</p>
             </div>
         </div>
 
         <!-- Checkout View -->
-        <div id="checkout-view" class="space-y-8">
-            <div class="bg-slate-900/50 rounded-3xl p-6 border border-slate-800">
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-400 font-medium">Ticket ID</span>
-                        <span id="reference-display" class="font-mono text-indigo-400">EVT-MATCH-2026</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-400 font-medium">Event</span>
-                        <span class="font-semibold text-white">VIP - Tech Conference 2026</span>
-                    </div>
-                    <div class="border-t border-slate-800 my-4 pt-4 flex justify-between items-center">
-                        <span class="text-lg font-bold">Total Price</span>
-                        <span class="text-2xl font-black text-white">50 <span
-                                class="text-indigo-500 text-lg uppercase ml-1">Coins</span></span>
+        <div id="checkout-view" class="space-y-10">
+            <div class="inner-card p-8 space-y-6">
+                <div class="flex justify-between items-center">
+                    <span class="text-zinc-400 font-medium text-sm">Order Reference</span>
+                    <span id="reference-display"
+                        class="font-mono text-blue-400 font-semibold tracking-wider">ORD-VERIFY-2026</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-zinc-400 font-medium text-sm">Description</span>
+                    <span class="font-semibold text-white">Premium Account Refill</span>
+                </div>
+
+                <div class="pt-6 border-t border-white/[0.05] flex justify-between items-end">
+                    <span class="text-zinc-500 font-medium text-sm">Payable Amount</span>
+                    <div class="text-right">
+                        <span class="text-4xl font-extrabold text-white tabular-nums tracking-tight">₹50.00</span>
                     </div>
                 </div>
             </div>
 
             <div class="space-y-4">
-                <label class="block text-sm font-semibold text-slate-500 uppercase tracking-widest">Integration
-                    Check</label>
-                <div
-                    class="p-4 bg-slate-800/30 rounded-2xl border border-slate-700/50 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
-                        <span class="text-xs text-slate-400 font-medium">Connection Status: API Linked</span>
+                <div class="flex items-center justify-between px-2">
+                    <label class="text-xs font-semibold text-zinc-600 uppercase tracking-widest">Connection
+                        Status</label>
+                    <div class="flex items-center gap-2">
+                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]">
+                        </div>
+                        <span class="text-[11px] text-emerald-500 font-bold uppercase">Active Gateway</span>
                     </div>
-                    <span class="text-[10px] font-bold text-slate-500 font-mono">X-API-KEY: default...</span>
+                </div>
+                <div
+                    class="p-4 bg-white/[0.01] rounded-2xl border border-white/[0.03] flex items-center justify-between">
+                    <span class="text-[10px] font-bold text-zinc-500 font-mono">SECURE-TOKEN: default-merchant...</span>
+                    <button class="text-[10px] font-bold text-blue-500 uppercase hover:underline">Verify Link</button>
                 </div>
             </div>
 
-            <button id="pay-btn"
-                class="btn-primary w-full text-white font-bold py-5 px-8 rounded-2xl transition-all flex items-center justify-center gap-3 text-lg">
-                Pay with ZenWallet
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                        clip-rule="evenodd" />
-                </svg>
-            </button>
+            <div class="pt-4">
+                <button id="pay-btn"
+                    class="btn-pay w-full font-bold py-5 px-8 rounded-2xl transition-all flex items-center justify-center gap-3 text-lg group">
+                    Proceed to pay via ZenWallet
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                        class="transition-transform group-hover:translate-x-1">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                </button>
+                <button onclick="window.open('http://localhost:5173/demo-checkout?token=demo', '_blank')"
+                    class="w-full text-zinc-600 hover:text-zinc-300 font-semibold py-6 text-sm transition-all focus:outline-none">
+                    Preview Standard Checkout Page
+                </button>
+            </div>
         </div>
 
         <!-- Verification / Status View -->
-        <div id="status-view" class="hidden space-y-8 py-4">
-            <div id="loading-state" class="text-center space-y-4">
-                <div
-                    class="w-16 h-16 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin mx-auto">
+        <div id="status-view" class="hidden space-y-10 py-6">
+            <div id="loading-state" class="text-center space-y-6">
+                <div class="relative w-24 h-24 mx-auto">
+                    <div class="absolute inset-0 border-4 border-blue-500/10 rounded-full"></div>
+                    <div
+                        class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin">
+                    </div>
                 </div>
-                <p class="text-slate-400 font-medium dots-animation">Verifying payment status with Wallet server</p>
+                <p class="text-zinc-500 font-medium text-lg dots-animation">Verifying payment status</p>
             </div>
 
-            <div id="result-state" class="hidden space-y-6">
+            <div id="result-state" class="hidden space-y-8">
                 <!-- Status Icon -->
                 <div id="status-icon-container"
-                    class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
-                    <div id="icon-success" class="hidden text-green-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                    class="w-28 h-28 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-2xl relative">
+                    <div class="absolute inset-0 bg-white/5 rounded-[2.5rem] blur-xl transition-opacity"></div>
+                    <div id="icon-success" class="hidden text-emerald-500 relative z-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6 9 17l-5-5" />
                         </svg>
                     </div>
-                    <div id="icon-fail" class="hidden text-red-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                                d="M6 18L18 6M6 6l12 12" />
+                    <div id="icon-fail" class="hidden text-red-500 relative z-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18M6 6l12 12" />
                         </svg>
                     </div>
                 </div>
 
-                <div class="text-center">
-                    <span id="status-label" class="status-badge mb-4 inline-block tracking-[0.2em]"></span>
-                    <h2 id="status-title" class="text-3xl font-black mt-2"></h2>
-                    <p id="status-msg" class="text-slate-400 mt-4 max-w-sm mx-auto leading-relaxed font-medium"></p>
+                <div class="text-center space-y-3">
+                    <span id="status-label"
+                        class="status-badge inline-block uppercase tracking-widest font-bold"></span>
+                    <h2 id="status-title" class="text-4xl font-extrabold text-white tracking-tight"></h2>
+                    <p id="status-msg" class="text-zinc-500 mt-4 max-w-sm mx-auto leading-relaxed font-medium"></p>
                 </div>
 
                 <!-- Transaction Details Card -->
-                <div id="trans-details" class="bg-indigo-950/30 rounded-[2rem] p-6 border border-indigo-500/20 hidden">
-                    <div class="grid grid-cols-2 gap-y-4 text-sm">
-                        <span class="text-slate-500">Merchant User ID</span>
-                        <span id="res-merchant-id"
-                            class="text-slate-300 font-mono text-right text-[10px] break-all"></span>
+                <div id="trans-details" class="inner-card p-8 space-y-5 hidden">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-zinc-500 font-medium">ZenWallet User ID</span>
+                        <span id="res-merchant-id" class="text-zinc-300 font-mono text-xs"></span>
+                    </div>
 
-                        <span class="text-slate-500">Booking Reference</span>
-                        <span id="res-ref-id" class="text-slate-300 font-bold text-right"></span>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-zinc-500 font-medium">Order ID</span>
+                        <span id="res-ref-id" class="text-zinc-300 font-bold"></span>
+                    </div>
 
-                        <span class="text-slate-500">Status Verification</span>
-                        <span id="res-match" class="text-green-400 font-bold text-right uppercase tracking-tighter">YES:
-                            MATCHED</span>
+                    <div class="pt-4 border-t border-white/[0.05] flex justify-between items-center text-sm">
+                        <span class="text-zinc-500 font-medium">Payment Status</span>
+                        <span id="res-match"
+                            class="text-emerald-500 font-bold uppercase tracking-wider text-[11px]">Verified
+                            Success</span>
                     </div>
                 </div>
 
                 <button onclick="location.href='merchant-demo.html'"
-                    class="w-full bg-white/5 hover:bg-white/10 text-white font-semibold py-4 rounded-2xl transition-all border border-white/10 mt-4">
-                    Try New Booking
+                    class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-5 rounded-2xl transition-all border border-zinc-400/10 active:scale-95 shadow-xl">
+                    Back to Store
                 </button>
             </div>
         </div>
@@ -197,7 +244,7 @@
         const API_KEY = 'default-merchant-key';
         const MERCHANT_ID = 'f294121c-2340-4e91-bf65-b550a6e0d81a';
 
-        const REF_ID = 'EVT-' + Math.floor(1000 + Math.random() * 9000);
+        const REF_ID = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
         document.getElementById('reference-display').innerText = REF_ID;
 
         // Check for callback
@@ -214,7 +261,6 @@
 
         async function verifyBooking(referenceId) {
             try {
-                // Call the new Verify by Reference endpoint
                 const response = await fetch(`${API_BASE}/verify-reference?merchantId=${MERCHANT_ID}&referenceId=${referenceId}`, {
                     headers: { 'x-api-key': API_KEY }
                 });
@@ -229,23 +275,22 @@
                 const badge = document.getElementById('status-icon-container');
 
                 if (data.received) {
-                    title.innerText = "Booking Confirmed";
-                    label.innerText = "YES: RECEIVED";
-                    label.className = "status-badge bg-green-500/20 text-green-500";
-                    msg.innerText = "Payment matches our database record. Your ticket is now active.";
-                    badge.classList.add('bg-green-500/10');
+                    title.innerText = "Payment Received";
+                    label.innerText = "Verified Status";
+                    label.className = "status-badge bg-emerald-500/10 text-emerald-500";
+                    msg.innerText = "Transaction confirmed. Your credits have been added successfully.";
+                    badge.classList.add('bg-emerald-500/5', 'border', 'border-emerald-500/20');
                     document.getElementById('icon-success').classList.remove('hidden');
 
-                    // Show details
                     document.getElementById('trans-details').classList.remove('hidden');
-                    document.getElementById('res-merchant-id').innerText = MERCHANT_ID;
+                    document.getElementById('res-merchant-id').innerText = MERCHANT_ID.slice(0, 18) + "...";
                     document.getElementById('res-ref-id').innerText = referenceId;
                 } else {
-                    title.innerText = "No Payment Found";
-                    label.innerText = "NOT RECEIVED";
-                    label.className = "status-badge bg-red-500/20 text-red-500";
-                    msg.innerText = "We couldn't find a matching transaction for this Event ID.";
-                    badge.classList.add('bg-red-500/10');
+                    title.innerText = "Payment Pending";
+                    label.innerText = "Not Found";
+                    label.className = "status-badge bg-red-500/10 text-red-500";
+                    msg.innerText = "We couldn't verify the payment for this order yet. Please try again.";
+                    badge.classList.add('bg-red-500/5', 'border', 'border-red-500/20');
                     document.getElementById('icon-fail').classList.remove('hidden');
                 }
             } catch (err) {
@@ -257,7 +302,7 @@
         document.getElementById('pay-btn').addEventListener('click', async () => {
             const btn = document.getElementById('pay-btn');
             btn.disabled = true;
-            btn.innerText = 'Initializing...';
+            btn.innerText = 'Creating session...';
 
             try {
                 const response = await fetch(`${API_BASE}/create-request`, {
@@ -278,14 +323,15 @@
                 if (resData.success) {
                     window.location.href = resData.data.paymentUrl;
                 } else {
-                    alert('Integration Error: ' + resData.message);
+                    alert('Error: ' + resData.message);
                     btn.disabled = false;
-                    btn.innerText = 'Pay with ZenWallet';
+                    btn.innerText = 'Proceed to pay via ZenWallet';
                 }
             } catch (err) {
                 console.error(err);
-                alert('Wallet Server not responding');
+                alert('Server connection failed');
                 btn.disabled = false;
+                btn.innerText = 'Proceed to pay via ZenWallet';
             }
         });
     </script>

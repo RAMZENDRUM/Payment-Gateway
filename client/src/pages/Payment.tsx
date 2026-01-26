@@ -1,52 +1,105 @@
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
+import {
+    CreditCard,
+    ShieldCheck,
+    ArrowLeft,
+    Coins,
+    Plus,
+    Check,
+    Lock
+} from "lucide-react";
+import { FaPaypal, FaApple } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+
+import AppLayout from "@/components/layout/AppLayout";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FaPaypal, FaApple } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import axios from "axios";
-import toast from "react-hot-toast";
+import { useAuth } from "@/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import TransactionReceipt, { TransactionData } from "@/components/ui/transaction-receipt";
+
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
 
+const AMOUNTS = [50, 100, 200, 500, 1000, 2000];
+
 export default function PaymentPage() {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
+    const [selectedAmount, setSelectedAmount] = useState(100);
+    const [customAmount, setCustomAmount] = useState("");
+    const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal' | 'apple' | 'google'>('card');
+    const [showReceipt, setShowReceipt] = useState(false);
+    const [txDetails, setTxDetails] = useState<TransactionData | null>(null);
+
+    const [cardData, setCardData] = useState({
         cardholderName: '',
         cardNumber: '',
         expiryDate: '',
-        cvv: '',
-        amount: 100
+        cvv: ''
     });
 
+    const finalAmount = useMemo(() => {
+        return customAmount ? parseInt(customAmount) : selectedAmount;
+    }, [customAmount, selectedAmount]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        if (name === 'cardNumber') {
+            const formatted = value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19);
+            setCardData(prev => ({ ...prev, [name]: formatted }));
+        } else if (name === 'expiryDate') {
+            const formatted = value.replace(/\D/g, '').replace(/(.{2})/g, '$1/').trim().slice(0, 5);
+            setCardData(prev => ({ ...prev, [name]: formatted }));
+        } else {
+            setCardData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleCheckout = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!finalAmount || finalAmount < 10) {
+            toast.error("Minimum top-up is 10 coins");
+            return;
+        }
+
+        if (finalAmount > 10000) {
+            toast.error("Maximum single refill limit is 10,000 C");
+            return;
+        }
+
+        // Potential check for existing balance + new amount
+        if (user && ((user.balance || 0) + finalAmount > 500000)) {
+            toast.error(`Transaction failed. Your wallet cannot hold more than 500,000 C (Current: ${user.balance} C)`);
+            return;
+        }
+
         setLoading(true);
-
         try {
-            // Simulate payment processing
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Simulation
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // Add coins to wallet after successful payment
-            await axios.post(`${API_URL}/wallet/admin/add-coins`, {
-                userId: localStorage.getItem('userId'),
-                amount: formData.amount
+            const res = await axios.post(`${API_URL}/wallet/admin/add-coins`, {
+                userId: user?.id,
+                amount: finalAmount
             });
 
-            toast.success(`Successfully added ${formData.amount} coins to your wallet!`);
-            navigate('/dashboard');
+            if (res.data.success) {
+                toast.success(`Successfully refilled ${finalAmount} coins!`);
+                setTxDetails(res.data.transaction);
+                setShowReceipt(true);
+            } else {
+                toast.error(res.data.message || "Payment processing failed");
+            }
         } catch (err) {
+            console.error(err);
             toast.error('Payment failed. Please try again.');
         } finally {
             setLoading(false);
@@ -54,133 +107,185 @@ export default function PaymentPage() {
     };
 
     return (
-        <div className="min-h-screen w-full bg-[#020617] text-white p-4 md:p-8 flex flex-col">
-            <header className="mb-8 flex items-center gap-4 max-w-2xl mx-auto w-full">
-                <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-400 hover:text-white">
-                    <ArrowLeft size={24} />
-                </button>
-                <div>
-                    <h1 className="text-2xl font-bold">Add Coins to Wallet</h1>
-                    <p className="text-slate-400 text-sm mt-1">Choose your payment method</p>
-                </div>
-            </header>
+        <AppLayout title="Refill Assets" subtitle="Instant coin top-up with secure encryption">
+            <div className="max-w-6xl mx-auto px-4 py-8 md:px-8 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
 
-            <div className="flex items-center justify-center flex-1">
-                <Card className="max-w-md w-full rounded-2xl shadow-lg bg-slate-900/50 border-slate-800">
-                    <CardContent className="p-6 space-y-6">
-                        {/* Amount Selection */}
-                        <div className="space-y-2">
-                            <Label htmlFor="amount" className="text-white">Select Amount</Label>
-                            <div className="grid grid-cols-3 gap-3">
-                                {[50, 100, 200, 500, 1000, 2000].map(amt => (
-                                    <button
-                                        key={amt}
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, amount: amt })}
-                                        className={`py-3 px-4 rounded-lg font-bold transition-all ${formData.amount === amt
-                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                                            }`}
-                                    >
-                                        {amt} C
-                                    </button>
-                                ))}
-                            </div>
+                    {/* Left Column: Amount Selection */}
+                    <div className="lg:col-span-4 space-y-10">
+                        <div>
+                            <h3 className="text-sm font-semibold text-white mb-4">Add Money</h3>
+                            <p className="text-zinc-500 text-sm font-medium leading-relaxed">Choose an amount to add to your ZenWallet balance.</p>
                         </div>
 
-                        {/* Payment Options */}
-                        <div className="grid grid-cols-3 gap-4">
-                            <Button variant="outline" className="h-14 p-0 flex items-center justify-center gap-2 bg-slate-800 border-slate-700 hover:bg-slate-700 text-white">
-                                <FaPaypal fontSize={24} className="text-blue-500" />
-                                <span className="text-sm font-medium">PayPal</span>
-                            </Button>
-                            <Button variant="outline" className="h-14 p-0 flex items-center justify-center gap-2 bg-slate-800 border-slate-700 hover:bg-slate-700 text-white">
-                                <FaApple fontSize={24} />
-                                <span className="text-sm font-medium">Pay</span>
-                            </Button>
-                            <Button variant="outline" className="h-14 p-0 flex items-center justify-center gap-2 bg-slate-800 border-slate-700 hover:bg-slate-700 text-white">
-                                <FcGoogle fontSize={30} />
-                                <span className="text-sm font-medium">Pay</span>
-                            </Button>
+                        <div className="grid grid-cols-2 gap-4">
+                            {AMOUNTS.map(amt => (
+                                <motion.button
+                                    key={amt}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => {
+                                        setSelectedAmount(amt);
+                                        setCustomAmount("");
+                                    }}
+                                    className={`relative py-5 px-6 rounded-2xl text-left transition-all ${selectedAmount === amt && !customAmount
+                                        ? 'bg-blue-600/10 ring-1 ring-blue-500/20'
+                                        : 'bg-zinc-900 border border-zinc-400/10 hover:border-zinc-400/20'
+                                        }`}
+                                >
+                                    <div className={`text-[11px] font-medium mb-1 ${selectedAmount === amt ? 'text-blue-500' : 'text-zinc-500'}`}>
+                                        Amount
+                                    </div>
+                                    <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
+                                        ₹{amt.toLocaleString()}
+                                    </div>
+                                </motion.button>
+                            ))}
                         </div>
 
-                        {/* Separator */}
-                        <div className="flex items-center text-slate-500">
-                            <hr className="flex-grow border-t border-slate-700" />
-                            <span className="mx-2 text-xs font-medium">or pay using credit card</span>
-                            <hr className="flex-grow border-t border-slate-700" />
-                        </div>
-
-                        {/* Credit Card Form */}
-                        <form onSubmit={handleCheckout} className="space-y-4">
-                            <div className="space-y-1">
-                                <Label htmlFor="cardholder-name" className="text-white">Card holder full name</Label>
+                        <div className="space-y-4 pt-4">
+                            <div className="relative group">
+                                <Label className="text-[13px] font-medium text-zinc-500 block mb-3 px-1">Other Amount</Label>
+                                <Coins className="absolute left-4 bottom-[18px] text-zinc-700" size={14} />
                                 <Input
-                                    id="cardholder-name"
-                                    name="cardholderName"
-                                    placeholder="Enter your full name"
-                                    value={formData.cardholderName}
-                                    onChange={handleInputChange}
-                                    className="bg-slate-800 border-slate-700 text-white"
-                                    required
+                                    placeholder="Enter custom amount..."
+                                    value={customAmount}
+                                    onChange={(e) => {
+                                        setCustomAmount(e.target.value.replace(/\D/g, ''));
+                                        setSelectedAmount(0);
+                                    }}
+                                    className="h-14 pl-12 bg-white/[0.02] border-zinc-400/10 text-sm font-medium rounded-2xl focus-visible:ring-1 focus-visible:ring-white/5"
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="card-number" className="text-white">Card Number</Label>
-                                <Input
-                                    id="card-number"
-                                    name="cardNumber"
-                                    placeholder="0000 0000 0000 0000"
-                                    inputMode="numeric"
-                                    value={formData.cardNumber}
-                                    onChange={handleInputChange}
-                                    className="bg-slate-800 border-slate-700 text-white"
-                                    required
-                                />
+                        </div>
+
+                        <div className="p-6 dashboard-card flex gap-4">
+                            <ShieldCheck className="text-emerald-500 shrink-0" size={18} />
+                            <div className="text-[12px] text-zinc-500 leading-relaxed font-medium">
+                                Total to add <span className="text-white">₹{finalAmount || 0}</span>.
+                                Money once added to wallet cannot be refunded to source.
                             </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="expiry" className="text-white">Expiry Date / CVV</Label>
-                                <div className="flex gap-4">
-                                    <Input
-                                        id="expiry"
-                                        name="expiryDate"
-                                        placeholder="MM/YY"
-                                        value={formData.expiryDate}
-                                        onChange={handleInputChange}
-                                        className="bg-slate-800 border-slate-700 text-white"
-                                        required
-                                    />
-                                    <Input
-                                        id="cvv"
-                                        name="cvv"
-                                        placeholder="CVV"
-                                        inputMode="numeric"
-                                        type="password"
-                                        maxLength="3"
-                                        value={formData.cvv}
-                                        onChange={handleInputChange}
-                                        className="bg-slate-800 border-slate-700 text-white"
-                                        required
-                                    />
+                        </div>
+                    </div>
+
+                    {/* Right Column: Payment Form */}
+                    <div className="lg:col-span-8">
+                        <div className="space-y-12">
+                            <div>
+                                <h3 className="text-sm font-semibold text-white mb-8">Payment Mode</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {[
+                                        { id: 'card', icon: <CreditCard size={18} />, label: 'Debit/Credit Card' },
+                                        { id: 'paypal', icon: <FaPaypal size={18} />, label: 'Net Banking' },
+                                        { id: 'apple', icon: <FaApple size={18} />, label: 'Apple Pay' },
+                                        { id: 'google', icon: <FcGoogle size={18} />, label: 'Google Pay' }
+                                    ].map((method) => (
+                                        <button
+                                            key={method.id}
+                                            onClick={() => setPaymentMethod(method.id as any)}
+                                            className={`flex flex-col items-center justify-center gap-3 h-24 rounded-2xl transition-all ${paymentMethod === method.id ? 'bg-blue-600/10 ring-1 ring-blue-500/20' : 'bg-transparent border border-zinc-400/10 hover:border-zinc-400/20'}`}
+                                        >
+                                            <div className={paymentMethod === method.id ? 'text-blue-500' : 'text-zinc-600'}>
+                                                {method.icon}
+                                            </div>
+                                            <span className={`text-[12px] font-medium ${paymentMethod === method.id ? 'text-white' : 'text-zinc-600'}`}>
+                                                {method.label}
+                                            </span>
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-600/30"
-                                size="lg"
-                                disabled={loading}
-                            >
-                                {loading ? 'Processing...' : `Checkout - ${formData.amount} Coins`}
-                            </Button>
-                        </form>
+                            <form onSubmit={handleCheckout} className="space-y-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+                                    <div className="space-y-3">
+                                        <Label className="text-[13px] font-medium text-zinc-500 block px-1">Card Holder Name</Label>
+                                        <Input
+                                            name="cardholderName"
+                                            placeholder="As per bank records"
+                                            value={cardData.cardholderName}
+                                            onChange={handleInputChange}
+                                            required={paymentMethod === 'card'}
+                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-blue-500/40 transition-colors"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-[13px] font-medium text-zinc-500 block px-1">Card Number</Label>
+                                        <Input
+                                            name="cardNumber"
+                                            placeholder="XXXX XXXX XXXX XXXX"
+                                            value={cardData.cardNumber}
+                                            onChange={handleInputChange}
+                                            required={paymentMethod === 'card'}
+                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-blue-500/40 transition-colors"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-[13px] font-medium text-zinc-500 block px-1">Expiry (MM/YY)</Label>
+                                        <Input
+                                            name="expiryDate"
+                                            placeholder="MM / YY"
+                                            value={cardData.expiryDate}
+                                            onChange={handleInputChange}
+                                            required={paymentMethod === 'card'}
+                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-blue-500/40 transition-colors"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-[13px] font-medium text-zinc-500 block px-1">CVV</Label>
+                                        <Input
+                                            name="cvv"
+                                            type="password"
+                                            maxLength={3}
+                                            placeholder="XXX"
+                                            value={cardData.cvv}
+                                            onChange={handleInputChange}
+                                            required={paymentMethod === 'card'}
+                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-blue-500/40 transition-colors"
+                                        />
+                                    </div>
+                                </div>
 
-                        <p className="text-xs text-slate-500 text-center">
-                            Your payment information is secure and encrypted
-                        </p>
-                    </CardContent>
-                </Card>
+                                <div className="pt-6">
+                                    <Button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full h-16 bg-white hover:bg-zinc-200 text-black font-bold text-base rounded-2xl active:scale-95 transition-all shadow-2xl"
+                                    >
+                                        {loading ? (
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-4 w-4 border-2 border-zinc-500 border-t-black rounded-full animate-spin"></div>
+                                                <span>Adding Money...</span>
+                                            </div>
+                                        ) : (
+                                            `Add ₹${finalAmount || 0} to Wallet`
+                                        )}
+                                    </Button>
+                                </div>
+                            </form>
+
+                            <div className="flex items-center gap-12 pt-8 text-xs font-medium text-zinc-600">
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full"></div>
+                                    100% Safe and Secure
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
+                                    Bank Grade Encryption
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <TransactionReceipt
+                isOpen={showReceipt}
+                onClose={() => {
+                    setShowReceipt(false);
+                    navigate('/dashboard');
+                }}
+                transaction={txDetails}
+            />
+        </AppLayout>
     );
 }

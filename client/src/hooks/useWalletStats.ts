@@ -14,8 +14,8 @@ export const useWalletStats = () => {
                 axios.get(`${API_URL}/wallet/balance`),
                 axios.get(`${API_URL}/wallet/transactions`)
             ]);
-            setBalance(balRes.data.balance);
-            setTransactions(transRes.data);
+            setBalance(balRes.data?.balance ?? 0);
+            setTransactions(Array.isArray(transRes.data) ? transRes.data : []);
         } catch (err) {
             console.error(err);
         } finally {

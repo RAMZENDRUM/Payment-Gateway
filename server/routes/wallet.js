@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 
 router.get('/balance', auth, walletController.getBalance);
 router.get('/transactions', auth, walletController.getTransactions);
+router.get('/transaction/:id', auth, walletController.getTransactionById);
 router.post('/send', auth, walletController.sendCoins);
 router.post('/qr/create', auth, walletController.createPaymentRequest);
 router.post('/qr/fulfill', auth, walletController.fulfillPayment);
