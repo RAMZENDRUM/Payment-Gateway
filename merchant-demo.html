@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Store - Event Booking Integration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a, #020617);
+            color: #f8fafc;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary:hover {
+            background: #6366f1;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .status-badge {
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .dots-animation::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60%,
+            100% {
+                content: '...';
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-6">
+
+    <div class="w-full max-w-xl glass-card p-10 shadow-2xl">
+        <!-- Header -->
+        <div class="flex items-center gap-4 mb-8">
+            <div
+                class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">Event Booking Store</h1>
+                <p class="text-slate-400 text-sm font-medium">Verify External IDs with ZenWallet</p>
+            </div>
+        </div>
+
+        <!-- Checkout View -->
+        <div id="checkout-view" class="space-y-8">
+            <div class="bg-slate-900/50 rounded-3xl p-6 border border-slate-800">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 font-medium">Ticket ID</span>
+                        <span id="reference-display" class="font-mono text-indigo-400">EVT-MATCH-2026</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 font-medium">Event</span>
+                        <span class="font-semibold text-white">VIP - Tech Conference 2026</span>
+                    </div>
+                    <div class="border-t border-slate-800 my-4 pt-4 flex justify-between items-center">
+                        <span class="text-lg font-bold">Total Price</span>
+                        <span class="text-2xl font-black text-white">50 <span
+                                class="text-indigo-500 text-lg uppercase ml-1">Coins</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <label class="block text-sm font-semibold text-slate-500 uppercase tracking-widest">Integration
+                    Check</label>
+                <div
+                    class="p-4 bg-slate-800/30 rounded-2xl border border-slate-700/50 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                        <span class="text-xs text-slate-400 font-medium">Connection Status: API Linked</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-500 font-mono">X-API-KEY: default...</span>
+                </div>
+            </div>
+
+            <button id="pay-btn"
+                class="btn-primary w-full text-white font-bold py-5 px-8 rounded-2xl transition-all flex items-center justify-center gap-3 text-lg">
+                Pay with ZenWallet
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Verification / Status View -->
+        <div id="status-view" class="hidden space-y-8 py-4">
+            <div id="loading-state" class="text-center space-y-4">
+                <div
+                    class="w-16 h-16 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin mx-auto">
+                </div>
+                <p class="text-slate-400 font-medium dots-animation">Verifying payment status with Wallet server</p>
+            </div>
+
+            <div id="result-state" class="hidden space-y-6">
+                <!-- Status Icon -->
+                <div id="status-icon-container"
+                    class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                    <div id="icon-success" class="hidden text-green-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div id="icon-fail" class="hidden text-red-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <span id="status-label" class="status-badge mb-4 inline-block tracking-[0.2em]"></span>
+                    <h2 id="status-title" class="text-3xl font-black mt-2"></h2>
+                    <p id="status-msg" class="text-slate-400 mt-4 max-w-sm mx-auto leading-relaxed font-medium"></p>
+                </div>
+
+                <!-- Transaction Details Card -->
+                <div id="trans-details" class="bg-indigo-950/30 rounded-[2rem] p-6 border border-indigo-500/20 hidden">
+                    <div class="grid grid-cols-2 gap-y-4 text-sm">
+                        <span class="text-slate-500">Merchant User ID</span>
+                        <span id="res-merchant-id"
+                            class="text-slate-300 font-mono text-right text-[10px] break-all"></span>
+
+                        <span class="text-slate-500">Booking Reference</span>
+                        <span id="res-ref-id" class="text-slate-300 font-bold text-right"></span>
+
+                        <span class="text-slate-500">Status Verification</span>
+                        <span id="res-match" class="text-green-400 font-bold text-right uppercase tracking-tighter">YES:
+                            MATCHED</span>
+                    </div>
+                </div>
+
+                <button onclick="location.href='merchant-demo.html'"
+                    class="w-full bg-white/5 hover:bg-white/10 text-white font-semibold py-4 rounded-2xl transition-all border border-white/10 mt-4">
+                    Try New Booking
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api/external';
+        const API_KEY = 'default-merchant-key';
+        const MERCHANT_ID = 'f294121c-2340-4e91-bf65-b550a6e0d81a';
+
+        const REF_ID = 'EVT-' + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('reference-display').innerText = REF_ID;
+
+        // Check for callback
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('status') === 'success') {
+            document.getElementById('checkout-view').classList.add('hidden');
+            document.getElementById('status-view').classList.remove('hidden');
+            const token = urlParams.get('token');
+            const refFromUrl = urlParams.get('ref') || REF_ID;
+
+            // Artificial delay for premium loader feel
+            setTimeout(() => verifyBooking(refFromUrl), 2000);
+        }
+
+        async function verifyBooking(referenceId) {
+            try {
+                // Call the new Verify by Reference endpoint
+                const response = await fetch(`${API_BASE}/verify-reference?merchantId=${MERCHANT_ID}&referenceId=${referenceId}`, {
+                    headers: { 'x-api-key': API_KEY }
+                });
+                const data = await response.json();
+
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('result-state').classList.remove('hidden');
+
+                const title = document.getElementById('status-title');
+                const label = document.getElementById('status-label');
+                const msg = document.getElementById('status-msg');
+                const badge = document.getElementById('status-icon-container');
+
+                if (data.received) {
+                    title.innerText = "Booking Confirmed";
+                    label.innerText = "YES: RECEIVED";
+                    label.className = "status-badge bg-green-500/20 text-green-500";
+                    msg.innerText = "Payment matches our database record. Your ticket is now active.";
+                    badge.classList.add('bg-green-500/10');
+                    document.getElementById('icon-success').classList.remove('hidden');
+
+                    // Show details
+                    document.getElementById('trans-details').classList.remove('hidden');
+                    document.getElementById('res-merchant-id').innerText = MERCHANT_ID;
+                    document.getElementById('res-ref-id').innerText = referenceId;
+                } else {
+                    title.innerText = "No Payment Found";
+                    label.innerText = "NOT RECEIVED";
+                    label.className = "status-badge bg-red-500/20 text-red-500";
+                    msg.innerText = "We couldn't find a matching transaction for this Event ID.";
+                    badge.classList.add('bg-red-500/10');
+                    document.getElementById('icon-fail').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Connection lost to Wallet server");
+            }
+        }
+
+        document.getElementById('pay-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('pay-btn');
+            btn.disabled = true;
+            btn.innerText = 'Initializing...';
+
+            try {
+                const response = await fetch(`${API_BASE}/create-request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify({
+                        amount: 50,
+                        referenceId: REF_ID,
+                        merchantId: MERCHANT_ID,
+                        callbackUrl: window.location.origin + window.location.pathname + '?ref=' + REF_ID
+                    })
+                });
+
+                const resData = await response.json();
+                if (resData.success) {
+                    window.location.href = resData.data.paymentUrl;
+                } else {
+                    alert('Integration Error: ' + resData.message);
+                    btn.disabled = false;
+                    btn.innerText = 'Pay with ZenWallet';
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Wallet Server not responding at http://localhost:5000');
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

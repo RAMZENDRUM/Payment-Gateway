@@ -1,0 +1,57 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import ForgotPassword from './pages/ForgotPassword';
+import Send from './pages/Send';
+import Receive from './pages/Receive';
+import Scan from './pages/Scan';
+import Payment from './pages/Payment';
+import Transactions from './pages/Transactions';
+import WalletPage from './pages/WalletPage';
+import Settings from './pages/Settings';
+
+interface PrivateRouteProps {
+    children: React.ReactNode;
+}
+
+const PrivateRoute = ({ children }: PrivateRouteProps) => {
+    const { user, loading } = useAuth();
+    if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-white">Loading...</div>;
+    return user ? (children as React.ReactElement) : <Navigate to="/login" />;
+};
+
+function AppRoutes() {
+    const { user } = useAuth();
+
+    return (
+        <Routes>
+            <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
+            <Route path="/wallet" element={<PrivateRoute><WalletPage /></PrivateRoute>} />
+            <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+            <Route path="/send" element={<PrivateRoute><Send /></PrivateRoute>} />
+            <Route path="/receive" element={<PrivateRoute><Receive /></PrivateRoute>} />
+            <Route path="/scan" element={<PrivateRoute><Scan /></PrivateRoute>} />
+            <Route path="/payment" element={<PrivateRoute><Payment /></PrivateRoute>} />
+            <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+    );
+}
+
+function App() {
+    return (
+        <AuthProvider>
+            <div className="min-h-screen bg-background text-slate-100 font-sans selection:bg-indigo-500/30">
+                <AppRoutes />
+            </div>
+        </AuthProvider>
+    );
+}
+
+export default App;
