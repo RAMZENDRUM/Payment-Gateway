@@ -68,7 +68,7 @@ exports.sendCoins = async (req, res) => {
         // Record transaction
         await client.query(
             'INSERT INTO transactions (sender_id, receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4, $5)',
-            [senderId, receiverId, amount, 'TRANSFER', referenceId]
+            [senderId, receiver_id, amount, 'TRANSFER', referenceId]
         );
 
         await client.query('COMMIT');
@@ -188,6 +188,29 @@ exports.addCoins = async (req, res) => {
             [userId, amount, 'RECHARGE', 'Admin Top-up']
         );
         res.json({ message: 'Coins added successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Sandbox Self-Fund
+exports.sandboxFund = async (req, res) => {
+    const userId = req.user.id;
+    const { amount } = req.body;
+
+    // Limit sandbox funding to avoid abuse even in dev? Nah, it's sandbox.
+    if (!amount || amount <= 0 || amount > 1000000) {
+        return res.status(400).json({ message: 'Invalid amount (max 1M)' });
+    }
+
+    try {
+        await db.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [amount, userId]);
+        await db.query(
+            'INSERT INTO transactions (receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4)',
+            [userId, amount, 'RECHARGE', 'Sandbox Faucet']
+        );
+        res.json({ message: 'Sandbox funds added successfully' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

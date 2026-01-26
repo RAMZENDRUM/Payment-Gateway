@@ -11,6 +11,7 @@ import Payment from './pages/Payment';
 import Transactions from './pages/Transactions';
 import WalletPage from './pages/WalletPage';
 import Settings from './pages/Settings';
+import ApiKeys from './pages/ApiKeys';
 
 interface PrivateRouteProps {
     children: React.ReactNode;
@@ -35,6 +36,7 @@ function AppRoutes() {
             <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
             <Route path="/wallet" element={<PrivateRoute><WalletPage /></PrivateRoute>} />
             <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+            <Route path="/developers" element={<PrivateRoute><ApiKeys /></PrivateRoute>} />
             <Route path="/send" element={<PrivateRoute><Send /></PrivateRoute>} />
             <Route path="/receive" element={<PrivateRoute><Receive /></PrivateRoute>} />
             <Route path="/scan" element={<PrivateRoute><Scan /></PrivateRoute>} />

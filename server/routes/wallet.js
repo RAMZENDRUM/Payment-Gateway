@@ -12,5 +12,6 @@ router.get('/qr/details/:token', auth, walletController.getPaymentDetails);
 
 // Admin route
 router.post('/admin/add-coins', auth, walletController.addCoins);
+router.post('/sandbox/fund', auth, walletController.sandboxFund);
 
 module.exports = router;

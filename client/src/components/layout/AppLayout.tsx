@@ -1,3 +1,4 @@
+```
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -5,7 +6,8 @@ import {
     ArrowUpDown,
     Wallet,
     Settings,
-    LogOut
+    LogOut,
+    Code
 } from 'lucide-react';
 import { useAuth } from '@/AuthContext';
 
@@ -21,12 +23,13 @@ const NavItem = ({ icon, label, path, isActive, onClick }: NavItemProps) => (
     <button
         onClick={onClick}
         className={`
-            w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all
-            ${isActive
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
-            }
-        `}
+w - full flex items - center gap - 3 px - 4 py - 3 rounded - xl text - sm font - semibold transition - all
+            ${
+    isActive
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+        : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+}
+`}
     >
         {icon}
         <span>{label}</span>
@@ -46,6 +49,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
         { icon: <ArrowUpDown size={20} />, label: 'Transactions', path: '/transactions' },
         { icon: <Wallet size={20} />, label: 'Wallet', path: '/wallet' },
+        { icon: <Code size={20} />, label: 'Developers', path: '/developers' },
         { icon: <Settings size={20} />, label: 'Settings', path: '/settings' },
     ];
 
