@@ -1,4 +1,3 @@
-```
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -23,13 +22,12 @@ const NavItem = ({ icon, label, path, isActive, onClick }: NavItemProps) => (
     <button
         onClick={onClick}
         className={`
-w - full flex items - center gap - 3 px - 4 py - 3 rounded - xl text - sm font - semibold transition - all
-            ${
-    isActive
-        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-        : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
-}
-`}
+            w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all
+            ${isActive
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+            }
+        `}
     >
         {icon}
         <span>{label}</span>
@@ -82,11 +80,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     <div className="px-3 py-3 mb-3 bg-zinc-950 rounded-xl border border-zinc-900">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
-                                {user?.username?.charAt(0).toUpperCase() || 'U'}
+                                {user?.full_name?.charAt(0).toUpperCase() || 'U'}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-white truncate">{user?.username || 'User'}</p>
-                                <p className="text-xs text-zinc-600 truncate">ID: {user?.wallet_id?.slice(0, 8) || '---'}</p>
+                                <p className="text-sm font-semibold text-white truncate">{user?.full_name || 'User'}</p>
+                                <p className="text-xs text-zinc-600 truncate">ID: {user?.id?.slice(0, 8) || '---'}</p>
                             </div>
                         </div>
                     </div>
