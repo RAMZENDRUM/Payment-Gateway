@@ -174,12 +174,6 @@ exports.directWalletTransfer = async (req, res) => {
     }
 };
 
-    } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-}
-};
-
 exports.createPaymentRequestExternal = async (req, res) => {
     const { amount, referenceId, merchantId, callbackUrl, preferredMethod } = req.body;
 
