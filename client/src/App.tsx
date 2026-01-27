@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -23,8 +23,12 @@ interface PrivateRouteProps {
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
     const { user, loading } = useAuth();
+    const location = useLocation();
+
     if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-white">Loading...</div>;
-    return user ? (children as React.ReactElement) : <Navigate to="/login" />;
+
+    // Redirect to login but save the attempted location
+    return user ? (children as React.ReactElement) : <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 function AppRoutes() {

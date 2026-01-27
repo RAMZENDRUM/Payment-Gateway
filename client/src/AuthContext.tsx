@@ -39,12 +39,14 @@ const getApiUrl = () => {
     // If no env var, use prod
     if (!envUrl) return prodUrl;
 
-    // Safety check: if we are on a deployed domain (not localhost) 
-    // but the configured API URL is localhost, force production URL.
+    // Logic fix: If on localhost, AND env var is localhost, keep it!
     if (typeof window !== 'undefined' &&
-        window.location.hostname !== 'localhost' &&
-        window.location.hostname !== '127.0.0.1' &&
-        envUrl.includes('localhost')) {
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        return envUrl;
+    }
+
+    // Otherwise, if we are on a deployed domain but config says localhost, force prod
+    if (envUrl.includes('localhost')) {
         return prodUrl;
     }
 
@@ -79,11 +81,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const fetchUser = async () => {
         try {
+            console.log("Fetching user from:", `${API_URL}/auth/me`);
             const res = await axios.get(`${API_URL}/auth/me`);
             setUser(res.data);
-        } catch (err) {
-            localStorage.removeItem('token');
-            delete axios.defaults.headers.common['Authorization'];
+        } catch (err: any) {
+            console.error("Error fetching user:", err);
+            // Only logout if unauthorized or forbidden (token invalid/expired)
+            if (err.response && (err.response.status === 401 || err.response.status === 403 || err.response.status === 404)) {
+                console.warn("Auth token invalid, logging out.");
+                localStorage.removeItem('token');
+                delete axios.defaults.headers.common['Authorization'];
+                setToken(null);
+                setUser(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -98,7 +108,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
             setUser(res.data.user);
             toast.success('Logged in successfully');
-            navigate('/dashboard');
+            // Navigation handled by the component calling login
+            // navigate('/dashboard');
         } catch (err: any) {
             console.error('Login error details:', err);
             toast.error(err.response?.data?.message || 'Login failed');

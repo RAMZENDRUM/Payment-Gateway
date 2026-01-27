@@ -247,6 +247,102 @@ export default function ApiKeys() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Integration Guide Modal */}
+            <IntegrationGuideModal />
         </AppLayout>
+    );
+}
+
+function IntegrationGuideModal() {
+    const [open, setOpen] = useState(false);
+    const { user } = useAuth();
+
+    // Constructing the AI prompt
+    const aiPrompt = `You are an expert developer. Please integrate the ZenWallet Payment Gateway into my application.
+
+Here are the API details:
+Base URL: ${API_URL}
+
+1. **Authentication**: 
+   - Use the header \`x-api-key: [MY_API_KEY]\` for all requests.
+
+2. **Create Payment Request**:
+   - Endpoint: POST \`/external/create-request\`
+   - Body:
+     \`\`\`json
+     {
+       "amount": 500,
+       "merchantId": "${user?.id || '[MY_MERCHANT_ID]'}",
+       "referenceId": "ORDER_ID_123",
+       "callbackUrl": "https://your-app.com/payment/callback"
+     }
+     \`\`\`
+   - Response contains \`paymentUrl\` and \`token\`. Redirect the user to \`paymentUrl\`.
+
+3. **Verify Payment**:
+   - Endpoint: GET \`/external/verify-reference?merchantId=${user?.id || '...'}&referenceId=ORDER_ID_123\`
+   - Use this to confirm payment status server-side.
+
+Please write the code to handle this payment flow using best practices.`;
+
+    const copyPrompt = () => {
+        navigator.clipboard.writeText(aiPrompt);
+        toast.success("Integration prompt copied!");
+    };
+
+    return (
+        <>
+            <div className="fixed bottom-6 right-6 z-50">
+                <Button
+                    onClick={() => setOpen(true)}
+                    className="h-12 px-6 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/20 font-bold flex items-center gap-2"
+                >
+                    <Globe size={18} />
+                    Integration Guide
+                </Button>
+            </div>
+
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent className="bg-[#0c0c0e] border-zinc-800 sm:max-w-2xl max-h-[85vh] overflow-hidden flex flex-col rounded-2xl p-0">
+                    <div className="p-6 border-b border-zinc-800 bg-zinc-900/50">
+                        <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
+                            <Key className="text-indigo-500" />
+                            AI Integration Prompt
+                        </DialogTitle>
+                        <DialogDescription className="text-zinc-400 mt-2">
+                            Copy this prompt and paste it into ChatGPT, Claude, or any AI assistant to instantly generate integration code for your app.
+                        </DialogDescription>
+                    </div>
+
+                    <div className="flex-1 overflow-auto p-6 bg-zinc-950/50">
+                        <div className="relative group">
+                            <div className="absolute right-4 top-4 z-10">
+                                <Button
+                                    size="sm"
+                                    onClick={copyPrompt}
+                                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold"
+                                >
+                                    <Copy size={14} className="mr-2" />
+                                    Copy Prompt
+                                </Button>
+                            </div>
+                            <pre className="font-mono text-sm text-zinc-400 bg-zinc-900/80 p-6 rounded-xl border border-zinc-800 whitespace-pre-wrap leading-relaxed selection:bg-indigo-500/30">
+                                {aiPrompt}
+                            </pre>
+                        </div>
+                    </div>
+
+                    <div className="p-6 border-t border-zinc-800 bg-zinc-900/50 flex justify-end gap-3">
+                        <Button variant="ghost" onClick={() => setOpen(false)} className="text-zinc-400 hover:text-white">
+                            Close
+                        </Button>
+                        <Button onClick={copyPrompt} className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold">
+                            Copy & Close
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

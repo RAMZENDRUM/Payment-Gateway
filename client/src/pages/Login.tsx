@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from '../AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import {
     Card,
     CardHeader,
@@ -34,16 +34,29 @@ export default function Login() {
     const { login } = useAuth();
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Check if there's a return URL in state (from PrivateRoute)
+    // The state structure from PrivateRoute is { from: Location object }
+    // We want to reconstruct pathname + search query
+    const fromState = location.state?.from;
+    const redirectPath = fromState
+        ? `${fromState.pathname}${fromState.search}`
+        : '/dashboard';
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        try {
-            await login(email, password);
-            navigate('/dashboard');
-        } catch (err) {
-            setLoading(false);
-        }
+
+        // Yield to main thread to allow UI to update (show loading spinner)
+        setTimeout(async () => {
+            try {
+                await login(email, password);
+                navigate(redirectPath, { replace: true });
+            } catch (err) {
+                setLoading(false);
+            }
+        }, 50);
     };
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -76,6 +89,10 @@ export default function Login() {
         };
 
         const draw = () => {
+            if (loading) {
+                raf = requestAnimationFrame(draw);
+                return;
+            }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ps.forEach((p) => {
                 p.y -= p.v;
@@ -103,7 +120,7 @@ export default function Login() {
             window.removeEventListener("resize", onResize);
             cancelAnimationFrame(raf);
         };
-    }, []);
+    }, [loading]);
 
     return (
         <section className="fixed inset-0 bg-zinc-950 text-zinc-50 overflow-auto">
@@ -246,7 +263,7 @@ export default function Login() {
                                         Remember me
                                     </Label>
                                 </div>
-                                <Link to="/forgot-password" size="sm" className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+                                <Link to="/forgot-password" className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
                                     Forgot password?
                                 </Link>
                             </div>

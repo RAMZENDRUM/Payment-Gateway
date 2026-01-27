@@ -5,10 +5,13 @@ const getApiUrl = () => {
     const envUrl = import.meta.env.VITE_API_URL;
     const prodUrl = 'https://payment-gateway-up7l.onrender.com/api';
     if (!envUrl) return prodUrl;
+
     if (typeof window !== 'undefined' &&
-        window.location.hostname !== 'localhost' &&
-        window.location.hostname !== '127.0.0.1' &&
-        envUrl.includes('localhost')) {
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        return envUrl;
+    }
+
+    if (envUrl.includes('localhost')) {
         return prodUrl;
     }
     return envUrl;

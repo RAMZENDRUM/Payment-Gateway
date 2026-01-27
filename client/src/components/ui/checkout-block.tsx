@@ -195,10 +195,13 @@ export default function Checkout() {
                     const envUrl = import.meta.env.VITE_API_URL;
                     const prodUrl = 'https://payment-gateway-up7l.onrender.com/api';
                     if (!envUrl) return prodUrl;
+
                     if (typeof window !== 'undefined' &&
-                        window.location.hostname !== 'localhost' &&
-                        window.location.hostname !== '127.0.0.1' &&
-                        envUrl.includes('localhost')) {
+                        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+                        return envUrl;
+                    }
+
+                    if (envUrl.includes('localhost')) {
                         return prodUrl;
                     }
                     return envUrl;
@@ -303,16 +306,16 @@ export default function Checkout() {
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium truncate text-zinc-200">{item.name}</p>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-semibold text-zinc-300">${item.price}</span>
+                                    <span className="text-sm font-semibold text-zinc-300">₹{item.price}</span>
                                     {item.originalPrice && (
                                         <span className="text-xs text-zinc-600 line-through">
-                                            ${item.originalPrice}
+                                            ₹{item.originalPrice}
                                         </span>
                                     )}
                                 </div>
                             </div>
                             <div className="text-sm font-semibold text-zinc-200">
-                                ${(item.price * item.quantity).toFixed(2)}
+                                ₹{(item.price * item.quantity).toFixed(2)}
                             </div>
                         </div>
                     ))}
@@ -341,21 +344,21 @@ export default function Checkout() {
                 <div className="flex flex-col gap-2 border-t border-zinc-800 pt-4">
                     <div className="flex justify-between text-sm text-zinc-400">
                         <span>Subtotal</span>
-                        <span>${summary.subtotal.toFixed(2)}</span>
+                        <span>₹{summary.subtotal.toFixed(2)}</span>
                     </div>
                     {summary.discount > 0 && (
                         <div className="flex justify-between text-sm text-green-500">
                             <span>Discount</span>
-                            <span>-${summary.discount.toFixed(2)}</span>
+                            <span>-₹{summary.discount.toFixed(2)}</span>
                         </div>
                     )}
                     <div className="flex justify-between text-sm text-zinc-400">
                         <span>Tax (8%)</span>
-                        <span>${summary.tax.toFixed(2)}</span>
+                        <span>₹{summary.tax.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-lg border-t border-zinc-800 pt-3 text-white">
                         <span>Total</span>
-                        <span>${summary.total.toFixed(2)}</span>
+                        <span>₹{summary.total.toFixed(2)}</span>
                     </div>
                 </div>
             </CardContent>
@@ -802,7 +805,7 @@ export default function Checkout() {
                                     ) : (
                                         <Lock className="h-4 w-4" />
                                     )}
-                                    {isProcessing ? "Processing..." : `Pay $${summary.total.toFixed(2)}`}
+                                    {isProcessing ? "Processing..." : `Pay ₹${summary.total.toFixed(2)}`}
                                 </Button>
                             </CardFooter>
                         </Card>
