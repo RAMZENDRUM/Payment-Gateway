@@ -64,6 +64,12 @@
     overflow-x: hidden;
   }
 
+  /* Hide default browser password reveal button */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
+  }
+
   body {
     @apply bg-[#08090b] text-foreground;
     font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;

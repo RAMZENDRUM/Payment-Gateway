@@ -1,11 +1,34 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+const getApiUrl = () => {
+    const envUrl = import.meta.env.VITE_API_URL;
+    const prodUrl = 'https://payment-gateway-up7l.onrender.com/api';
+    if (!envUrl) return prodUrl;
+    if (typeof window !== 'undefined' &&
+        window.location.hostname !== 'localhost' &&
+        window.location.hostname !== '127.0.0.1' &&
+        envUrl.includes('localhost')) {
+        return prodUrl;
+    }
+    return envUrl;
+};
+
+const API_URL = getApiUrl();
+
+interface Transaction {
+    id: string;
+    type: string;
+    amount: number;
+    created_at: string;
+    sender_id?: string;
+    receiver_id?: string;
+    sender_name?: string;
+}
 
 export const useWalletStats = () => {
     const [balance, setBalance] = useState(0);
-    const [transactions, setTransactions] = useState([]);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
 
     const loadData = async () => {

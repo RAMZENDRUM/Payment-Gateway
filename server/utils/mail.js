@@ -3,8 +3,8 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'eventbooking.otp@gmail.com',
-        pass: 'bwqj vemx rcrg lsck'
+        user: process.env.EMAIL_USER || 'eventbooking.otp@gmail.com',
+        pass: process.env.EMAIL_PASS || 'bwqj vemx rcrg lsck'
     }
 });
 
@@ -43,7 +43,14 @@ exports.sendOTP = async (email, otp) => {
         `
     };
 
-    return transporter.sendMail(mailOptions);
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('✅ OTP Email sent:', info.messageId);
+        return info;
+    } catch (error) {
+        console.error('❌ Error sending OTP email:', error);
+        throw error;
+    }
 };
 
 exports.sendForgotPasswordOTP = async (email, otp) => {

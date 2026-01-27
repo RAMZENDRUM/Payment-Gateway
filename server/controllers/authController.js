@@ -57,7 +57,15 @@ exports.register = async (req, res) => {
             if (existingUser.rows[0].is_verified) {
                 return res.status(400).json({ message: 'A verified account with this email already exists' });
             } else {
-                // Remove old unverified user to prevent unique constraint errors later
+                // Remove old unverified user and related data manually to prevent FK violations
+                const userId = existingUser.rows[0].id;
+                await db.query('DELETE FROM virtual_cards WHERE user_id = $1', [userId]);
+                await db.query('DELETE FROM wallets WHERE user_id = $1', [userId]);
+
+                // Also clear any transactions/requests where this user might be referenced
+                await db.query('DELETE FROM transactions WHERE sender_id = $1 OR receiver_id = $1', [userId]);
+                await db.query('DELETE FROM payment_requests WHERE receiver_id = $1', [userId]);
+
                 await db.query('DELETE FROM users WHERE email = $1', [email]);
             }
         }

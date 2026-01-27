@@ -31,7 +31,27 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+const getApiUrl = () => {
+    // In production (Vercel), we want to ignore the localhost .env if it was accidentally committed
+    const envUrl = import.meta.env.VITE_API_URL;
+    const prodUrl = 'https://payment-gateway-up7l.onrender.com/api';
+
+    // If no env var, use prod
+    if (!envUrl) return prodUrl;
+
+    // Safety check: if we are on a deployed domain (not localhost) 
+    // but the configured API URL is localhost, force production URL.
+    if (typeof window !== 'undefined' &&
+        window.location.hostname !== 'localhost' &&
+        window.location.hostname !== '127.0.0.1' &&
+        envUrl.includes('localhost')) {
+        return prodUrl;
+    }
+
+    return envUrl;
+};
+
+const API_URL = getApiUrl();
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -79,7 +99,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(res.data.user);
             toast.success('Logged in successfully');
             navigate('/dashboard');
-        } catch (err) {
+        } catch (err: any) {
+            console.error('Login error details:', err);
             toast.error(err.response?.data?.message || 'Login failed');
             throw err;
         }
@@ -90,7 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const res = await axios.post(`${API_URL}/auth/register`, { email, password, fullName, phoneNumber, purpose });
             toast.success(res.data.message || 'OTP sent to your email');
             return res.data;
-        } catch (err) {
+        } catch (err: any) {
             toast.error(err.response?.data?.message || 'Registration failed');
             throw err;
         }
@@ -100,7 +121,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             await axios.post(`${API_URL}/auth/verify-otp`, { email, otp });
             toast.success('Account verified! You can now login.');
-        } catch (err) {
+        } catch (err: any) {
             toast.error(err.response?.data?.message || 'Verification failed');
             throw err;
         }

@@ -191,7 +191,19 @@ export default function Checkout() {
         setIsProcessing(true);
         try {
             if (selectedPaymentType === 'card' || selectedPaymentType === 'zenwallet') {
-                const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+                const getApiUrl = () => {
+                    const envUrl = import.meta.env.VITE_API_URL;
+                    const prodUrl = 'https://payment-gateway-up7l.onrender.com/api';
+                    if (!envUrl) return prodUrl;
+                    if (typeof window !== 'undefined' &&
+                        window.location.hostname !== 'localhost' &&
+                        window.location.hostname !== '127.0.0.1' &&
+                        envUrl.includes('localhost')) {
+                        return prodUrl;
+                    }
+                    return envUrl;
+                };
+                const API_URL = getApiUrl();
                 const res = await axios.post(`${API_URL}/external/verify-card`, {
                     cardNumber: paymentMethod.cardNumber,
                     cvv: paymentMethod.cvv,
