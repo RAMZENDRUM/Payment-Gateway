@@ -92,8 +92,9 @@ exports.register = async (req, res) => {
             [email, hashedPassword, fullName, phoneNumber, purpose, otpCode, otpExpiry]
         );
 
-        // 5. Send OTP via email
-        await mailUtils.sendOTP(email, otpCode);
+        // 5. Send OTP via email (Async - Fire and Forget)
+        // We do NOT await this to keep the API fast. We catch errors internally.
+        mailUtils.sendOTP(email, otpCode).catch(err => console.error("Background Email Error:", err));
 
         res.status(201).json({
             message: 'OTP sent! Please check your email to verify your account.',
@@ -170,38 +171,62 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (user.rows.length === 0) {
+        // Optimization: Fetch user AND their virtual card in one round-trip
+        const userQuery = `
+            SELECT u.*, 
+                   vc.card_number, vc.cvv, vc.expiry_month, vc.expiry_year 
+            FROM users u 
+            LEFT JOIN virtual_cards vc ON u.id = vc.user_id 
+            WHERE u.email = $1
+        `;
+        const userResult = await db.query(userQuery, [email]);
+
+        if (userResult.rows.length === 0) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        if (!user.rows[0].is_verified) {
+        const user = userResult.rows[0];
+
+        if (!user.is_verified) {
             return res.status(403).json({ message: 'Account not verified. Please verify your OTP first.' });
         }
 
-        const isMatch = await bcrypt.compare(password, user.rows[0].password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Ensure user has a virtual card (for legacy users)
-        const card = await ensureVirtualCard(db, user.rows[0].id);
+        let virtualCardData;
 
-        const token = jwt.sign({ id: user.rows[0].id, email }, JWT_SECRET, { expiresIn: '24h' });
+        // If card exists from JOIN, use it. Else, generate one (legacy user case)
+        if (user.card_number) {
+            virtualCardData = {
+                cardNumber: user.card_number,
+                cvv: user.cvv,
+                expiryMonth: user.expiry_month,
+                expiryYear: user.expiry_year
+            };
+        } else {
+            // Fallback: Create card if missing
+            const newCard = await ensureVirtualCard(db, user.id);
+            virtualCardData = {
+                cardNumber: newCard.card_number,
+                cvv: newCard.cvv,
+                expiryMonth: newCard.expiry_month,
+                expiryYear: newCard.expiry_year
+            };
+        }
+
+        const token = jwt.sign({ id: user.id, email }, JWT_SECRET, { expiresIn: '24h' });
 
         res.json({
             token,
             user: {
-                id: user.rows[0].id,
-                email: user.rows[0].email,
-                full_name: user.rows[0].full_name,
-                upi_id: user.rows[0].upi_id,
-                virtualCard: {
-                    cardNumber: card.card_number,
-                    cvv: card.cvv,
-                    expiryMonth: card.expiry_month,
-                    expiryYear: card.expiry_year
-                }
+                id: user.id,
+                email: user.email,
+                full_name: user.full_name,
+                upi_id: user.upi_id,
+                virtualCard: virtualCardData
             }
         });
     } catch (err) {
