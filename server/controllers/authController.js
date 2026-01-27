@@ -196,9 +196,23 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        let virtualCardData;
+        // --- Data Integrity Checks (Fix for missing ID/Wallet) ---
 
-        // If card exists from JOIN, use it. Else, generate one (legacy user case)
+        // 1. Ensure UPI ID exists
+        if (!user.upi_id) {
+            const newUpiId = generateUpiId();
+            await db.query('UPDATE users SET upi_id = $1 WHERE id = $2', [newUpiId, user.id]);
+            user.upi_id = newUpiId;
+        }
+
+        // 2. Ensure Wallet exists (prevent getMe 404s)
+        await db.query(
+            'INSERT INTO wallets (user_id, balance) VALUES ($1, $2) ON CONFLICT (user_id) DO NOTHING',
+            [user.id, 0] // Default balance 0 if created now
+        );
+
+        // 3. Ensure Virtual Card exists
+        let virtualCardData;
         if (user.card_number) {
             virtualCardData = {
                 cardNumber: user.card_number,
@@ -207,7 +221,6 @@ exports.login = async (req, res) => {
                 expiryYear: user.expiry_year
             };
         } else {
-            // Fallback: Create card if missing
             const newCard = await ensureVirtualCard(db, user.id);
             virtualCardData = {
                 cardNumber: newCard.card_number,
@@ -311,10 +324,14 @@ exports.verifyPassword = async (req, res) => {
 
 exports.getMe = async (req, res) => {
     try {
-        const userResult = await db.query(
-            'SELECT u.id, u.email, u.full_name, u.upi_id, w.balance FROM users u JOIN wallets w ON u.id = w.user_id WHERE u.id = $1',
-            [req.user.id]
-        );
+        // Use LEFT JOIN to prevent 404 if wallet is missing (robustness)
+        const userQuery = `
+            SELECT u.id, u.email, u.full_name, u.upi_id, w.balance 
+            FROM users u 
+            LEFT JOIN wallets w ON u.id = w.user_id 
+            WHERE u.id = $1
+        `;
+        const userResult = await db.query(userQuery, [req.user.id]);
 
         if (userResult.rows.length === 0) {
             return res.status(404).json({ message: 'User not found' });
@@ -322,11 +339,18 @@ exports.getMe = async (req, res) => {
 
         let userData = userResult.rows[0];
 
-        // Generate on-the-fly if missing
+        // Ensure UPI ID exists (Self-healing)
         if (!userData.upi_id) {
             const newUpiId = generateUpiId();
             await db.query('UPDATE users SET upi_id = $1 WHERE id = $2', [newUpiId, req.user.id]);
             userData.upi_id = newUpiId;
+        }
+
+        // Ensure Wallet balance exists (Self-healing display)
+        if (userData.balance === null) {
+            userData.balance = 0;
+            // Optionally create wallet here, but login/verifyOtp handles it usually.
+            // We just display 0 to avoid crash.
         }
 
         // Fetch card details
@@ -337,7 +361,7 @@ exports.getMe = async (req, res) => {
             email: userData.email,
             full_name: userData.full_name,
             upi_id: userData.upi_id,
-            balance: userData.balance,
+            balance: userData.balance, // Now safe from null
             virtualCard: {
                 cardNumber: card.card_number,
                 cvv: card.cvv,
@@ -355,7 +379,7 @@ exports.getMe = async (req, res) => {
 exports.getUsers = async (req, res) => {
     try {
         const users = await db.query(
-            'SELECT u.id, u.email, u.full_name, w.balance FROM users u JOIN wallets w ON u.id = w.user_id ORDER BY u.full_name'
+            'SELECT u.id, u.email, u.full_name, w.balance FROM users u LEFT JOIN wallets w ON u.id = w.user_id ORDER BY u.full_name'
         );
         res.json(users.rows);
     } catch (err) {
