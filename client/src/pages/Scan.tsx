@@ -1,13 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import React, { useState, useEffect, useRef } from 'react';
+import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Loader2, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+import { API_URL } from '@/lib/api';
 
 interface ScanResult {
     token: string;
@@ -24,6 +24,7 @@ export default function Scan() {
     const [status, setStatus] = useState<'idle' | 'confirming' | 'success' | 'error'>('idle');
     const navigate = useNavigate();
     const scannerRef = useRef<any>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -89,18 +90,54 @@ export default function Scan() {
 
     function onScanSuccess(result: string) {
         try {
+            // Check if it's a JSON string
             const data = JSON.parse(result);
             if (data.token) {
                 fetchPaymentDetails(data.token);
+                return;
             }
         } catch (err) {
-            console.error('Invalid QR data', err);
+            // Not JSON, check if it's a URL
+            try {
+                const url = new URL(result);
+                const token = url.searchParams.get('token');
+                if (token) {
+                    fetchPaymentDetails(token);
+                } else {
+                    // Maybe the path contains the token? Or it's just a raw token string
+                    fetchPaymentDetails(result);
+                }
+            } catch (urlErr) {
+                // Not a URL either, treat as raw token string
+                fetchPaymentDetails(result);
+            }
         }
     }
 
     function onScanError(err: any) {
         // console.warn(err);
     }
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setLoading(true);
+        const html5QrCode = new Html5Qrcode("file-scanner");
+
+        try {
+            const result = await html5QrCode.scanFile(file, true);
+            onScanSuccess(result);
+        } catch (err) {
+            toast.error("No QR code found in this image");
+            console.error(err);
+        } finally {
+            setLoading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
 
     const handlePayment = async () => {
         if (!scanResult) return;
@@ -152,7 +189,30 @@ export default function Scan() {
                                 className="w-full"
                             >
                                 <div id="reader" className="overflow-hidden rounded-[2.5rem] bg-[#0c0c0e]/50 backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-white/[0.02]"></div>
-                                <p className="text-center mt-12 text-zinc-500 text-xs font-medium tracking-widest">Center QR code within the frame</p>
+                                <div id="file-scanner" className="hidden"></div>
+                                <div className="mt-12 flex flex-col items-center gap-6">
+                                    <p className="text-zinc-500 text-xs font-medium tracking-widest">Center QR code within the frame</p>
+
+                                    <div className="w-full h-px bg-white/[0.05] max-w-[100px]" />
+
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        ref={fileInputRef}
+                                        onChange={handleFileUpload}
+                                    />
+
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={loading}
+                                        className="bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 h-14 px-8 rounded-2xl flex items-center gap-3 transition-all"
+                                    >
+                                        {loading ? <Loader2 className="animate-spin" size={18} /> : <ImageIcon size={18} />}
+                                        <span className="text-xs font-bold uppercase tracking-widest">Upload from Gallery</span>
+                                    </Button>
+                                </div>
                             </motion.div>
                         )}
 

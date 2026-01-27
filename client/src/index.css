@@ -119,4 +119,41 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Premium Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    /* Indigo-500 with opacity */
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, 0);
+    background-clip: padding-box;
+    transition: all 0.3s ease;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.6);
+    /* More solid on hover */
+    border: 2px solid rgba(0, 0, 0, 0);
+    background-clip: padding-box;
+  }
+
+  /* Hide Numeric Input Spinners (The 'white one' in the input field) */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
 }

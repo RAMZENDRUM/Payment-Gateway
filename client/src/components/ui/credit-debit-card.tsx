@@ -9,10 +9,27 @@ interface FlippableCreditCardProps extends React.HTMLAttributes<HTMLDivElement> 
     cardNumber: string;
     expiryDate: string;
     cvv: string;
+    spending?: number;
 }
 
 const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCardProps>(
-    ({ className, cardholderName, cardNumber, expiryDate, cvv, ...props }, ref) => {
+    ({ className, cardholderName, cardNumber, expiryDate, cvv, spending = 0, ...props }, ref) => {
+        const getCardTheme = () => {
+            if (spending >= 1000000) return {
+                bg: "bg-black",
+                border: "border-yellow-400/50 shadow-[0_0_20px_rgba(250,204,21,0.2)]",
+                glow: "after:content-[''] after:absolute after:inset-0 after:rounded-[1.5rem] after:shadow-[inset_0_0_15px_rgba(250,204,21,0.15)]"
+            };
+            if (spending >= 800000) return { bg: "bg-emerald-950/40", border: "border-emerald-400/40 shadow-[0_0_15px_rgba(52,211,153,0.1)]" };
+            if (spending >= 600000) return { bg: "bg-red-950/40", border: "border-amber-700/40 shadow-[0_0_15px_rgba(185,28,28,0.1)]" };
+            if (spending >= 400000) return { bg: "bg-[#0a0f1c]", border: "border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.1)]" };
+            if (spending >= 300000) return { bg: "bg-[#0a1c12]", border: "border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.1)]" };
+            if (spending >= 200000) return { bg: "bg-[#121212]", border: "border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.15)]" };
+            if (spending >= 100000) return { bg: "bg-[#140b2a]", border: "border-orange-500/40 shadow-[0_0_15px_rgba(249,115,22,0.15)]" };
+            return { bg: "bg-[#1c1c1c]", border: "border-slate-700/50" };
+        };
+
+        const theme = getCardTheme();
         return (
             // The main container uses `group` to control the flip effect on hover.
             // `perspective` is used to create the 3D effect.
@@ -24,13 +41,18 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
                 {/* The inner container handles the transform animation. */}
                 <div
                     className={cn(
-                        "relative h-full w-full rounded-xl shadow-xl transition-transform duration-700 [transform-style:preserve-3d]",
+                        "relative h-full w-full rounded-2xl shadow-xl transition-transform duration-700 [transform-style:preserve-3d]",
                         !props.id?.includes('locked') && "group-hover:[transform:rotateY(180deg)]"
                     )}
                 >
 
                     {/* --- CARD FRONT --- */}
-                    <div className="absolute h-full w-full rounded-xl bg-[#1c1c1c] border border-slate-700/50 text-white [backface-visibility:hidden]">
+                    <div className={cn(
+                        "absolute h-full w-full rounded-2xl transition-all duration-500 text-white [backface-visibility:hidden] border p-[1px]",
+                        theme.bg,
+                        theme.border,
+                        (theme as any).glow
+                    )}>
                         <div className="relative flex h-full flex-col justify-between p-4">
                             {/* Card Header */}
                             <div className="flex items-start justify-between">
@@ -70,7 +92,11 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
                     </div>
 
                     {/* --- CARD BACK --- */}
-                    <div className="absolute h-full w-full rounded-xl bg-[#1c1c1c] border border-slate-700/50 text-white [backface-visibility:hidden] [transform:rotateY(180deg)]">
+                    <div className={cn(
+                        "absolute h-full w-full rounded-2xl transition-all duration-500 text-white [backface-visibility:hidden] [transform:rotateY(180deg)] border",
+                        theme.bg,
+                        theme.border
+                    )}>
                         <div className="flex h-full flex-col">
                             {/* Magnetic Strip */}
                             <div className="mt-6 h-8 w-full bg-neutral-900" />

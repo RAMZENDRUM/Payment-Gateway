@@ -33,6 +33,8 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const { login } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [needsVerification, setNeedsVerification] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -51,10 +53,16 @@ export default function Login() {
         // Yield to main thread to allow UI to update (show loading spinner)
         setTimeout(async () => {
             try {
+                setErrorMsg('');
+                setNeedsVerification(false);
                 await login(email, password);
                 navigate(redirectPath, { replace: true });
-            } catch (err) {
+            } catch (err: any) {
                 setLoading(false);
+                setErrorMsg(err.response?.data?.message || 'Login failed');
+                if (err.response?.data?.needsVerification) {
+                    setNeedsVerification(true);
+                }
             }
         }, 50);
     };
@@ -204,6 +212,16 @@ export default function Login() {
                     </CardHeader>
 
                     <CardContent className="grid gap-6">
+                        {errorMsg && (
+                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-medium animate-in fade-in slide-in-from-top-1">
+                                {errorMsg}
+                                {needsVerification && (
+                                    <div className="mt-2 text-zinc-200">
+                                        Lost your OTP? <Link to="/register" className="text-white hover:underline font-bold">Restart registration here →</Link>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         <form onSubmit={handleSubmit} className="grid gap-6">
                             <div className="grid gap-2.5">
                                 <Label htmlFor="email" className="text-[15px] font-medium text-zinc-300">
@@ -308,6 +326,6 @@ export default function Login() {
                     </CardFooter>
                 </Card>
             </div>
-        </section>
+        </section >
     );
 }

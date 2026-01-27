@@ -1,23 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { useAuth } from '@/AuthContext';
 
-const getApiUrl = () => {
-    const envUrl = import.meta.env.VITE_API_URL;
-    const prodUrl = 'https://payment-gateway-up7l.onrender.com/api';
-    if (!envUrl) return prodUrl;
-
-    if (typeof window !== 'undefined' &&
-        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        return envUrl;
-    }
-
-    if (envUrl.includes('localhost')) {
-        return prodUrl;
-    }
-    return envUrl;
-};
-
-const API_URL = getApiUrl();
+import { API_URL } from '@/lib/api';
 
 interface Transaction {
     id: string;
@@ -33,6 +18,8 @@ export const useWalletStats = () => {
     const [balance, setBalance] = useState(0);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const { user } = useAuth();
 
     const loadData = async () => {
         try {
@@ -56,28 +43,40 @@ export const useWalletStats = () => {
     }, []);
 
     const stats = useMemo(() => {
-        const salesCount = transactions.filter(t => t.type === 'PAYMENT' || t.type === 'TRANSFER').length;
-        const averageSale = salesCount > 0
-            ? transactions.filter(t => t.type === 'PAYMENT' || t.type === 'TRANSFER').reduce((acc, t) => acc + t.amount, 0) / salesCount
-            : 0;
+        const spendingTransactions = transactions.filter(t => t.type === 'PAYMENT' || t.type === 'TRANSFER');
+        const salesCount = spendingTransactions.length;
+        const totalSpent = spendingTransactions.reduce((acc, t) => acc + t.amount, 0);
+        const averageSale = salesCount > 0 ? totalSpent / salesCount : 0;
 
-        // Generate chart data from transactions
-        const salesChartData = transactions.slice(0, 20).reverse().map(t => ({
-            time: new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-            sales: t.amount
-        }));
+        // Sort chronologically for charts
+        const chronTransactions = transactions.slice(0, 20).reverse();
 
-        // Cumulative revenue (simplified as balance over time if we had historical snapshots, but here we just use the list)
-        let runningTotal = 0;
-        const cumulativeRevenueData = transactions.slice().reverse().map(t => {
-            runningTotal += t.amount;
+        // Graph 1: Money In vs Money Out
+        const moneyFlowData = chronTransactions.map(t => {
+            const isIncoming = t.receiver_id === user?.id && t.sender_id !== user?.id; // Self-pay blocked but just in case
+            // If sender is me, it's Out via Transfer or Payment. If receiver is me, it's In.
+            // Note: Recharge is IN (receiver=me, sender=null/system).
+
             return {
-                time: new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-                sales: runningTotal
+                time: new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                moneyIn: t.receiver_id === user?.id ? t.amount : 0,
+                moneyOut: t.sender_id === user?.id ? t.amount : 0
             };
         });
 
-        const latestPayments = transactions.slice(0, 10).map(t => ({
+        // Graph 2: Avg Transaction Value (Cumulative Running Average)
+        let runningSum = 0;
+        let count = 0;
+        const transactionQualityData = chronTransactions.map(t => {
+            runningSum += t.amount;
+            count++;
+            return {
+                time: new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                avgValue: Math.round(runningSum / count)
+            };
+        });
+
+        const latestPayments = transactions.slice(0, 5).map(t => ({
             id: t.id,
             amount: t.amount,
             product: t.type,
@@ -87,14 +86,15 @@ export const useWalletStats = () => {
 
         return {
             totalRevenue: balance,
-            cumulativeRevenueData,
+            moneyFlowData,
+            transactionQualityData,
             salesCount,
+            totalSpent,
             averageSale,
-            salesChartData,
             latestPayments,
             loading
         };
-    }, [balance, transactions, loading]);
+    }, [balance, transactions, loading, user]);
 
     return stats;
 };

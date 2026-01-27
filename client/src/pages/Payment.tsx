@@ -24,7 +24,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import TransactionReceipt, { TransactionData } from "@/components/ui/transaction-receipt";
 
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+import { API_URL } from '@/lib/api';
 
 const AMOUNTS = [50, 100, 200, 500, 1000, 2000];
 
@@ -66,18 +66,18 @@ export default function PaymentPage() {
         e.preventDefault();
 
         if (!finalAmount || finalAmount < 10) {
-            toast.error("Minimum top-up is 10 coins");
+            toast.error("Minimum top-up is ₹10");
             return;
         }
 
-        if (finalAmount > 10000) {
-            toast.error("Maximum single refill limit is 10,000 C");
+        if (finalAmount > 200000) {
+            toast.error("Maximum single refill limit is ₹2,00,000");
             return;
         }
 
         // Potential check for existing balance + new amount
-        if (user && ((user.balance || 0) + finalAmount > 500000)) {
-            toast.error(`Transaction failed. Your wallet cannot hold more than 500,000 C (Current: ${user.balance} C)`);
+        if (user && (((user.balance as number) || 0) + finalAmount > 1000000)) {
+            toast.error(`Transaction failed. Your wallet cannot hold more than ₹1,000,000 (Current: ₹${user.balance})`);
             return;
         }
 
@@ -92,7 +92,7 @@ export default function PaymentPage() {
             });
 
             if (res.data.success) {
-                toast.success(`Successfully refilled ${finalAmount} coins!`);
+                toast.success(`Successfully refilled ₹${finalAmount}!`);
                 setTxDetails(res.data.transaction);
                 setShowReceipt(true);
             } else {
@@ -107,7 +107,7 @@ export default function PaymentPage() {
     };
 
     return (
-        <AppLayout title="Refill Assets" subtitle="Instant coin top-up with secure encryption">
+        <AppLayout title="Refill INR" subtitle="Instant INR top-up with secure encryption">
             <div className="max-w-6xl mx-auto px-4 py-8 md:px-8 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
 
@@ -147,6 +147,8 @@ export default function PaymentPage() {
                                 <Label className="text-[13px] font-medium text-zinc-500 block mb-3 px-1">Other Amount</Label>
                                 <Coins className="absolute left-4 bottom-[18px] text-zinc-700" size={14} />
                                 <Input
+                                    max="200000"
+                                    step="1"
                                     placeholder="Enter custom amount..."
                                     value={customAmount}
                                     onChange={(e) => {

@@ -5,7 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Copy, Plus, Trash2, Key, Globe, AlertTriangle } from 'lucide-react';
+import { Copy, Plus, Trash2, Key, Globe, AlertTriangle, Terminal, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Label } from '@/components/ui/label';
 import {
@@ -16,6 +16,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface AppData {
     id: string;
@@ -25,7 +26,7 @@ interface AppData {
     created_at: string;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+import { API_URL } from '@/lib/api';
 
 export default function ApiKeys() {
     const { token } = useAuth();
@@ -129,6 +130,8 @@ export default function ApiKeys() {
                             >
                                 {generating ? "Creating..." : "Generate Key"}
                             </Button>
+
+                            <IntegrationGuideModal />
                         </div>
                     </div>
                 </div>
@@ -248,8 +251,7 @@ export default function ApiKeys() {
                 </DialogContent>
             </Dialog>
 
-            {/* Integration Guide Modal */}
-            <IntegrationGuideModal />
+
         </AppLayout>
     );
 }
@@ -259,87 +261,111 @@ function IntegrationGuideModal() {
     const { user } = useAuth();
 
     // Constructing the AI prompt
-    const aiPrompt = `You are an expert developer. Please integrate the ZenWallet Payment Gateway into my application.
+    const aiPrompt = `## Role
+Act as a Senior Backend Integration Engineer.
 
-Here are the API details:
-Base URL: ${API_URL}
+## Task
+Integrate the ZenWallet Payment Gateway into my application.
 
-1. **Authentication**: 
-   - Use the header \`x-api-key: [MY_API_KEY]\` for all requests.
+## API Configuration
+- **Base URL**: ${API_URL}
+- **Auth Header**: \`x-api-key: [YOUR_API_KEY]\` (Replace with my actual key)
 
-2. **Create Payment Request**:
-   - Endpoint: POST \`/external/create-request\`
-   - Body:
-     \`\`\`json
-     {
-       "amount": 500,
-       "merchantId": "${user?.id || '[MY_MERCHANT_ID]'}",
-       "referenceId": "ORDER_ID_123",
-       "callbackUrl": "https://your-app.com/payment/callback"
-     }
-     \`\`\`
-   - Response contains \`paymentUrl\` and \`token\`. Redirect the user to \`paymentUrl\`.
+## Required Workflows
 
-3. **Verify Payment**:
-   - Endpoint: GET \`/external/verify-reference?merchantId=${user?.id || '...'}&referenceId=ORDER_ID_123\`
-   - Use this to confirm payment status server-side.
+### 1. Initiate Payment
+Create a checkout session when the user clicks "Pay".
+- **Endpoint**: \`POST /external/create-request\`
+- **Payload**:
+  \`\`\`json
+  {
+    "amount": 1500, // Amount in cents or smallest unit
+    "merchantId": "${user?.id || 'YOUR_MARCHANT_ID'}",
+    "referenceId": "ORDER_12345", // My unique order ID
+    "callbackUrl": "https://myapp.com/callback"
+  }
+  \`\`\`
+- **Action**: Redirect user to the returned \`paymentUrl\`.
 
-Please write the code to handle this payment flow using best practices.`;
+### 2. Verify Transaction
+Confirm the payment status when the user returns.
+- **Endpoint**: \`GET /external/verify-reference\`
+- **Params**: \`merchantId\` and \`referenceId\`
+
+## Deliverable
+Write clean, robust code to handle this flow. specific to my tech stack.`;
 
     const copyPrompt = () => {
         navigator.clipboard.writeText(aiPrompt);
-        toast.success("Integration prompt copied!");
+        toast.success("Prompt copied to clipboard!");
     };
 
     return (
         <>
-            <div className="fixed bottom-6 right-6 z-50">
-                <Button
-                    onClick={() => setOpen(true)}
-                    className="h-12 px-6 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/20 font-bold flex items-center gap-2"
-                >
-                    <Globe size={18} />
-                    Integration Guide
-                </Button>
-            </div>
+            <Button
+                onClick={() => setOpen(true)}
+                className="h-11 px-6 rounded-xl border-2 border-dashed border-zinc-700 bg-transparent text-zinc-400 hover:text-white hover:border-zinc-500 hover:bg-zinc-800 transition-all font-bold text-xs flex items-center gap-2"
+            >
+                <Terminal size={14} />
+                Integration Guide
+            </Button>
 
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="bg-[#0c0c0e] border-zinc-800 sm:max-w-2xl max-h-[85vh] overflow-hidden flex flex-col rounded-2xl p-0">
-                    <div className="p-6 border-b border-zinc-800 bg-zinc-900/50">
-                        <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-                            <Key className="text-indigo-500" />
-                            AI Integration Prompt
-                        </DialogTitle>
-                        <DialogDescription className="text-zinc-400 mt-2">
-                            Copy this prompt and paste it into ChatGPT, Claude, or any AI assistant to instantly generate integration code for your app.
-                        </DialogDescription>
-                    </div>
+                <DialogContent className="bg-[#09090b] border border-zinc-800 sm:max-w-2xl overflow-hidden flex flex-col rounded-3xl shadow-2xl p-0 gap-0">
 
-                    <div className="flex-1 overflow-auto p-6 bg-zinc-950/50">
-                        <div className="relative group">
-                            <div className="absolute right-4 top-4 z-10">
-                                <Button
-                                    size="sm"
-                                    onClick={copyPrompt}
-                                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold"
-                                >
-                                    <Copy size={14} className="mr-2" />
-                                    Copy Prompt
-                                </Button>
-                            </div>
-                            <pre className="font-mono text-sm text-zinc-400 bg-zinc-900/80 p-6 rounded-xl border border-zinc-800 whitespace-pre-wrap leading-relaxed selection:bg-indigo-500/30">
-                                {aiPrompt}
-                            </pre>
+                    {/* Header */}
+                    <div className="px-6 py-5 border-b border-zinc-800 bg-zinc-900/40 flex items-center justify-between">
+                        <div>
+                            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2.5">
+                                <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
+                                    <Sparkles size={16} fill="currentColor" className="opacity-50" />
+                                </div>
+                                AI Integration Assistant
+                            </DialogTitle>
+                            <DialogDescription className="text-zinc-500 mt-1 text-xs font-medium pl-11">
+                                Generates perfect integration code for any language.
+                            </DialogDescription>
                         </div>
                     </div>
 
-                    <div className="p-6 border-t border-zinc-800 bg-zinc-900/50 flex justify-end gap-3">
-                        <Button variant="ghost" onClick={() => setOpen(false)} className="text-zinc-400 hover:text-white">
-                            Close
+                    {/* Code Editor Area */}
+                    <div className="relative group bg-[#0c0c0e]">
+                        {/* Editor Controls */}
+                        <div className="absolute right-4 top-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                                size="sm"
+                                onClick={copyPrompt}
+                                className="h-8 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-[10px] font-bold uppercase tracking-wider border border-zinc-700"
+                            >
+                                <Copy size={12} className="mr-2" />
+                                Copy
+                            </Button>
+                        </div>
+
+                        <ScrollArea maxHeight="50vh" className="p-6 bg-[#0c0c0e]">
+                            <pre className="font-mono text-xs md:text-sm text-zinc-400 whitespace-pre-wrap leading-relaxed">
+                                {aiPrompt.split('\n').map((line, i) => (
+                                    <div key={i} className="table-row">
+                                        <span className="table-cell text-right pr-6 select-none text-zinc-800 text-[10px] w-8">{i + 1}</span>
+                                        <span className="table-cell">{line}</span>
+                                    </div>
+                                ))}
+                            </pre>
+                        </ScrollArea>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="p-6 border-t border-zinc-800 bg-zinc-900/40">
+                        <Button
+                            onClick={() => { copyPrompt(); setOpen(false); }}
+                            className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                        >
+                            <Copy size={16} />
+                            Copy Prompt & Close
                         </Button>
-                        <Button onClick={copyPrompt} className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold">
-                            Copy & Close
-                        </Button>
+                        <p className="text-center text-[10px] text-zinc-600 mt-3 font-medium">
+                            Paste this into ChatGPT, Claude, or Cursor to get started.
+                        </p>
                     </div>
                 </DialogContent>
             </Dialog>

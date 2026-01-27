@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { API_URL } from './lib/api';
 
 interface User {
     id: string;
@@ -30,30 +31,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const getApiUrl = () => {
-    // In production (Vercel), we want to ignore the localhost .env if it was accidentally committed
-    const envUrl = import.meta.env.VITE_API_URL;
-    const prodUrl = 'https://payment-gateway-up7l.onrender.com/api';
-
-    // If no env var, use prod
-    if (!envUrl) return prodUrl;
-
-    // Logic fix: If on localhost, AND env var is localhost, keep it!
-    if (typeof window !== 'undefined' &&
-        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        return envUrl;
-    }
-
-    // Otherwise, if we are on a deployed domain but config says localhost, force prod
-    if (envUrl.includes('localhost')) {
-        return prodUrl;
-    }
-
-    return envUrl;
-};
-
-const API_URL = getApiUrl();
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -87,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (err: any) {
             console.error("Error fetching user:", err);
             // Only logout if unauthorized or forbidden (token invalid/expired)
-            if (err.response && (err.response.status === 401 || err.response.status === 403 || err.response.status === 404)) {
+            if (err.response && (err.response.status === 401 || err.response.status === 403)) {
                 console.warn("Auth token invalid, logging out.");
                 localStorage.removeItem('token');
                 delete axios.defaults.headers.common['Authorization'];

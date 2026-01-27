@@ -1,8 +1,8 @@
 const db = require('../utils/db');
 const { v4: uuidv4 } = require('uuid');
 
-const MAX_RECHARGE = 10000;
-const MAX_BALANCE = 500000;
+const MAX_RECHARGE = 200000;
+const MAX_BALANCE = 1000000;
 
 exports.getBalance = async (req, res) => {
     try {
@@ -63,6 +63,7 @@ exports.sendCoins = async (req, res) => {
     const senderId = req.user.id;
 
     if (amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
+    if (amount > 200000) return res.status(400).json({ message: 'Maximum transfer limit is ₹2,00,000' });
 
     const { client, query, release } = await db.getTransaction();
 
@@ -131,6 +132,7 @@ exports.sendCoins = async (req, res) => {
 // QR Payment Logic
 exports.createPaymentRequest = async (req, res) => {
     const { amount, referenceId } = req.body;
+    if (amount > 200000) return res.status(400).json({ message: 'Maximum request limit is ₹2,00,000' });
     const receiverId = req.user.id; // The one generating the QR is the receiver
 
     try {
@@ -142,14 +144,11 @@ exports.createPaymentRequest = async (req, res) => {
             [receiverId, amount, referenceId, token, expiresAt]
         );
 
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const paymentUrl = `${frontendUrl}/scan?token=${token}`;
+
         res.json({
-            qrData: JSON.stringify({
-                token,
-                amount,
-                receiverId,
-                referenceId,
-                expiresAt
-            }),
+            qrData: paymentUrl,
             request: request.rows[0]
         });
     } catch (err) {
@@ -179,6 +178,10 @@ exports.fulfillPayment = async (req, res) => {
         }
 
         const { amount, receiver_id, reference_id } = reqData;
+
+        if (senderId === receiver_id) {
+            throw new Error('You cannot pay yourself');
+        }
 
         // Check sender balance
         const senderWallet = await client.query('SELECT balance FROM wallets WHERE user_id = $1 FOR UPDATE', [senderId]);

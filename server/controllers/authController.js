@@ -59,14 +59,21 @@ exports.register = async (req, res) => {
             } else {
                 // Remove old unverified user and related data manually to prevent FK violations
                 const userId = existingUser.rows[0].id;
+
+                // Correct deletion order to respect FK constraints
+                await db.query('DELETE FROM otp_verifications WHERE email = $1', [email]);
                 await db.query('DELETE FROM virtual_cards WHERE user_id = $1', [userId]);
                 await db.query('DELETE FROM wallets WHERE user_id = $1', [userId]);
-
-                // Also clear any transactions/requests where this user might be referenced
                 await db.query('DELETE FROM transactions WHERE sender_id = $1 OR receiver_id = $1', [userId]);
                 await db.query('DELETE FROM payment_requests WHERE receiver_id = $1', [userId]);
 
+                // Cleanup Gateway tables (Apps -> Payments -> Logs)
+                await db.query('DELETE FROM webhook_logs WHERE payment_id IN (SELECT payment_id FROM external_payments WHERE app_id IN (SELECT id FROM apps WHERE user_id = $1))', [userId]);
+                await db.query('DELETE FROM external_payments WHERE app_id IN (SELECT id FROM apps WHERE user_id = $1)', [userId]);
+                await db.query('DELETE FROM apps WHERE user_id = $1', [userId]);
+
                 await db.query('DELETE FROM users WHERE email = $1', [email]);
+                console.log(`Successfully cleaned up unverified user: ${email}`);
             }
         }
 
@@ -102,7 +109,10 @@ exports.register = async (req, res) => {
         });
     } catch (err) {
         console.error('Registration Error:', err);
-        res.status(500).json({ message: 'Server error during registration' });
+        res.status(500).json({
+            message: 'Server error during registration',
+            error: err.message
+        });
     }
 };
 
@@ -188,7 +198,11 @@ exports.login = async (req, res) => {
         const user = userResult.rows[0];
 
         if (!user.is_verified) {
-            return res.status(403).json({ message: 'Account not verified. Please verify your OTP first.' });
+            return res.status(403).json({
+                message: 'Account not verified. Please verify your OTP first.',
+                email: email,
+                needsVerification: true
+            });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -324,49 +338,52 @@ exports.verifyPassword = async (req, res) => {
 
 exports.getMe = async (req, res) => {
     try {
-        // Use LEFT JOIN to prevent 404 if wallet is missing (robustness)
-        const userQuery = `
-            SELECT u.id, u.email, u.full_name, u.upi_id, w.balance 
+        // Use JOIN to get everything in one go: user, wallet balance, and virtual card
+        const query = `
+            SELECT 
+                u.id, u.email, u.full_name, u.upi_id, 
+                COALESCE(w.balance, 0) as balance,
+                vc.card_number, vc.cvv, vc.expiry_month, vc.expiry_year
             FROM users u 
             LEFT JOIN wallets w ON u.id = w.user_id 
+            LEFT JOIN virtual_cards vc ON u.id = vc.user_id
             WHERE u.id = $1
         `;
-        const userResult = await db.query(userQuery, [req.user.id]);
+        const result = await db.query(query, [req.user.id]);
 
-        if (userResult.rows.length === 0) {
+        if (result.rows.length === 0) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        let userData = userResult.rows[0];
+        let userData = result.rows[0];
 
-        // Ensure UPI ID exists (Self-healing)
+        // Self-healing: Ensure UPI ID exists
         if (!userData.upi_id) {
             const newUpiId = generateUpiId();
             await db.query('UPDATE users SET upi_id = $1 WHERE id = $2', [newUpiId, req.user.id]);
             userData.upi_id = newUpiId;
         }
 
-        // Ensure Wallet balance exists (Self-healing display)
-        if (userData.balance === null) {
-            userData.balance = 0;
-            // Optionally create wallet here, but login/verifyOtp handles it usually.
-            // We just display 0 to avoid crash.
+        // Self-healing: If virtual card was missing (JOIN returned null rows for card fields)
+        if (!userData.card_number) {
+            const card = await ensureVirtualCard(db, req.user.id);
+            userData.card_number = card.card_number;
+            userData.cvv = card.cvv;
+            userData.expiry_month = card.expiry_month;
+            userData.expiry_year = card.expiry_year;
         }
-
-        // Fetch card details
-        const card = await ensureVirtualCard(db, req.user.id);
 
         res.json({
             id: userData.id,
             email: userData.email,
             full_name: userData.full_name,
             upi_id: userData.upi_id,
-            balance: userData.balance, // Now safe from null
+            balance: userData.balance,
             virtualCard: {
-                cardNumber: card.card_number,
-                cvv: card.cvv,
-                expiryMonth: card.expiry_month,
-                expiryYear: card.expiry_year
+                cardNumber: userData.card_number,
+                cvv: userData.cvv,
+                expiryMonth: userData.expiry_month,
+                expiryYear: userData.expiry_year
             }
         });
     } catch (err) {

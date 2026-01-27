@@ -17,6 +17,13 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
     Eye,
     EyeOff,
     Lock,
@@ -219,7 +226,7 @@ export default function Register() {
                                                 placeholder="John Doe"
                                                 value={fullName}
                                                 onChange={(e) => setFullName(e.target.value)}
-                                                className="pl-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600"
+                                                className="pl-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600 h-12 rounded-xl"
                                                 required
                                             />
                                         </div>
@@ -235,25 +242,24 @@ export default function Register() {
                                                     placeholder="+91..."
                                                     value={phoneNumber}
                                                     onChange={(e) => setPhoneNumber(e.target.value)}
-                                                    className="pl-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600"
+                                                    className="pl-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600 h-12 rounded-xl"
                                                     required
                                                 />
                                             </div>
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="purpose" className="text-zinc-300">Purpose</Label>
-                                            <select
-                                                id="purpose"
-                                                className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
-                                                value={purpose}
-                                                onChange={(e) => setPurpose(e.target.value)}
-                                                required
-                                            >
-                                                <option value="Website">Website</option>
-                                                <option value="Business">Business</option>
-                                                <option value="Freelance">Freelance</option>
-                                                <option value="Personal">Personal</option>
-                                            </select>
+                                            <Select value={purpose} onValueChange={setPurpose}>
+                                                <SelectTrigger className="bg-zinc-950 border-zinc-800 text-zinc-50 h-12 rounded-xl">
+                                                    <SelectValue placeholder="Select purpose" />
+                                                </SelectTrigger>
+                                                <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
+                                                    <SelectItem value="Website">Website</SelectItem>
+                                                    <SelectItem value="Business">Business</SelectItem>
+                                                    <SelectItem value="Freelance">Freelance</SelectItem>
+                                                    <SelectItem value="Personal">Personal</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                     </div>
 
@@ -267,7 +273,7 @@ export default function Register() {
                                                 placeholder="you@example.com"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
-                                                className="pl-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600"
+                                                className="pl-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600 h-12 rounded-xl"
                                                 required
                                             />
                                         </div>
@@ -283,7 +289,7 @@ export default function Register() {
                                                 placeholder="••••••••"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
-                                                className="pl-10 pr-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600"
+                                                className="pl-10 pr-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600 h-12 rounded-xl"
                                                 required
                                             />
                                             <button

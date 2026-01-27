@@ -7,6 +7,7 @@ import {
     Settings,
     LogOut,
     Code,
+    QrCode,
     User as UserIcon
 } from 'lucide-react';
 import { useAuth } from '@/AuthContext';
@@ -48,6 +49,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
 
     const navItems = [
         { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
+        { icon: <QrCode size={20} />, label: 'Scan to Pay', path: '/scan' },
         { icon: <ArrowUpDown size={20} />, label: 'History', path: '/transactions' },
         { icon: <Wallet size={20} />, label: 'Wallet', path: '/wallet' },
         { icon: <UserIcon size={20} />, label: 'Profile', path: '/profile' },

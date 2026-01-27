@@ -25,7 +25,7 @@ export default function Wallet() {
                     <div className="flex items-center justify-between max-w-[1600px] mx-auto">
                         <div>
                             <h1 className="text-xl font-semibold text-white tracking-tight">Financial Hub</h1>
-                            <p className="text-xs text-slate-500 mt-0.5">Your unique cross-platform identification and asset control.</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Your unique cross-platform identification and INR control.</p>
                         </div>
                     </div>
                 </div>
@@ -38,7 +38,7 @@ export default function Wallet() {
                                 <QrCode className="text-zinc-400" size={24} />
                             </div>
                             <div>
-                                <p className="text-[11px] text-zinc-500 font-medium mb-1.5 leading-none">Global Asset Identifier</p>
+                                <p className="text-[11px] text-zinc-500 font-medium mb-1.5 leading-none">Global INR Identifier</p>
                                 <p className="text-xl text-white font-medium tracking-tight">{user?.upi_id || 'Generating ID...'}</p>
                             </div>
                         </div>
@@ -52,7 +52,18 @@ export default function Wallet() {
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <button
+                            onClick={() => navigate('/scan')}
+                            className="border-pane py-10 transition-all text-center group hover:bg-blue-500/[0.02]"
+                        >
+                            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-blue-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <QrCode size={22} className="text-blue-400" />
+                            </div>
+                            <h3 className="text-[15px] font-medium text-white mb-2">Scan QR</h3>
+                            <p className="text-[11px] text-zinc-500 leading-relaxed max-w-[160px] mx-auto font-medium">Scan any Zen or External QR code to pay instantly.</p>
+                        </button>
+
                         <button
                             onClick={() => navigate('/send')}
                             className="border-pane py-10 transition-all text-center group hover:bg-emerald-500/[0.02]"
@@ -60,7 +71,7 @@ export default function Wallet() {
                             <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-emerald-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <SendIcon size={22} className="text-emerald-500" />
                             </div>
-                            <h3 className="text-[15px] font-medium text-white mb-2">Send Assets</h3>
+                            <h3 className="text-[15px] font-medium text-white mb-2">Send INR</h3>
                             <p className="text-[11px] text-zinc-500 leading-relaxed max-w-[160px] mx-auto font-medium">Transfer liquidity to any secure Zen ID worldwide.</p>
                         </button>
 
@@ -71,18 +82,18 @@ export default function Wallet() {
                             <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-indigo-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <QrCode size={22} className="text-indigo-400" />
                             </div>
-                            <h3 className="text-[15px] font-medium text-white mb-2">My Qr Code</h3>
+                            <h3 className="text-[15px] font-medium text-white mb-2">My QR Code</h3>
                             <p className="text-[11px] text-zinc-500 leading-relaxed max-w-[160px] mx-auto font-medium">Generate a secure uplink for incoming payments.</p>
                         </button>
 
                         <button
                             onClick={() => navigate('/payment')}
-                            className="border-pane py-10 transition-all text-center group hover:bg-blue-500/[0.02]"
+                            className="border-pane py-10 transition-all text-center group hover:bg-zinc-500/[0.02]"
                         >
-                            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-blue-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <ArrowDownToLine size={22} className="text-blue-400" />
+                            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-zinc-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <ArrowDownToLine size={22} className="text-zinc-400" />
                             </div>
-                            <h3 className="text-[15px] font-medium text-white mb-2">Add Capital</h3>
+                            <h3 className="text-[15px] font-medium text-white mb-2">Add INR</h3>
                             <p className="text-[11px] text-zinc-500 leading-relaxed max-w-[160px] mx-auto font-medium">Inject liquidity into your global node instantly.</p>
                         </button>
                     </div>

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWalletStats } from '@/hooks/useWalletStats';
+import { useSpring, useTransform, animate } from 'framer-motion';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer
 } from 'recharts';
@@ -25,13 +26,60 @@ import { FlippableCreditCard } from '@/components/ui/credit-debit-card';
 
 interface MetricCardProps {
     title: string;
-    value: number | string;
+    value: number;
     unit?: string;
     icon: React.ReactNode;
     description?: string;
+    decimals?: number;
 }
 
-const MetricCard = ({ title, value, unit = '', icon, description }: MetricCardProps) => (
+const RollingDigit = ({ digit, index }: { digit: string; index: number }) => {
+    const isNumber = !isNaN(parseInt(digit));
+    if (!isNumber) return <span className="w-[0.3em] inline-flex justify-center">{digit}</span>;
+
+    const digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    return (
+        <span className="inline-flex h-[1.1em] w-[0.6em] overflow-hidden leading-none relative">
+            <motion.span
+                initial={{ y: "-30%" }}
+                animate={{ y: `-${parseInt(digit) * 10}%` }}
+                transition={{
+                    type: "spring",
+                    stiffness: 60,
+                    damping: 12,
+                    mass: 0.5,
+                    delay: index * 0.01
+                }}
+                className="flex flex-col absolute top-0 left-0 w-full"
+            >
+                {digits.map((d) => (
+                    <span key={d} className="h-[1.1em] flex items-center justify-center">
+                        {d}
+                    </span>
+                ))}
+            </motion.span>
+            <span className="opacity-0 invisible">8</span>
+        </span>
+    );
+};
+
+const AnimatedNumber = ({ value, decimals = 2 }: { value: number; decimals?: number }) => {
+    const stringValue = value.toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+    });
+
+    return (
+        <span className="inline-flex items-baseline overflow-hidden">
+            {stringValue.split("").map((char, i) => (
+                <RollingDigit key={`${stringValue.length - i}-${char}`} digit={char} index={i} />
+            ))}
+        </span>
+    );
+};
+
+const MetricCard = ({ title, value, unit = '', icon, description, decimals = 2 }: MetricCardProps) => (
     <div className="p-6 dashboard-card group">
         <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-xl bg-blue-500/5 text-blue-500 group-hover:bg-blue-500/10 transition-colors">
@@ -40,9 +88,9 @@ const MetricCard = ({ title, value, unit = '', icon, description }: MetricCardPr
             <span className="text-[13px] font-medium text-zinc-500">{title}</span>
         </div>
         <div>
-            <div className="text-3xl font-semibold text-white tabular-nums tracking-tight">
+            <div className="text-3xl font-semibold text-white tabular-nums tracking-tight flex items-baseline">
                 <span className="text-xl font-normal text-zinc-600 mr-1.5">{unit}</span>
-                {typeof value === 'number' ? value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : value}
+                <AnimatedNumber value={value} decimals={decimals} />
             </div>
             {description && <p className="text-[11px] text-zinc-500 mt-3 font-medium">{description}</p>}
         </div>
@@ -56,12 +104,12 @@ interface RealtimeChartProps {
     lineColor: string;
 }
 
-const RealtimeChart = React.memo(({ data, title, dataKey, lineColor }: RealtimeChartProps) => {
+const MoneyFlowChart = React.memo(({ data }: { data: any[] }) => {
     const chartData = useMemo(() => data || [], [data]);
     return (
         <div className="border-pane flex-1">
             <div className="px-6 pt-6 pb-2">
-                <h3 className="text-sm font-medium text-zinc-400">{title}</h3>
+                <h3 className="text-sm font-medium text-zinc-400">Money Flow (In vs Out)</h3>
             </div>
             <div className="p-6">
                 <div style={{ width: '100%', height: '260px' }}>
@@ -79,7 +127,40 @@ const RealtimeChart = React.memo(({ data, title, dataKey, lineColor }: RealtimeC
                                     color: '#fff'
                                 }}
                             />
-                            <Line type="monotone" dataKey={dataKey} stroke={lineColor} strokeWidth={2} dot={false} animationDuration={1000} />
+                            <Line type="monotone" dataKey="moneyIn" stroke="#10b981" strokeWidth={2} dot={false} name="Incoming ₹" />
+                            <Line type="monotone" dataKey="moneyOut" stroke="#ef4444" strokeWidth={2} dot={false} name="Outgoing ₹" />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+        </div>
+    );
+});
+
+const TransactionQualityChart = React.memo(({ data }: { data: any[] }) => {
+    const chartData = useMemo(() => data || [], [data]);
+    return (
+        <div className="border-pane flex-1">
+            <div className="px-6 pt-6 pb-2">
+                <h3 className="text-sm font-medium text-zinc-400">Avg Transaction Value</h3>
+            </div>
+            <div className="p-6">
+                <div style={{ width: '100%', height: '260px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" strokeOpacity={0.2} vertical={false} />
+                            <XAxis dataKey="time" stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} dy={10} />
+                            <YAxis stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} dx={-4} />
+                            <RechartsTooltip
+                                contentStyle={{
+                                    backgroundColor: '#09090b',
+                                    borderColor: '#27272a',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    color: '#fff'
+                                }}
+                            />
+                            <Line type="step" dataKey="avgValue" stroke="#8b5cf6" strokeWidth={2} dot={false} name="Avg Value ₹" />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
@@ -91,7 +172,7 @@ const RealtimeChart = React.memo(({ data, title, dataKey, lineColor }: RealtimeC
 export default function Dashboard() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { totalRevenue, salesCount, averageSale, salesChartData, latestPayments } = useWalletStats();
+    const { totalRevenue, salesCount, averageSale, moneyFlowData, transactionQualityData, latestPayments } = useWalletStats();
 
     return (
         <AppLayout title="Overview" subtitle={`Welcome back, ${user?.full_name?.split(' ')[0] || 'User'}`}>
@@ -99,7 +180,7 @@ export default function Dashboard() {
                 {/* Metrics */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <MetricCard title="Account Balance" value={totalRevenue || 0} unit="₹" icon={<DollarSign size={16} />} description="Available in ZenWallet" />
-                    <MetricCard title="Total Transactions" value={salesCount || 0} icon={<Repeat2 size={16} />} description="Lifetime usage" />
+                    <MetricCard title="Total Transactions" value={salesCount || 0} decimals={0} icon={<Repeat2 size={16} />} description="Lifetime usage" />
                     <MetricCard title="Average Spent" value={averageSale || 0} unit="₹" icon={<TrendingUp size={16} />} description="Per transaction avg" />
                     <div className="p-6 dashboard-card">
                         <div className="flex items-center gap-3 mb-4">
@@ -142,15 +223,14 @@ export default function Dashboard() {
 
                 {/* Charts */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <RealtimeChart data={salesChartData} title="Activity Velocity" dataKey="sales" lineColor="#3b82f6" />
-                    <RealtimeChart data={salesChartData} title="Volume Matrix" dataKey="sales" lineColor="#6366f1" />
+                    <MoneyFlowChart data={moneyFlowData} />
+                    <TransactionQualityChart data={transactionQualityData} />
                 </div>
 
                 {/* Table */}
                 <div className="pt-8">
                     <div className="flex items-center justify-between mb-6 px-1">
                         <h3 className="text-sm font-medium text-white">Recent Transactions</h3>
-                        <Button variant="link" className="text-xs text-blue-500 font-medium h-auto p-0" onClick={() => navigate('/transactions')}>View All History</Button>
                     </div>
 
                     <div className="dashboard-card overflow-hidden">
@@ -158,23 +238,33 @@ export default function Dashboard() {
                             {!latestPayments || latestPayments.length === 0 ? (
                                 <div className="py-20 text-center text-zinc-600 font-medium text-sm">No transmissions detected</div>
                             ) : (
-                                latestPayments.map((p) => (
-                                    <div key={p.id} className="group flex items-center justify-between py-5 hover:bg-white/[0.02] px-6 transition-all">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 bg-zinc-900 border border-zinc-400/[0.08] rounded-full flex items-center justify-center text-zinc-400 font-medium text-xs">
-                                                {p.product.charAt(0)}
+                                <>
+                                    {latestPayments.slice(0, 5).map((p) => (
+                                        <div key={p.id} className="group flex items-center justify-between py-5 hover:bg-white/[0.02] px-6 transition-all">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 bg-zinc-900 border border-zinc-400/[0.08] rounded-full flex items-center justify-center text-zinc-400 font-medium text-xs">
+                                                    {p.product.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-white">{p.product}</p>
+                                                    <p className="text-[10px] text-zinc-500 font-mono mt-1 tracking-tight">{p.id.slice(0, 16).toUpperCase()}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-white">{p.product}</p>
-                                                <p className="text-[10px] text-zinc-500 font-mono mt-1 tracking-tight">{p.id.slice(0, 16).toUpperCase()}</p>
+                                            <div className="text-right">
+                                                <p className="text-sm font-semibold text-white tabular-nums">₹{p.amount.toLocaleString()}</p>
+                                                <p className="text-[10px] text-zinc-500 mt-1 font-medium">{p.time}</p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-semibold text-white tabular-nums">₹{p.amount.toLocaleString()}</p>
-                                            <p className="text-[10px] text-zinc-500 mt-1 font-medium">{p.time}</p>
-                                        </div>
-                                    </div>
-                                ))
+                                    ))}
+                                    {latestPayments.length > 5 && (
+                                        <button
+                                            onClick={() => navigate('/transactions')}
+                                            className="w-full py-4 text-xs font-medium text-zinc-500 hover:text-white hover:bg-white/[0.02] transition-colors flex items-center justify-center border-t border-zinc-400/[0.08]"
+                                        >
+                                            See more
+                                        </button>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

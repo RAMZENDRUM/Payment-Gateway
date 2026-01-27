@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Mail, ArrowRight, ArrowLeft, Lock, CheckCircle2 } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+import { API_URL } from '@/lib/api';
 
 export default function ForgotPassword() {
     const [step, setStep] = useState<'email' | 'otp'>('email');

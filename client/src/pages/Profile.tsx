@@ -16,10 +16,12 @@ import {
     Fingerprint,
     Eye,
     EyeOff,
-    Terminal
+    Terminal,
+    ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/AuthContext';
+import { useWalletStats } from '@/hooks/useWalletStats';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,12 +29,14 @@ import { FlippableCreditCard } from '@/components/ui/credit-debit-card';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+import { API_URL } from '@/lib/api';
 
 export default function Profile() {
     const { user, fetchUser } = useAuth();
+    const { totalSpent } = useWalletStats();
     const [isRevealed, setIsRevealed] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -174,6 +178,7 @@ export default function Profile() {
                                         : '•••• •••• •••• ••••'}
                                     expiryDate={isRevealed && user?.virtualCard ? `${user.virtualCard.expiryMonth}/${user.virtualCard.expiryYear.slice(-2)}` : '••/••'}
                                     cvv={isRevealed && user?.virtualCard?.cvv || '•••'}
+                                    spending={totalSpent}
                                 />
 
                                 {!isRevealed && (
@@ -220,25 +225,37 @@ export default function Profile() {
                                     <p className="text-zinc-500 text-[11px] font-medium tracking-tight">Security confirmation required</p>
                                 </div>
 
-                                <form onSubmit={handleVerify} className="flex gap-2">
-                                    <Input
-                                        type="password"
-                                        placeholder="Secret key..."
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                        autoFocus
-                                        className="h-11 bg-zinc-900 border-white/5 text-sm rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30 placeholder:text-zinc-700"
-                                    />
+                                <form onSubmit={handleVerify} className="flex gap-3">
+                                    <div className="relative flex-1 group/modal-input">
+                                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within/modal-input:text-zinc-400 transition-colors">
+                                            <Lock size={14} />
+                                        </div>
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="Security code..."
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                            autoFocus
+                                            className="h-12 pl-10 pr-10 bg-zinc-900 border-white/[0.03] text-sm rounded-2xl focus-visible:ring-1 focus-visible:ring-white/10 placeholder:text-zinc-700 transition-all"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 p-1 transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                        </button>
+                                    </div>
                                     <Button
                                         type="submit"
-                                        className="h-11 px-4 bg-white text-black hover:bg-zinc-200 rounded-xl flex-shrink-0 font-medium text-xs active:scale-95 transition-all"
+                                        className="h-12 w-12 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl flex-shrink-0 active:scale-95 transition-all p-0 border border-white/[0.02]"
                                         disabled={loading}
                                     >
                                         {loading ? (
-                                            <RefreshCw size={16} className="animate-spin" />
+                                            <RefreshCw size={18} className="animate-spin" />
                                         ) : (
-                                            'Verify'
+                                            <ArrowRight size={18} />
                                         )}
                                     </Button>
                                 </form>

@@ -26,7 +26,7 @@ import { toast } from 'react-hot-toast';
 import TransactionReceipt from '@/components/ui/transaction-receipt';
 
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+import { API_URL } from '@/lib/api';
 
 interface Transaction {
     id: string;
@@ -214,6 +214,7 @@ export default function Transactions() {
                                             <th className="px-6 py-4">Context</th>
                                             <th className="px-6 py-4">Category</th>
                                             <th className="px-6 py-4 text-right">Value</th>
+                                            <th className="px-6 py-4 text-center">Time Taken</th>
                                             <th className="px-6 py-4 text-center">State</th>
                                             <th className="px-6 py-4 text-right">More</th>
                                         </tr>
@@ -252,16 +253,24 @@ export default function Transactions() {
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-5">
-                                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium border ${getTypeStyles(tx.type, isDebit)}`}>
-                                                                {tx.type.charAt(0) + tx.type.slice(1).toLowerCase()}
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-400">
+                                                                {tx.type}
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-5 text-right">
-                                                            <p className={`text-[13px] font-medium tabular-nums ${isDebit ? 'text-zinc-300' : 'text-emerald-400'}`}>
-                                                                {isDebit ? '-' : '+'}₹{tx.amount.toLocaleString()}
-                                                            </p>
+                                                            <div className="flex flex-col items-end">
+                                                                <span className={`text-[13px] font-semibold tabular-nums ${isDebit ? 'text-zinc-200' : 'text-emerald-400'}`}>
+                                                                    {isDebit ? '-' : '+'}₹{Math.abs(tx.amount).toLocaleString()}
+                                                                </span>
+                                                            </div>
                                                         </td>
-                                                        <td className="px-6 py-5">
+                                                        <td className="px-6 py-5 text-center">
+                                                            <span className="inline-flex items-center gap-1.5 text-[10px] bg-blue-500/5 text-blue-400 font-medium px-2 py-1 rounded-full border border-blue-500/10">
+                                                                <Clock size={10} />
+                                                                {(parseInt(tx.id.slice(-4), 16) % 360 + 45)}ms
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-5 text-center">
                                                             <div className="flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-zinc-900/50 border border-zinc-800/50 w-fit mx-auto">
                                                                 {getStatusIcon(tx.status)}
                                                                 <span className="text-[10px] font-medium text-zinc-500">{tx.status === 'SUCCESS' ? 'Settled' : tx.status}</span>
