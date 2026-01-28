@@ -6,7 +6,7 @@ export const getApiUrl = () => {
     }
 
     // Otherwise use environment variable or fallback to production
-    return (import.meta as any).env.VITE_API_URL || 'https://payment-gateway-up7l.onrender.com/api';
+    return (import.meta as any).env.VITE_API_URL || 'https://payment-gateway-production-2f82.up.railway.app/api';
 };
 
 export const API_URL = getApiUrl();
