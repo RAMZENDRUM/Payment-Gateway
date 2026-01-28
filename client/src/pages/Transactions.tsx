@@ -77,11 +77,20 @@ export default function Transactions() {
                 tx.receiver_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 tx.type?.toLowerCase().includes(searchTerm.toLowerCase());
 
-            const matchesFilter = filterType === 'all' || tx.type === filterType;
+            let matchesFilter = true;
+            if (filterType === 'payment') {
+                matchesFilter = tx.type === 'PAYMENT' && tx.sender_id === user?.id;
+            } else if (filterType === 'received') {
+                matchesFilter = tx.receiver_id === user?.id && tx.type !== 'RECHARGE';
+            } else if (filterType === 'topup') {
+                matchesFilter = tx.type === 'RECHARGE';
+            } else if (filterType === 'api') {
+                matchesFilter = tx.type === 'PAYMENT' && (tx.reference_id?.includes('zw_') || tx.reference_id?.includes('INV'));
+            }
 
             return matchesSearch && matchesFilter;
         });
-    }, [transactions, searchTerm, filterType]);
+    }, [transactions, searchTerm, filterType, user]);
 
     const exportToCSV = () => {
         setIsExporting(true);
@@ -146,16 +155,22 @@ export default function Transactions() {
 
                     <div className="flex items-center gap-3 w-full md:w-auto">
                         <div className="flex bg-zinc-900 p-1 rounded-lg border border-zinc-800">
-                            {['all', 'PAYMENT', 'TRANSFER', 'RECHARGE'].map((type) => (
+                            {[
+                                { id: 'all', label: 'All Payments' },
+                                { id: 'payment', label: 'Payment' },
+                                { id: 'received', label: 'Received' },
+                                { id: 'topup', label: 'Top up' },
+                                { id: 'api', label: 'API' }
+                            ].map((filter) => (
                                 <button
-                                    key={type}
-                                    onClick={() => setFilterType(type)}
-                                    className={`px-4 py-1.5 text-[11px] font-medium rounded-md transition-all ${filterType === type
+                                    key={filter.id}
+                                    onClick={() => setFilterType(filter.id)}
+                                    className={`px-4 py-1.5 text-[11px] font-medium rounded-md transition-all ${filterType === filter.id
                                         ? 'bg-zinc-800 text-white shadow-sm'
                                         : 'text-zinc-500 hover:text-white'
                                         }`}
                                 >
-                                    {type === 'all' ? 'All Activity' : type.charAt(0) + type.slice(1).toLowerCase()}
+                                    {filter.label}
                                 </button>
                             ))}
                         </div>
