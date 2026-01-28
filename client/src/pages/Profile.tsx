@@ -150,7 +150,7 @@ export default function Profile() {
                         <div className="dashboard-card border-none shadow-none p-8 flex flex-col items-center bg-white/[0.01] max-w-sm ml-auto">
                             <div className="p-4 bg-white rounded-2xl">
                                 {user?.upi_id ? (
-                                    <QRCodeSVG value={user.upi_id} size={120} level="H" />
+                                    <QRCodeSVG value={`${window.location.origin}/send?to=${user.upi_id}`} size={120} level="H" />
                                 ) : (
                                     <div className="w-[120px] h-[120px] flex items-center justify-center bg-zinc-50 rounded-xl">
                                         <RefreshCw size={24} className="text-zinc-200 animate-spin" />

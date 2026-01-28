@@ -128,28 +128,47 @@ export default function Scan() {
 
     function onScanSuccess(result: string) {
         try {
-            // Check if it's a JSON string
+            // 1. Try to parse as JSON
             const data = JSON.parse(result);
             if (data.token) {
                 fetchPaymentDetails(data.token);
                 return;
             }
-        } catch (err) {
-            // Not JSON, check if it's a URL
-            try {
-                const url = new URL(result);
-                const token = url.searchParams.get('token');
-                if (token) {
-                    fetchPaymentDetails(token);
-                } else {
-                    // Maybe the path contains the token? Or it's just a raw token string
-                    fetchPaymentDetails(result);
-                }
-            } catch (urlErr) {
-                // Not a URL either, treat as raw token string
-                fetchPaymentDetails(result);
+            if (data.upiId) {
+                navigate('/send', { state: { receiverId: data.upiId } });
+                return;
             }
+        } catch (err) { }
+
+        // 2. Try to parse as URL
+        try {
+            const url = new URL(result);
+            const token = url.searchParams.get('token');
+            const to = url.searchParams.get('to');
+
+            if (token) {
+                fetchPaymentDetails(token);
+                return;
+            }
+            if (to) {
+                navigate(`/send?to=${to}`);
+                return;
+            }
+            // If it's a URL but no specific param, check if it's a raw token/id
+            if (url.searchParams.get('id')) {
+                fetchPaymentDetails(url.searchParams.get('id')!);
+                return;
+            }
+        } catch (urlErr) { }
+
+        // 3. Raw UPI ID Check (contains @ and no spaces)
+        if (result.includes('@') && !result.includes(' ')) {
+            navigate('/send', { state: { receiverId: result } });
+            return;
         }
+
+        // 4. Default to treating as raw token
+        fetchPaymentDetails(result);
     }
 
     function onScanError(err: any) {

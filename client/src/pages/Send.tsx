@@ -21,7 +21,9 @@ export default function Send() {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
-    const [receiverUpiId, setReceiverUpiId] = useState(location.state?.receiverId || '');
+    const queryParams = new URLSearchParams(location.search);
+    const toParam = queryParams.get('to');
+    const [receiverUpiId, setReceiverUpiId] = useState(toParam || location.state?.receiverId || '');
     const [amount, setAmount] = useState('');
     const [referenceId, setReferenceId] = useState('');
     const [loading, setLoading] = useState(false);
