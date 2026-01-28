@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 
 exports.sendOTP = async (email, otp) => {
     const mailOptions = {
-        from: '"ZenWallet Auth" <eventbooking.otp@gmail.com>',
+        from: `"ZenWallet Auth" <${process.env.EMAIL_USER || 'eventbooking.otp@gmail.com'}>`,
         to: email,
         subject: 'ZenWallet Verification OTP',
         html: `
@@ -55,7 +55,7 @@ exports.sendOTP = async (email, otp) => {
 
 exports.sendForgotPasswordOTP = async (email, otp) => {
     const mailOptions = {
-        from: '"ZenWallet Auth" <eventbooking.otp@gmail.com>',
+        from: `"ZenWallet Auth" <${process.env.EMAIL_USER || 'eventbooking.otp@gmail.com'}>`,
         to: email,
         subject: 'Reset Your ZenWallet Password',
         html: `

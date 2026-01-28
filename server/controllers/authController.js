@@ -99,9 +99,14 @@ exports.register = async (req, res) => {
             [email, hashedPassword, fullName, phoneNumber, purpose, otpCode, otpExpiry]
         );
 
-        // 5. Send OTP via email (Async - Fire and Forget)
-        // We do NOT await this to keep the API fast. We catch errors internally.
-        mailUtils.sendOTP(email, otpCode).catch(err => console.error("Background Email Error:", err));
+        // 5. Send OTP via email
+        // We await this now to verify credentials work before confirming to user
+        try {
+            await mailUtils.sendOTP(email, otpCode);
+        } catch (error) {
+            console.error("OTP Email Failed:", error);
+            return res.status(500).json({ message: "Failed to send OTP. System email credentials may be invalid." });
+        }
 
         res.status(201).json({
             message: 'OTP sent! Please check your email to verify your account.',
