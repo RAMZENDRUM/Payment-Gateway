@@ -190,14 +190,14 @@ export default function Register() {
                 className="absolute inset-0 w-full h-full opacity-50 mix-blend-screen pointer-events-none"
             />
 
-            <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-6 py-4 border-b border-zinc-800/80 z-10">
+            <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-6 py-4 border-b border-zinc-800/80 z-50">
                 <span className="text-xs tracking-[0.14em] uppercase text-zinc-400">
                     ZENWALLET
                 </span>
                 <Button
                     variant="link"
                     asChild
-                    className="text-zinc-400 hover:text-zinc-50"
+                    className="text-zinc-400 hover:text-zinc-50 relative z-[51]"
                 >
                     <Link to="/login">
                         <ArrowLeft className="h-4 w-4 mr-2" />
