@@ -1,16 +1,12 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    service: 'gmail',
+    pool: true,
     auth: {
-        user: (process.env.EMAIL_USER || 'eventbooking.otp@gmail.com').trim().replace(/['"]/g, ''),
-        pass: (process.env.EMAIL_PASS || 'bwqj vemx rcrg lsck').trim().replace(/['"]/g, '')
+        user: (process.env.EMAIL_USER || 'eventbooking.otp@gmail.com').trim(),
+        pass: (process.env.EMAIL_PASS || 'bwqj vemx rcrg lsck').trim()
     },
-    connectionTimeout: 60000,
-    greetingTimeout: 60000,
-    socketTimeout: 60000,
     tls: {
         rejectUnauthorized: false
     }
@@ -64,15 +60,8 @@ exports.sendOTP = async (email, otp) => {
         console.log('✅ OTP Email sent:', info.messageId);
         return info;
     } catch (error) {
-        console.error('❌ Email Network Blocked. Fallback to Logs...');
-        console.log('******************************************');
-        console.log('🔑 VERIFICATION CODE FOR:', email);
-        console.log('👉 OTP CODE:', otp);
-        console.log('******************************************');
-
-        // We return a "fake" successful response so the registration can continue
-        // The user can find the code in their Railway Logs tab.
-        return { success: true, message: 'Logged to console' };
+        console.error('❌ Email Failed:', error);
+        throw error; // Re-enable throwing so the user knows if it failed
     }
 };
 
