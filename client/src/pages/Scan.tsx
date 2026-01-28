@@ -20,6 +20,12 @@ interface ScanResult {
 
 export default function Scan() {
     const [isScanning, setIsScanning] = useState(false);
+    const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState<'idle' | 'confirming' | 'success' | 'error'>('idle');
+    const navigate = useNavigate();
+    const scannerRef = useRef<any>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
