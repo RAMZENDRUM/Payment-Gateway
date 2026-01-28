@@ -79,7 +79,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                             </div>
                             <div className="ml-3 flex-1">
                                 <p className="text-sm font-bold text-white uppercase tracking-wider">
-                                    System Broadcast
+                                    Official Updates from Ram
+
                                 </p>
                                 <p className="mt-1 text-xs font-medium text-violet-100">
                                     {data.title}: {data.short_message}

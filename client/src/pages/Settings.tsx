@@ -98,17 +98,25 @@ export default function Settings() {
         }
     };
 
-    const fetchNotifications = async () => {
-        setNotifLoading(true);
+    const fetchNotifications = async (arg?: unknown) => {
+        const isBackground = arg === true;
+        if (!isBackground) setNotifLoading(true);
         try {
             const res = await axios.get(`${API_URL}/notifications`);
             setNotifications(res.data);
         } catch (err) {
             console.error('Failed to fetch notifications');
         } finally {
-            setNotifLoading(false);
+            if (!isBackground) setNotifLoading(false);
         }
     };
+
+    // Initial fetch for badge
+    useEffect(() => {
+        fetchNotifications(true);
+    }, []);
+
+
 
     useEffect(() => {
         if (activeTab === 'notifications') {
@@ -181,6 +189,9 @@ export default function Settings() {
                                     <div className="flex items-center gap-2">
                                         {tab.icon}
                                         {tab.label}
+                                        {tab.id === 'notifications' && notifications.some(n => !n.is_read) && (
+                                            <div className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse" />
+                                        )}
                                     </div>
                                     {activeTab === tab.id && (
                                         <motion.div
@@ -386,8 +397,9 @@ export default function Settings() {
                                             notifications.map((n) => (
                                                 <motion.div
                                                     key={n.id}
-                                                    layout
-                                                    className={`p-4 border rounded-2xl transition-all cursor-pointer ${expandedNotif === n.id
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className={`p-4 border rounded-2xl transition-all cursor-pointer relative overflow-hidden ${expandedNotif === n.id
                                                         ? 'bg-violet-500/5 border-violet-500/30'
                                                         : 'bg-card border-border hover:border-violet-500/20'
                                                         }`}
@@ -396,6 +408,9 @@ export default function Settings() {
                                                         if (!n.is_read) markAsRead(n.id);
                                                     }}
                                                 >
+                                                    {!n.is_read && (
+                                                        <div className="absolute top-4 right-4 h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse z-10" />
+                                                    )}
                                                     <div className="flex items-start gap-4">
                                                         <div className={`mt-1 h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${n.type === 'BROADCAST'
                                                             ? 'bg-purple-500/10 text-purple-500'
