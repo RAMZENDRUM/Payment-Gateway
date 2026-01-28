@@ -74,16 +74,42 @@ export default function Scan() {
     };
 
     useEffect(() => {
-        if (status === 'idle' && !window.location.search.includes('token')) {
-            const scanner = new Html5QrcodeScanner('reader', {
-                qrbox: { width: 250, height: 250 },
-                fps: 10,
-            }, false);
+        let scanner: Html5Qrcode | null = null;
+        const readerElement = document.getElementById('reader');
 
-            scanner.render(onScanSuccess, onScanError);
+        if (status === 'idle' && !window.location.search.includes('token') && readerElement) {
+            scanner = new Html5Qrcode('reader');
+
+            const startScanner = async () => {
+                try {
+                    await scanner?.start(
+                        { facingMode: "environment" },
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 },
+                        },
+                        onScanSuccess,
+                        onScanError
+                    );
+                } catch (err) {
+                    console.error("Failed to start scanner:", err);
+                }
+            };
+
+            startScanner();
 
             return () => {
-                scanner.clear().catch(err => console.error('Failed to clear scanner', err));
+                if (scanner) {
+                    if (scanner.isScanning) {
+                        scanner.stop().then(() => {
+                            scanner?.clear();
+                        }).catch(err => console.error('Failed to stop scanner', err));
+                    } else {
+                        try {
+                            scanner.clear();
+                        } catch (e) { }
+                    }
+                }
             };
         }
     }, [status]);
@@ -188,7 +214,7 @@ export default function Scan() {
                                 animate={{ opacity: 1 }}
                                 className="w-full"
                             >
-                                <div id="reader" className="overflow-hidden rounded-[2.5rem] bg-[#0c0c0e]/50 backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-white/[0.02]"></div>
+                                <div id="reader" className="overflow-hidden rounded-[2.5rem] bg-[#0c0c0e]/50 backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-white/[0.02] [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>div]:hidden"></div>
                                 <div id="file-scanner" className="hidden"></div>
                                 <div className="mt-12 flex flex-col items-center gap-6">
                                     <p className="text-zinc-500 text-xs font-medium tracking-widest">Center QR code within the frame</p>

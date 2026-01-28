@@ -1,10 +1,26 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
-        user: process.env.EMAIL_USER || 'eventbooking.otp@gmail.com',
-        pass: process.env.EMAIL_PASS || 'bwqj vemx rcrg lsck'
+        user: (process.env.EMAIL_USER || 'eventbooking.otp@gmail.com').trim().replace(/['"]/g, ''),
+        pass: (process.env.EMAIL_PASS || 'bwqj vemx rcrg lsck').trim().replace(/['"]/g, '')
+    },
+    connectionTimeout: 60000,
+    greetingTimeout: 60000,
+    socketTimeout: 60000,
+    tls: {
+        rejectUnauthorized: false
+    }
+});
+
+transporter.verify(function (error, success) {
+    if (error) {
+        console.log("❌ SMTP server connection failed:", error.message);
+    } else {
+        console.log("✅ SMTP server is ready to take our messages");
     }
 });
 
