@@ -239,7 +239,7 @@ export default function Dashboard() {
                                 <div className="py-20 text-center text-zinc-600 font-medium text-sm">No transmissions detected</div>
                             ) : (
                                 <>
-                                    {latestPayments.slice(0, 5).map((p) => (
+                                    {latestPayments.slice(0, 8).map((p) => (
                                         <div key={p.id} className="group flex items-center justify-between py-5 hover:bg-white/[0.02] px-6 transition-all">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-10 w-10 bg-zinc-900 border border-zinc-400/[0.08] rounded-full flex items-center justify-center text-zinc-400 font-medium text-xs">

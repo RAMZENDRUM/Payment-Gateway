@@ -76,12 +76,12 @@ export const useWalletStats = () => {
             };
         });
 
-        const latestPayments = transactions.slice(0, 5).map(t => ({
+        const latestPayments = transactions.slice(0, 8).map(t => ({
             id: t.id,
             amount: t.amount,
             product: t.type,
             customer: t.sender_id === t.receiver_id ? 'System' : (t.sender_name || 'User'),
-            time: new Date(t.created_at).toLocaleTimeString()
+            time: `${new Date(t.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} • ${new Date(t.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
         }));
 
         return {
