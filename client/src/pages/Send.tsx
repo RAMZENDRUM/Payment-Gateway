@@ -105,6 +105,20 @@ export default function Send() {
                                                 <span>ZenWallet Balance</span>
                                                 <span className="text-indigo-400">₹{user?.balance?.toLocaleString() || '0'}</span>
                                             </div>
+
+                                            {/* Quick Amount Picks */}
+                                            <div className="flex gap-2 mt-8">
+                                                {[100, 500, 1000, 2000].map((amt) => (
+                                                    <button
+                                                        key={amt}
+                                                        type="button"
+                                                        onClick={() => setAmount(amt.toString())}
+                                                        className="flex-1 h-10 rounded-xl bg-white/[0.02] border border-white/[0.05] text-[11px] font-bold text-zinc-400 hover:bg-white/5 hover:text-white transition-all uppercase tracking-wider"
+                                                    >
+                                                        +₹{amt}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

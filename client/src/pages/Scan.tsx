@@ -83,6 +83,7 @@ export default function Scan() {
 
         if (isScanning && status === 'idle' && !window.location.search.includes('token') && readerElement) {
             scanner = new Html5Qrcode('reader');
+            scannerRef.current = scanner;
 
             const startScanner = async () => {
                 try {
@@ -127,47 +128,46 @@ export default function Scan() {
     }, [isScanning, status]);
 
     function onScanSuccess(result: string) {
+        console.log("🔍 Scan hit:", result);
+
+        // Immediate stop for better UX
+        if (scannerRef.current) {
+            scannerRef.current.stop().catch(() => { });
+            setIsScanning(false);
+        }
+
+        // 1. Check for modern URL format (e.g. zenwallet.app/send?to=xyz)
+        if (result.includes('/send?to=')) {
+            try {
+                const url = new URL(result);
+                const to = url.searchParams.get('to');
+                if (to) {
+                    navigate(`/send?to=${to}`, { replace: true });
+                    return;
+                }
+            } catch (e) { }
+        }
+
+        // 2. Try to parse as JSON
         try {
-            // 1. Try to parse as JSON
             const data = JSON.parse(result);
             if (data.token) {
                 fetchPaymentDetails(data.token);
                 return;
             }
             if (data.upiId) {
-                navigate('/send', { state: { receiverId: data.upiId } });
+                navigate('/send', { state: { receiverId: data.upiId }, replace: true });
                 return;
             }
         } catch (err) { }
 
-        // 2. Try to parse as URL
-        try {
-            const url = new URL(result);
-            const token = url.searchParams.get('token');
-            const to = url.searchParams.get('to');
-
-            if (token) {
-                fetchPaymentDetails(token);
-                return;
-            }
-            if (to) {
-                navigate(`/send?to=${to}`);
-                return;
-            }
-            // If it's a URL but no specific param, check if it's a raw token/id
-            if (url.searchParams.get('id')) {
-                fetchPaymentDetails(url.searchParams.get('id')!);
-                return;
-            }
-        } catch (urlErr) { }
-
-        // 3. Raw UPI ID Check (contains @ and no spaces)
-        if (result.includes('@') && !result.includes(' ')) {
-            navigate('/send', { state: { receiverId: result } });
+        // 3. Check for raw UPI ID
+        if (result.includes('@')) {
+            navigate('/send', { state: { receiverId: result.trim() }, replace: true });
             return;
         }
 
-        // 4. Default to treating as raw token
+        // 4. Default to payment token
         fetchPaymentDetails(result);
     }
 

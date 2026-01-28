@@ -33,6 +33,12 @@ io.on('connection', (socket) => {
         console.log(`📦 Client ${socket.id} joined order room: ${orderId}`);
     });
 
+    // Join room for specific user notifications
+    socket.on('join-user', (userId) => {
+        socket.join(`user_${userId}`);
+        console.log(`👤 User ${userId} connected as ${socket.id}`);
+    });
+
     socket.on('disconnect', () => {
         console.log('❌ Client disconnected:', socket.id);
     });

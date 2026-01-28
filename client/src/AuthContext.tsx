@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { API_URL } from './lib/api';
+import { io } from 'socket.io-client';
 
 interface User {
     id: string;
@@ -38,23 +39,63 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+
+
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
-
-        // Safety timeout to prevent infinite loading
-        const timeout = setTimeout(() => {
-            setLoading(false);
-        }, 3000);
-
         if (storedToken) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
             setToken(storedToken);
-            fetchUser().finally(() => clearTimeout(timeout));
+            fetchUser();
         } else {
             setLoading(false);
-            clearTimeout(timeout);
         }
-    }, []);
+    }, [token]);
+
+    // Socket.io for live notifications
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const socketUrl = API_URL.replace('/api', '');
+        const socket = io(socketUrl);
+
+        socket.on('connect', () => {
+            console.log('📡 Notification socket connected');
+            socket.emit('join-user', user.id);
+        });
+
+        socket.on('payment-received', (data: any) => {
+            toast.success(`Received ₹${data.amount} from ${data.sender_name}`, {
+                icon: '💰',
+                duration: 6000,
+                style: {
+                    borderRadius: '16px',
+                    background: '#0c0c0e',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                },
+            });
+            fetchUser(); // Refresh balance
+        });
+
+        socket.on('payment-sent', (data: any) => {
+            toast.success(`Sent ₹${data.amount} to ${data.receiver_name}`, {
+                icon: '💸',
+                style: {
+                    borderRadius: '16px',
+                    background: '#0c0c0e',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                },
+            });
+            fetchUser(); // Refresh balance
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [user?.id]);
+
 
     const fetchUser = async () => {
         try {

@@ -111,6 +111,23 @@ exports.sendCoins = async (req, res) => {
         const sender = await client.query('SELECT full_name, upi_id FROM users WHERE id = $1', [senderId]);
 
         await client.query('COMMIT');
+        // Emit Socket Events
+        const io = req.app.get('io');
+        if (io) {
+            // Notify receiver
+            io.to(`user_${receiverId}`).emit('payment-received', {
+                amount,
+                sender_name: sender.rows[0].full_name,
+                reference_id: referenceId
+            });
+            // Notify sender
+            io.to(`user_${senderId}`).emit('payment-sent', {
+                amount,
+                receiver_name: receiver.rows[0].full_name,
+                reference_id: referenceId
+            });
+        }
+
         res.json({
             message: 'Transfer successful',
             transaction: {
@@ -205,6 +222,27 @@ exports.fulfillPayment = async (req, res) => {
 
         // Mark request as completed
         await client.query('UPDATE payment_requests SET status = $1 WHERE token = $2', ['COMPLETED', token]);
+
+        // Emit Socket Events
+        const io = req.app.get('io');
+        if (io) {
+            // Get user names for nice notifications
+            const sender = await client.query('SELECT full_name FROM users WHERE id = $1', [senderId]);
+            const receiver = await client.query('SELECT full_name FROM users WHERE id = $1', [receiver_id]);
+
+            // Notify receiver
+            io.to(`user_${receiver_id}`).emit('payment-received', {
+                amount,
+                sender_name: sender.rows[0].full_name,
+                reference_id: reference_id
+            });
+            // Notify sender
+            io.to(`user_${senderId}`).emit('payment-sent', {
+                amount,
+                receiver_name: receiver.rows[0].full_name,
+                reference_id: reference_id
+            });
+        }
 
         await client.query('COMMIT');
         res.json({ message: 'Payment successful', amount, receiver_id });
