@@ -5,8 +5,8 @@ export const getApiUrl = () => {
         return 'http://localhost:5000/api';
     }
 
-    // Otherwise use environment variable or fallback to production
-    return (import.meta as any).env.VITE_API_URL || 'https://payment-gateway-production-2f82.up.railway.app/api';
+    // DIRECTLY return the Railway URL to override any incorrect Vercel Environment Variables
+    return 'https://payment-gateway-production-2f82.up.railway.app/api';
 };
 
 export const API_URL = getApiUrl();
