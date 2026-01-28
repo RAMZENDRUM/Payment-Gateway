@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Copy, Share2, RefreshCw, Info } from 'lucide-react';
@@ -17,7 +17,27 @@ export default function Receive() {
     const [amount, setAmount] = useState('');
     const [qrData, setQrData] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
     const navigate = useNavigate();
+
+    useEffect(() => {
+        let timer: any;
+        if (qrData && timeLeft > 0) {
+            timer = setInterval(() => {
+                setTimeLeft((prev) => prev - 1);
+            }, 1000);
+        } else if (timeLeft === 0) {
+            setQrData(null);
+            toast.error('Payment request expired');
+        }
+        return () => clearInterval(timer);
+    }, [qrData, timeLeft]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
 
     const generateQR = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,6 +55,7 @@ export default function Receive() {
                 referenceId: 'Payment Request'
             });
             setQrData(res.data.qrData);
+            setTimeLeft(300); // Reset timer on new generation
         } catch (err) {
             toast.error('Failed to generate request');
         } finally {
@@ -137,7 +158,7 @@ export default function Receive() {
                                     </Button>
                                 </div>
                                 <p className="text-center text-[10px] text-zinc-600 font-bold uppercase tracking-widest">
-                                    Valid for the next 5 minutes
+                                    Valid for the next {Math.ceil(timeLeft / 60)} minutes
                                 </p>
                             </motion.div>
                         )}
@@ -184,7 +205,7 @@ export default function Receive() {
                                             <div className="h-2 w-2 bg-blue-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(96,165,250,0.5)]" />
                                             <span className="text-[11px] font-bold tracking-[0.1em] uppercase">Awaiting Payment</span>
                                             <div className="w-[1px] h-3 bg-blue-500/20 mx-1" />
-                                            <span className="text-[11px] font-mono font-bold">04:59</span>
+                                            <span className="text-[11px] font-mono font-bold">{formatTime(timeLeft)}</span>
                                         </div>
 
                                         <div className="flex -space-x-2">

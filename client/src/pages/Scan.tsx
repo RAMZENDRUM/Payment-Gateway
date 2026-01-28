@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Loader from '@/components/Loader';
 import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, XCircle, Loader2, Image as ImageIcon } from 'lucide-react';
@@ -88,8 +89,15 @@ export default function Scan() {
                     await scanner?.start(
                         { facingMode: "environment" },
                         {
-                            fps: 10,
-                            qrbox: { width: 250, height: 250 },
+                            fps: 30, // Optimized for scanning speed
+                            qrbox: { width: 280, height: 280 },
+                            aspectRatio: 1.0,
+                            videoConstraints: {
+                                facingMode: "environment",
+                                focusMode: { ideal: "continuous" },
+                                width: { ideal: 1280 },
+                                height: { ideal: 720 }
+                            } as any
                         },
                         onScanSuccess,
                         onScanError
@@ -219,16 +227,16 @@ export default function Scan() {
                                 className="w-full"
                             >
                                 <div className="relative group">
-                                    <div id="reader" className={`overflow-hidden rounded-[2.5rem] bg-[#0c0c0e]/50 backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-white/[0.02] [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>div]:hidden transition-all duration-500 ${isScanning ? 'opacity-100' : 'opacity-40 grayscale'}`}>
-                                        {!isScanning && (
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                                                    <Loader2 className="text-zinc-600 animate-pulse" size={32} />
-                                                </div>
-                                            </div>
-                                        )}
+                                    <div id="reader" className={`overflow-hidden rounded-[2.5rem] bg-[#0c0c0e]/50 backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-white/[0.02] [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>div]:hidden transition-all duration-500 ${isScanning ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
                                     </div>
-                                    <div className="absolute inset-0 rounded-[2.5rem] border-2 border-dashed border-white/10 pointer-events-none" />
+                                    {!isScanning && (
+                                        <div className="flex flex-col items-center justify-center min-h-[400px]">
+                                            <Loader />
+                                        </div>
+                                    )}
+                                    {isScanning && (
+                                        <div className="absolute inset-0 rounded-[2.5rem] border-2 border-dashed border-white/20 pointer-events-none animate-pulse" />
+                                    )}
                                 </div>
 
                                 <div id="file-scanner" className="hidden"></div>
@@ -238,7 +246,7 @@ export default function Scan() {
                                         onClick={() => setIsScanning(!isScanning)}
                                         className={`w-full h-16 rounded-2xl font-bold transition-all transform active:scale-95 ${isScanning ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20' : 'bg-white text-black hover:bg-zinc-200 shadow-xl shadow-white/5'}`}
                                     >
-                                        {isScanning ? 'Stop Camera' : 'Start Camera'}
+                                        {isScanning ? 'Stop Hardware' : 'Start Hardware Interface'}
                                     </Button>
 
                                     <div className="flex items-center gap-4 w-full">
