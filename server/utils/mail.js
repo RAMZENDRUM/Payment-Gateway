@@ -87,3 +87,27 @@ exports.sendForgotPasswordOTP = async (email, otp) => {
 
     return sendBrevoEmail(email, 'Reset Your ZenWallet Password', html);
 };
+
+exports.sendEmailChangeOTP = async (email, otp) => {
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4;">
+            <div style="background-color: #4f46e5; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="color: white; margin: 0;">ZenWallet</h1>
+            </div>
+            <div style="background-color: white; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e5e5;">
+                <h2 style="color: #111827; margin-top: 0;">Confirm New Email Address</h2>
+                <p style="color: #4b5563; font-size: 16px; line-height: 24px;">
+                    You requested to change your ZenWallet email address. Please use the following OTP to verify your new email:
+                </p>
+                <div style="background-color: #f3f4f6; padding: 20px; text-align: center; margin: 30px 0; border-radius: 8px;">
+                    <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #4f46e5;">${otp}</span>
+                </div>
+                <p style="color: #9ca3af; font-size: 14px; text-align: center;">
+                    This OTP is valid for 10 minutes. If you didn't request this, your account is safe.
+                </p>
+            </div>
+        </div>
+    `;
+
+    return sendBrevoEmail(email, 'Verify Your New Email Address', html);
+};

@@ -22,7 +22,7 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
             };
             if (spending >= 800000) return { bg: "bg-emerald-950/40", border: "border-emerald-400/40 shadow-[0_0_15px_rgba(52,211,153,0.1)]" };
             if (spending >= 600000) return { bg: "bg-red-950/40", border: "border-amber-700/40 shadow-[0_0_15px_rgba(185,28,28,0.1)]" };
-            if (spending >= 400000) return { bg: "bg-[#0a0f1c]", border: "border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.1)]" };
+            if (spending >= 400000) return { bg: "bg-[#0a0f1c]", border: "border-violet-500/40 shadow-[0_0_15px_rgba(139,92,246,0.1)]" };
             if (spending >= 300000) return { bg: "bg-[#0a1c12]", border: "border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.1)]" };
             if (spending >= 200000) return { bg: "bg-[#121212]", border: "border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.15)]" };
             if (spending >= 100000) return { bg: "bg-[#140b2a]", border: "border-orange-500/40 shadow-[0_0_15px_rgba(249,115,22,0.15)]" };
@@ -58,7 +58,7 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
                             <div className="flex items-start justify-between">
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-bold tracking-widest text-slate-400">ZENWALLET</span>
-                                    <span className="text-[7px] font-bold text-blue-500/80">SANDBOX NODE</span>
+                                    <span className="text-[7px] font-bold text-violet-500/80">SANDBOX NODE</span>
                                 </div>
                                 <svg
                                     className="h-9 w-9"

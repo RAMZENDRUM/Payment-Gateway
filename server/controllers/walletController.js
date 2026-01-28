@@ -17,10 +17,20 @@ exports.getBalance = async (req, res) => {
 exports.getTransactions = async (req, res) => {
     try {
         const transactions = await db.query(
-            `SELECT t.*, u_s.full_name as sender_name, u_r.full_name as receiver_name 
+            `SELECT t.*, 
+                u_s.full_name as sender_name, 
+                u_r.full_name as receiver_name,
+                u_r.upi_id as receiver_upi_id,
+                a.name as app_name,
+                CASE 
+                    WHEN t.sender_id = $1 THEN t.sender_balance_after
+                    WHEN t.receiver_id = $1 THEN t.receiver_balance_after
+                    ELSE NULL
+                END as balance_after
              FROM transactions t
              LEFT JOIN users u_s ON t.sender_id = u_s.id
              JOIN users u_r ON t.receiver_id = u_r.id
+             LEFT JOIN apps a ON t.app_id = a.id
              WHERE t.sender_id = $1 OR t.receiver_id = $1
              ORDER BY t.created_at DESC`,
             [req.user.id]
@@ -100,9 +110,12 @@ exports.sendCoins = async (req, res) => {
         await client.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [amount, receiverId]);
 
         // Record transaction
+        const senderBalAfter = parseFloat(senderWallet.rows[0].balance) - parseFloat(amount);
+        const receiverBalAfter = parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount);
+
         const txResult = await client.query(
-            'INSERT INTO transactions (sender_id, receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [senderId, receiverId, amount, 'TRANSFER', referenceId]
+            'INSERT INTO transactions (sender_id, receiver_id, amount, type, reference_id, sender_balance_after, receiver_balance_after) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [senderId, receiverId, amount, 'TRANSFER', referenceId, senderBalAfter, receiverBalAfter]
         );
 
         const transaction = txResult.rows[0];
@@ -118,15 +131,29 @@ exports.sendCoins = async (req, res) => {
             io.to(`user_${receiverId}`).emit('payment-received', {
                 amount,
                 sender_name: sender.rows[0].full_name,
-                reference_id: referenceId
+                reference_id: referenceId,
+                newBalance: parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount)
             });
             // Notify sender
             io.to(`user_${senderId}`).emit('payment-sent', {
                 amount,
                 receiver_name: receiver.rows[0].full_name,
-                reference_id: referenceId
+                reference_id: referenceId,
+                newBalance: parseFloat(senderWallet.rows[0].balance) - parseFloat(amount)
             });
         }
+
+        // Create notification for Receiver
+        await client.query(
+            'INSERT INTO notifications (user_id, type, title, short_message, full_message) VALUES ($1, $2, $3, $4, $5)',
+            [receiverId, 'TRANSACTION', 'Payment Received', `Received ₹${amount} from ${sender.rows[0].full_name}`, `You have received a payment of ₹${amount} from ${sender.rows[0].full_name} (${sender.rows[0].upi_id}). Reference: ${referenceId}`]
+        );
+
+        // Create notification for Sender
+        await client.query(
+            'INSERT INTO notifications (user_id, type, title, short_message, full_message) VALUES ($1, $2, $3, $4, $5)',
+            [senderId, 'TRANSACTION', 'Payment Sent', `Sent ₹${amount} to ${receiver.rows[0].full_name || 'User'}`, `You have successfully sent ₹${amount} to ${receiver.rows[0].full_name || 'User'}. Reference: ${referenceId}`]
+        );
 
         res.json({
             message: 'Transfer successful',
@@ -138,6 +165,7 @@ exports.sendCoins = async (req, res) => {
                 receiver_upi_id: receiver.rows[0].upi_id
             }
         });
+
     } catch (err) {
         await client.query('ROLLBACK');
         res.status(400).json({ message: err.message });
@@ -215,9 +243,12 @@ exports.fulfillPayment = async (req, res) => {
         await client.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [amount, receiver_id]);
 
         // Record transaction
+        const senderBalAfter = parseFloat(senderWallet.rows[0].balance) - parseFloat(amount);
+        const receiverBalAfter = parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount);
+
         await client.query(
-            'INSERT INTO transactions (sender_id, receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4, $5)',
-            [senderId, receiver_id, amount, 'PAYMENT', reference_id]
+            'INSERT INTO transactions (sender_id, receiver_id, amount, type, reference_id, sender_balance_after, receiver_balance_after) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+            [senderId, receiver_id, amount, 'PAYMENT', reference_id, senderBalAfter, receiverBalAfter]
         );
 
         // Mark request as completed
@@ -234,18 +265,33 @@ exports.fulfillPayment = async (req, res) => {
             io.to(`user_${receiver_id}`).emit('payment-received', {
                 amount,
                 sender_name: sender.rows[0].full_name,
-                reference_id: reference_id
+                reference_id: reference_id,
+                newBalance: parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount)
             });
             // Notify sender
             io.to(`user_${senderId}`).emit('payment-sent', {
                 amount,
                 receiver_name: receiver.rows[0].full_name,
-                reference_id: reference_id
+                reference_id: reference_id,
+                newBalance: parseFloat(senderWallet.rows[0].balance) - parseFloat(amount)
             });
         }
 
+        // Create notification for Receiver
+        await client.query(
+            'INSERT INTO notifications (user_id, type, title, short_message, full_message) VALUES ($1, $2, $3, $4, $5)',
+            [receiver_id, 'TRANSACTION', 'Payment Received', `Received ₹${amount} from ${sender.rows[0].full_name}`, `You have received a payment of ₹${amount} via QR code from ${sender.rows[0].full_name}. Reference: ${reference_id}`]
+        );
+
+        // Create notification for Sender
+        await client.query(
+            'INSERT INTO notifications (user_id, type, title, short_message, full_message) VALUES ($1, $2, $3, $4, $5)',
+            [senderId, 'TRANSACTION', 'Payment Successful', `Paid ₹${amount} to ${receiver.rows[0].full_name}`, `Your payment of ₹${amount} to ${receiver.rows[0].full_name} was successful. Reference: ${reference_id}`]
+        );
+
         await client.query('COMMIT');
         res.json({ message: 'Payment successful', amount, receiver_id });
+
     } catch (err) {
         await client.query('ROLLBACK');
         res.status(400).json({ message: err.message });
@@ -285,10 +331,11 @@ exports.addCoins = async (req, res) => {
             return res.status(400).json({ message: `Wallet balance cannot exceed ${MAX_BALANCE} C.` });
         }
 
+        const newBalance = parseFloat(wallet.rows[0].balance) + parseFloat(amount);
         await db.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [amount, userId]);
         const txResult = await db.query(
-            'INSERT INTO transactions (receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4) RETURNING *',
-            [userId, amount, 'RECHARGE', 'Asset Top-up']
+            'INSERT INTO transactions (receiver_id, amount, type, reference_id, receiver_balance_after) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [userId, amount, 'RECHARGE', 'Asset Top-up', newBalance]
         );
 
         const transaction = txResult.rows[0];
@@ -328,10 +375,11 @@ exports.sandboxFund = async (req, res) => {
             return res.status(400).json({ message: `Wallet balance cannot exceed ${MAX_BALANCE} C.` });
         }
 
+        const newBalance = parseFloat(wallet.rows[0].balance) + parseFloat(amount);
         await db.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [amount, userId]);
         await db.query(
-            'INSERT INTO transactions (receiver_id, amount, type, reference_id) VALUES ($1, $2, $3, $4)',
-            [userId, amount, 'RECHARGE', 'Sandbox Faucet']
+            'INSERT INTO transactions (receiver_id, amount, type, reference_id, receiver_balance_after) VALUES ($1, $2, $3, $4, $5)',
+            [userId, amount, 'RECHARGE', 'Sandbox Faucet', newBalance]
         );
         res.json({ message: 'Sandbox funds added successfully' });
     } catch (err) {

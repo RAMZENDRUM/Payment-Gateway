@@ -317,7 +317,7 @@ Write clean, robust code to handle this flow. specific to my tech stack.`;
                     <div className="px-6 py-5 border-b border-zinc-800 bg-zinc-900/40 flex items-center justify-between">
                         <div>
                             <DialogTitle className="text-lg font-bold text-white flex items-center gap-2.5">
-                                <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
+                                <div className="p-2 bg-violet-500/10 rounded-lg text-violet-400">
                                     <Sparkles size={16} fill="currentColor" className="opacity-50" />
                                 </div>
                                 AI Integration Assistant
@@ -358,7 +358,7 @@ Write clean, robust code to handle this flow. specific to my tech stack.`;
                     <div className="p-6 border-t border-zinc-800 bg-zinc-900/40">
                         <Button
                             onClick={() => { copyPrompt(); setOpen(false); }}
-                            className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            className="w-full h-12 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl shadow-lg shadow-violet-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                         >
                             <Copy size={16} />
                             Copy Prompt & Close

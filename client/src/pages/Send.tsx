@@ -64,11 +64,11 @@ export default function Send() {
 
                     {/* Left Column: Form */}
                     <div className="order-2 lg:order-1 relative p-8 lg:p-12 bg-[#0c0c0e]/50 backdrop-blur-xl border border-zinc-400/10 rounded-[2.5rem] shadow-2xl">
-                        <div className="absolute -left-20 top-20 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+                        <div className="absolute -left-20 top-20 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
 
                         <div className="mb-14">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-[10px] font-bold uppercase tracking-wider mb-6 border border-indigo-500/20">
-                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 text-violet-400 text-[10px] font-bold uppercase tracking-wider mb-6 border border-violet-500/20">
+                                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
                                 Secured Transaction
                             </div>
                             <h2 className="text-4xl font-bold text-white tracking-tight mb-4">Transfer Money</h2>
@@ -87,7 +87,7 @@ export default function Send() {
                                     <div className="space-y-12">
                                         <div className="relative group/input">
                                             <Label className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.2em] mb-8 block">Amount to Send</Label>
-                                            <div className="flex items-center gap-6 pb-6 border-b border-zinc-800/50 group-focus-within/input:border-indigo-500/50 transition-all duration-500">
+                                            <div className="flex items-center gap-6 pb-6 border-b border-zinc-800/50 group-focus-within/input:border-violet-500/50 transition-all duration-500">
                                                 <span className="text-4xl text-zinc-600 font-bold select-none">₹</span>
                                                 <input
                                                     type="number"
@@ -103,7 +103,7 @@ export default function Send() {
                                             </div>
                                             <div className="flex justify-between mt-6 text-[11px] font-bold uppercase tracking-widest text-zinc-500">
                                                 <span>ZenWallet Balance</span>
-                                                <span className="text-indigo-400">₹{user?.balance?.toLocaleString() || '0'}</span>
+                                                <span className="text-violet-400">₹{user?.balance?.toLocaleString() || '0'}</span>
                                             </div>
 
                                             {/* Quick Amount Picks */}
@@ -128,7 +128,7 @@ export default function Send() {
                                                     type="text"
                                                     placeholder="e.g. user@zen"
                                                     required
-                                                    className="h-14 bg-white/[0.01] border-zinc-800 text-sm rounded-2xl focus-visible:ring-1 focus-visible:ring-indigo-500/20 font-medium transition-all"
+                                                    className="h-14 bg-white/[0.01] border-zinc-800 text-sm rounded-2xl focus-visible:ring-1 focus-visible:ring-violet-500/20 font-medium transition-all"
                                                     value={receiverUpiId}
                                                     onChange={(e) => setReceiverUpiId(e.target.value)}
                                                 />
@@ -166,7 +166,7 @@ export default function Send() {
                                     </div>
                                     <h3 className="text-4xl font-bold text-white tracking-tight mb-6">Payment Sent</h3>
                                     <p className="text-zinc-500 text-base mb-12 max-w-sm font-medium leading-relaxed">
-                                        You've successfully transferred <span className="text-white">₹{parseFloat(amount).toLocaleString()}</span> to <span className="text-indigo-400">{receiverUpiId}</span>.
+                                        You've successfully transferred <span className="text-white">₹{parseFloat(amount).toLocaleString()}</span> to <span className="text-violet-400">{receiverUpiId}</span>.
                                     </p>
                                     <div className="flex gap-4">
                                         <Button
@@ -190,7 +190,7 @@ export default function Send() {
 
                     {/* Right Column: Visual Section */}
                     <div className="order-1 lg:order-2 space-y-8 animate-in slide-in-from-right-10 duration-1000">
-                        <div className="p-8 lg:p-10 bg-indigo-600 rounded-[2.5rem] shadow-2xl shadow-indigo-600/20 relative overflow-hidden group">
+                        <div className="p-8 lg:p-10 bg-violet-600 rounded-[2.5rem] shadow-2xl shadow-violet-600/20 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8">
                                 <Info size={24} className="text-white/40" />
                             </div>
@@ -200,7 +200,7 @@ export default function Send() {
                                 </div>
                                 <div className="space-y-4">
                                     <h3 className="text-2xl font-bold text-white leading-tight">Zero-Knowledge Transfers</h3>
-                                    <p className="text-indigo-100/70 text-sm font-medium leading-relaxed">
+                                    <p className="text-violet-100/70 text-sm font-medium leading-relaxed">
                                         ZenWallet uses the Zen Protocol to ensure your transaction details are encrypted and private, with near-instant finality.
                                     </p>
                                 </div>

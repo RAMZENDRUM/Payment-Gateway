@@ -9,6 +9,8 @@ router.post('/login', authController.login);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 router.post('/verify-password', auth, authController.verifyPassword);
+router.post('/update-profile', auth, authController.updateProfile);
+router.post('/verify-email-change', auth, authController.verifyEmailChange);
 router.get('/me', auth, authController.getMe);
 router.get('/users', authController.getUsers); // For demo
 

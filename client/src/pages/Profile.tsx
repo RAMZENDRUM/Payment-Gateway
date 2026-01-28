@@ -79,14 +79,14 @@ export default function Profile() {
                                 <div className="h-20 w-20 rounded-2xl bg-zinc-900 flex items-center justify-center text-3xl font-medium text-white shadow-none">
                                     {user?.full_name?.charAt(0).toUpperCase()}
                                 </div>
-                                <div className="absolute -bottom-1 -right-1 p-1.5 bg-zinc-950 rounded-lg text-blue-500">
+                                <div className="absolute -bottom-1 -right-1 p-1.5 bg-zinc-950 rounded-lg text-violet-500">
                                     <Fingerprint size={16} />
                                 </div>
                             </div>
                             <div className="space-y-1">
                                 <h2 className="text-2xl font-bold text-white tracking-tight">{user?.full_name}</h2>
                                 <p className="text-zinc-400 font-medium text-sm flex items-center gap-2">
-                                    <Mail size={14} className="text-blue-500/30" />
+                                    <Mail size={14} className="text-violet-500/30" />
                                     {user?.email}
                                 </p>
                                 <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/5 text-emerald-500 text-[10px] font-bold mt-1 uppercase tracking-widest">
@@ -99,7 +99,7 @@ export default function Profile() {
                         {/* 2. Asset ID Card */}
                         <div className="dashboard-card border-none shadow-none p-8 relative overflow-hidden group bg-white/[0.01]">
                             <div className="absolute top-0 right-0 p-6 opacity-[0.03] transition-opacity pointer-events-none">
-                                <Zap size={80} className="text-blue-500" />
+                                <Zap size={80} className="text-violet-500" />
                             </div>
                             <div className="relative z-10">
                                 <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Personal Asset ID</p>
@@ -115,7 +115,7 @@ export default function Profile() {
                                     </button>
                                 </div>
                                 <div className="mt-8 flex items-center gap-2 text-zinc-500 font-medium text-[10px] italic">
-                                    <div className="h-1 w-1 bg-blue-500/40 rounded-full" />
+                                    <div className="h-1 w-1 bg-violet-500/40 rounded-full" />
                                     Unique cryptographic identification string
                                 </div>
                             </div>
@@ -158,7 +158,7 @@ export default function Profile() {
                                 )}
                             </div>
                             <div className="mt-6 text-center">
-                                <p className="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-1">SECURE NODE</p>
+                                <p className="text-[9px] font-bold text-violet-500 uppercase tracking-widest mb-1">SECURE NODE</p>
                                 <p className="text-[10px] text-zinc-500 font-medium leading-tight">Identification access key</p>
                             </div>
                         </div>

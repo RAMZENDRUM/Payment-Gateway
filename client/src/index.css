@@ -12,7 +12,7 @@
     --card-foreground: 0 0% 14%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 14%;
-    --primary: 235 100% 60%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 97%;
     --secondary-foreground: 0 0% 20%;
@@ -35,7 +35,7 @@
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 235 100% 60%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -131,8 +131,8 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.3);
-    /* Indigo-500 with opacity */
+    background: rgba(139, 92, 246, 0.3);
+    /* Violet-500 with opacity */
     border-radius: 10px;
     border: 2px solid rgba(0, 0, 0, 0);
     background-clip: padding-box;
@@ -140,7 +140,7 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.6);
+    background: rgba(139, 92, 246, 0.6);
     /* More solid on hover */
     border: 2px solid rgba(0, 0, 0, 0);
     background-clip: padding-box;
@@ -154,6 +154,7 @@
   }
 
   input[type=number] {
+    appearance: textfield;
     -moz-appearance: textfield;
   }
 

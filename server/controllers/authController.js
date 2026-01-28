@@ -346,7 +346,7 @@ exports.getMe = async (req, res) => {
         // Use JOIN to get everything in one go: user, wallet balance, and virtual card
         const query = `
             SELECT 
-                u.id, u.email, u.full_name, u.upi_id, 
+                u.id, u.email, u.full_name, u.upi_id, u.age,
                 COALESCE(w.balance, 0) as balance,
                 vc.card_number, vc.cvv, vc.expiry_month, vc.expiry_year
             FROM users u 
@@ -382,6 +382,7 @@ exports.getMe = async (req, res) => {
             id: userData.id,
             email: userData.email,
             full_name: userData.full_name,
+            age: userData.age,
             upi_id: userData.upi_id,
             balance: userData.balance,
             virtualCard: {
@@ -393,6 +394,101 @@ exports.getMe = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Update Profile (Name, Age, Email)
+exports.updateProfile = async (req, res) => {
+    const { fullName, age, newEmail, currentPassword } = req.body;
+    const userId = req.user.id;
+
+    try {
+        // 1. Get current user
+        const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const user = userResult.rows[0];
+
+        // 2. If changing email, verify password first
+        if (newEmail && newEmail !== user.email) {
+            if (!currentPassword) {
+                return res.status(400).json({ message: 'Password required to change email' });
+            }
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: 'Incorrect password' });
+            }
+
+            // Check if new email already exists
+            const emailCheck = await db.query('SELECT id FROM users WHERE email = $1', [newEmail]);
+            if (emailCheck.rows.length > 0) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
+
+            // Generate OTP for new email
+            const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+            const otpExpiry = new Date(Date.now() + 10 * 60000); // 10 mins
+
+            await db.query(
+                'UPDATE users SET pending_email = $1, email_otp = $2, otp_expiry = $3 WHERE id = $4',
+                [newEmail, otpCode, otpExpiry, userId]
+            );
+
+            await mailUtils.sendEmailChangeOTP(newEmail, otpCode);
+
+            // Also update other fields if provided
+            if (fullName) await db.query('UPDATE users SET full_name = $1 WHERE id = $2', [fullName, userId]);
+            if (age) await db.query('UPDATE users SET age = $1 WHERE id = $2', [age, userId]);
+
+            return res.json({
+                message: 'OTP sent to your new email. Please verify to complete the change.',
+                emailChangePending: true
+            });
+        }
+
+        // 3. Simple updates (no email change)
+        if (fullName) await db.query('UPDATE users SET full_name = $1 WHERE id = $2', [fullName, userId]);
+        if (age) await db.query('UPDATE users SET age = $1 WHERE id = $2', [age, userId]);
+
+        res.json({ message: 'Profile updated successfully' });
+
+    } catch (err) {
+        console.error('Update Profile Error:', err);
+        res.status(500).json({ message: 'Server error during profile update' });
+    }
+};
+
+// Verify Email Change OTP
+exports.verifyEmailChange = async (req, res) => {
+    const { otp } = req.body;
+    const userId = req.user.id;
+
+    try {
+        const result = await db.query(
+            'SELECT pending_email, email_otp, otp_expiry FROM users WHERE id = $1',
+            [userId]
+        );
+
+        if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });
+
+        const user = result.rows[0];
+
+        if (!user.email_otp || user.email_otp !== otp || new Date(user.otp_expiry) < new Date()) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        // Apply new email
+        await db.query(
+            'UPDATE users SET email = $1, pending_email = NULL, email_otp = NULL, otp_expiry = NULL WHERE id = $2',
+            [user.pending_email, userId]
+        );
+
+        res.json({ message: 'Email updated successfully' });
+
+    } catch (err) {
+        console.error('Verify Email Error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 };

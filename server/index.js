@@ -50,6 +50,8 @@ app.use('/api/wallet', require('./routes/wallet'));
 app.use('/api/external', require('./routes/external'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/apps', require('./routes/apps')); // Developer API Keys
+app.use('/api/notifications', require('./routes/notifications'));
+
 
 // Basic health check
 app.get('/', (req, res) => {

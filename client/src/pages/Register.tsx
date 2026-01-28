@@ -10,12 +10,10 @@ import {
     CardTitle,
     CardDescription,
     CardContent,
-    CardFooter,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
     Select,
     SelectContent,
@@ -31,11 +29,12 @@ import {
     ArrowRight,
     User,
     Phone,
-    Globe,
     CheckCircle2,
-    ArrowLeft
+    ArrowLeft,
+    ShieldCheck
 } from "lucide-react";
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Register() {
     const [step, setStep] = useState<'form' | 'otp'>('form');
@@ -44,12 +43,13 @@ export default function Register() {
     const [fullName, setFullName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [purpose, setPurpose] = useState('Website');
-    const [otp, setOtp] = useState('');
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [showPassword, setShowPassword] = useState(false);
 
     const { register, verifyOtp } = useAuth();
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,19 +57,39 @@ export default function Register() {
         try {
             await register(email, password, fullName, phoneNumber, purpose);
             setStep('otp');
+            toast.success('Verification code sent');
         } catch (err: any) {
             console.error(err);
-            toast.error(err.response?.data?.message || "Operation failed. Please check your connection.");
+            toast.error(err.response?.data?.message || "Operation failed.");
         } finally {
             setLoading(false);
         }
     };
 
+    const handleOtpChange = (index: number, value: string) => {
+        if (!/^\d*$/.test(value)) return;
+        const newOtp = [...otp];
+        newOtp[index] = value.slice(-1);
+        setOtp(newOtp);
+        if (value && index < 5) {
+            inputRefs.current[index + 1]?.focus();
+        }
+    };
+
+    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+            inputRefs.current[index - 1]?.focus();
+        }
+    };
+
     const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
+        const fullOtp = otp.join('');
+        if (fullOtp.length !== 6) return toast.error('Enter 6-digit code');
+
         setLoading(true);
         try {
-            await verifyOtp(email, otp);
+            await verifyOtp(email, fullOtp);
             navigate('/login');
         } catch (err) {
             console.error(err);
@@ -104,7 +124,7 @@ export default function Register() {
         const init = () => {
             ps = [];
             const count = Math.floor((canvas.width * canvas.height) / 9000);
-            for (let i = 0; i < count; i++) ps.push(make());
+            ps.push(make());
         };
 
         const draw = () => {
@@ -117,7 +137,7 @@ export default function Register() {
                     p.v = Math.random() * 0.25 + 0.05;
                     p.o = Math.random() * 0.35 + 0.15;
                 }
-                ctx.fillStyle = `rgba(250,250,250,${p.o})`;
+                ctx.fillStyle = `rgba(235, 235, 235, ${p.o})`;
                 ctx.fillRect(p.x, p.y, 0.7, 2.2);
             });
             raf = requestAnimationFrame(draw);
@@ -138,67 +158,45 @@ export default function Register() {
     }, []);
 
     return (
-        <section className="fixed inset-0 bg-zinc-950 text-zinc-50 overflow-auto">
+        <section className="fixed inset-0 bg-background text-foreground overflow-auto transition-colors duration-300">
             <style>{`
-        .accent-lines{position:absolute;inset:0;pointer-events:none;opacity:.7}
-        .hline,.vline{position:absolute;background:#27272a;will-change:transform,opacity}
-        .hline{left:0;right:0;height:1px;transform:scaleX(0);transform-origin:50% 50%;animation:drawX .8s cubic-bezier(.22,.61,.36,1) forwards}
-        .vline{top:0;bottom:0;width:1px;transform:scaleY(0);transform-origin:50% 0%;animation:drawY .9s cubic-bezier(.22,.61,.36,1) forwards}
-        .hline:nth-child(1){top:18%;animation-delay:.12s}
-        .hline:nth-child(2){top:50%;animation-delay:.22s}
-        .hline:nth-child(3){top:82%;animation-delay:.32s}
-        .vline:nth-child(4){left:22%;animation-delay:.42s}
-        .vline:nth-child(5){left:50%;animation-delay:.54s}
-        .vline:nth-child(6){left:78%;animation-delay:.66s}
-        .hline::after,.vline::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(250,250,250,.24),transparent);opacity:0;animation:shimmer .9s ease-out forwards}
-        .hline:nth-child(1)::after{animation-delay:.12s}
-        .hline:nth-child(2)::after{animation-delay:.22s}
-        .hline:nth-child(3)::after{animation-delay:.32s}
-        .vline:nth-child(4)::after{animation-delay:.42s}
-        .vline:nth-child(5)::after{animation-delay:.54s}
-        .vline:nth-child(6)::after{animation-delay:.66s}
-        @keyframes drawX{0%{transform:scaleX(0);opacity:0}60%{opacity:.95}100%{transform:scaleX(1);opacity:.7}}
-        @keyframes drawY{0%{transform:scaleY(0);opacity:0}60%{opacity:.95}100%{transform:scaleY(1);opacity:.7}}
-        @keyframes shimmer{0%{opacity:0}35%{opacity:.25}100%{opacity:0}}
+                .accent-lines{position:absolute;inset:0;pointer-events:none;opacity:.3}
+                .hline,.vline{position:absolute;background:currentColor;will-change:transform,opacity;opacity:0.12}
+                .hline{left:0;right:0;height:1px;transform:scaleX(0);transform-origin:50% 50%;animation:drawX .8s cubic-bezier(.22,.61,.36,1) forwards}
+                .vline{top:0;bottom:0;width:1px;transform:scaleY(0);transform-origin:50% 0%;animation:drawY .9s cubic-bezier(.22,.61,.36,1) forwards}
+                @keyframes drawX{0%{transform:scaleX(0);opacity:0}60%{opacity:.95}100%{transform:scaleX(1);opacity:.7}}
+                @keyframes drawY{0%{transform:scaleY(0);opacity:0}60%{opacity:.95}100%{transform:scaleY(1);opacity:.7}}
+                .card-animate {
+                  opacity: 0;
+                  transform: translateY(20px);
+                  animation: fadeUp 0.8s cubic-bezier(.22,.61,.36,1) 0.4s forwards;
+                }
+                @keyframes fadeUp {
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+            `}</style>
 
-        .card-animate {
-          opacity: 0;
-          transform: translateY(20px);
-          animation: fadeUp 0.8s cubic-bezier(.22,.61,.36,1) 0.4s forwards;
-        }
-        @keyframes fadeUp {
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-
-            <div className="absolute inset-0 pointer-events-none [background:radial-gradient(80%_60%_at_50%_30%,rgba(255,255,255,0.06),transparent_60%)]" />
+            <div className="absolute inset-0 pointer-events-none [background:radial-gradient(80%_60%_at_50%_30%,rgba(139,92,246,0.04),transparent_60%)]" />
 
             <div className="accent-lines">
-                <div className="hline" />
-                <div className="hline" />
-                <div className="hline" />
-                <div className="vline" />
-                <div className="vline" />
-                <div className="vline" />
+                <div className="hline" style={{ top: '18%' }} />
+                <div className="hline" style={{ top: '50%' }} />
+                <div className="hline" style={{ top: '82%' }} />
+                <div className="vline" style={{ left: '22%' }} />
+                <div className="vline" style={{ left: '50%' }} />
+                <div className="vline" style={{ left: '78%' }} />
             </div>
 
-            <canvas
-                ref={canvasRef}
-                className="absolute inset-0 w-full h-full opacity-50 mix-blend-screen pointer-events-none"
-            />
+            <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-30 mix-blend-screen pointer-events-none dark:opacity-50" />
 
-            <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-6 py-4 border-b border-zinc-800/80 z-50">
-                <span className="text-xs tracking-[0.14em] uppercase text-zinc-400">
+            <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-6 py-4 border-b border-border/50 z-50 bg-background/20 backdrop-blur-md">
+                <span className="text-xs font-bold tracking-[0.14em] uppercase text-zinc-500">
                     ZENWALLET
                 </span>
-                <Button
-                    variant="link"
-                    asChild
-                    className="text-zinc-400 hover:text-zinc-50 relative z-[51]"
-                >
+                <Button variant="link" asChild className="text-zinc-500 hover:text-foreground relative z-[51] font-bold">
                     <Link to="/login">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back to Login
@@ -207,162 +205,155 @@ export default function Register() {
             </header>
 
             <div className="min-h-screen h-full w-full grid place-items-center px-4 relative z-10 py-20">
-                <Card className="card-animate w-full max-w-md border-zinc-800 bg-zinc-900/70 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/60">
-                    {step === 'form' ? (
-                        <>
-                            <CardHeader className="space-y-1 text-center">
-                                <CardTitle className="text-3xl font-bold tracking-tight">Create an account</CardTitle>
-                                <CardDescription className="text-zinc-400">
-                                    Join the premium payment network
-                                </CardDescription>
-                            </CardHeader>
+                <Card className="card-animate w-full max-w-md border-border bg-card/70 backdrop-blur-xl shadow-2xl">
+                    <AnimatePresence mode="wait">
+                        {step === 'form' ? (
+                            <motion.div key="form" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+                                <CardHeader className="space-y-1 text-center pb-8">
+                                    <CardTitle className="text-3xl font-black tracking-tight text-foreground">Create account</CardTitle>
+                                    <CardDescription className="text-zinc-500">
+                                        Join the premium payment network
+                                    </CardDescription>
+                                </CardHeader>
 
-                            <CardContent className="grid gap-5">
-                                <form onSubmit={handleRegister} className="grid gap-4">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="fullName" className="text-zinc-300">Full Name</Label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                                            <Input
-                                                id="fullName"
-                                                placeholder="John Doe"
-                                                value={fullName}
-                                                onChange={(e) => setFullName(e.target.value)}
-                                                className="pl-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600 h-12 rounded-xl"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
+                                <CardContent className="grid gap-5">
+                                    <form onSubmit={handleRegister} className="grid gap-4">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="phoneNumber" className="text-zinc-300">Phone Number</Label>
-                                            <div className="relative">
-                                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                                            <Label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Full Name</Label>
+                                            <div className="relative group">
+                                                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 group-focus-within:text-violet-500 transition-colors" />
                                                 <Input
-                                                    id="phoneNumber"
-                                                    placeholder="+91..."
-                                                    value={phoneNumber}
-                                                    onChange={(e) => setPhoneNumber(e.target.value)}
-                                                    className="pl-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600 h-12 rounded-xl"
+                                                    placeholder="John Doe"
+                                                    value={fullName}
+                                                    onChange={(e) => setFullName(e.target.value)}
+                                                    className="pl-10 bg-background/50 border-border text-foreground h-12 rounded-xl"
                                                     required
                                                 />
                                             </div>
                                         </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid gap-2">
+                                                <Label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Phone</Label>
+                                                <div className="relative group">
+                                                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 group-focus-within:text-violet-500 transition-colors" />
+                                                    <Input
+                                                        placeholder="+91..."
+                                                        value={phoneNumber}
+                                                        onChange={(e) => setPhoneNumber(e.target.value)}
+                                                        className="pl-10 bg-background/50 border-border text-foreground h-12 rounded-xl"
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Purpose</Label>
+                                                <Select value={purpose} onValueChange={setPurpose}>
+                                                    <SelectTrigger className="bg-background/50 border-border text-foreground h-12 rounded-xl focus:ring-violet-500/20">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="bg-card border-border">
+                                                        <SelectItem value="Website">Website</SelectItem>
+                                                        <SelectItem value="Business">Business</SelectItem>
+                                                        <SelectItem value="Freelance">Freelance</SelectItem>
+                                                        <SelectItem value="Personal">Personal</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+
                                         <div className="grid gap-2">
-                                            <Label htmlFor="purpose" className="text-zinc-300">Purpose</Label>
-                                            <Select value={purpose} onValueChange={setPurpose}>
-                                                <SelectTrigger className="bg-zinc-950 border-zinc-800 text-zinc-50 h-12 rounded-xl">
-                                                    <SelectValue placeholder="Select purpose" />
-                                                </SelectTrigger>
-                                                <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
-                                                    <SelectItem value="Website">Website</SelectItem>
-                                                    <SelectItem value="Business">Business</SelectItem>
-                                                    <SelectItem value="Freelance">Freelance</SelectItem>
-                                                    <SelectItem value="Personal">Personal</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <Label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Email</Label>
+                                            <div className="relative group">
+                                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 group-focus-within:text-violet-500 transition-colors" />
+                                                <Input
+                                                    type="email"
+                                                    placeholder="you@example.com"
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    className="pl-10 bg-background/50 border-border text-foreground h-12 rounded-xl"
+                                                    required
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="email" className="text-zinc-300">Email Address</Label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                placeholder="you@example.com"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                className="pl-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600 h-12 rounded-xl"
-                                                required
-                                            />
+                                        <div className="grid gap-2">
+                                            <Label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Password</Label>
+                                            <div className="relative group">
+                                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 group-focus-within:text-violet-500 transition-colors" />
+                                                <Input
+                                                    type={showPassword ? "text" : "password"}
+                                                    placeholder="••••••••"
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
+                                                    className="pl-10 pr-10 bg-background/50 border-border text-foreground h-12 rounded-xl"
+                                                    required
+                                                />
+                                                <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-zinc-500 hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
+                                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="password" className="text-zinc-300">Password</Label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                                            <Input
-                                                id="password"
-                                                type={showPassword ? "text" : "password"}
-                                                placeholder="••••••••"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                className="pl-10 pr-10 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-600 h-12 rounded-xl"
-                                                required
-                                            />
-                                            <button
-                                                type="button"
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-zinc-400 hover:text-zinc-200"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                            >
-                                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                            </button>
+                                        <Button disabled={loading} type="submit" className="w-full h-12 mt-4 rounded-xl bg-violet-600 text-white hover:bg-violet-500 font-bold transition-all shadow-lg shadow-violet-600/20 border-none">
+                                            {loading ? 'Processing...' : 'Create Account'}
+                                            {!loading && <ArrowRight className="h-4 w-4 ml-2" />}
+                                        </Button>
+                                    </form>
+                                </CardContent>
+                            </motion.div>
+                        ) : (
+                            <motion.div key="otp" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                                <CardHeader className="space-y-2 text-center pb-8">
+                                    <div className="w-16 h-16 bg-violet-500/10 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-violet-500/20">
+                                        <ShieldCheck className="text-violet-500" size={32} />
+                                    </div>
+                                    <CardTitle className="text-2xl font-black text-foreground">Verify Identity</CardTitle>
+                                    <CardDescription className="text-zinc-500 text-sm leading-relaxed">
+                                        We've sent a 6-digit cryptographic code to <br />
+                                        <span className="text-violet-500 font-bold">{email}</span>
+                                    </CardDescription>
+                                </CardHeader>
+
+                                <CardContent className="grid gap-6 pb-8">
+                                    <form onSubmit={handleVerifyOtp} className="grid gap-6">
+                                        <div className="grid gap-4">
+                                            <Label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest text-center block">Security Code</Label>
+                                            <div className="flex justify-between gap-2">
+                                                {otp.map((digit, index) => (
+                                                    <input
+                                                        key={index}
+                                                        ref={(el) => (inputRefs.current[index] = el)}
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        maxLength={1}
+                                                        value={digit}
+                                                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                                                        onKeyDown={(e) => handleKeyDown(index, e)}
+                                                        className="w-full h-14 text-center text-xl font-black bg-background border border-border rounded-xl text-foreground focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all outline-none"
+                                                    />
+                                                ))}
+                                            </div>
                                         </div>
+
+                                        <Button disabled={loading} type="submit" className="w-full h-12 rounded-xl bg-violet-600 text-white hover:bg-violet-500 font-bold shadow-lg shadow-violet-600/20 border-none">
+                                            {loading ? 'Verifying...' : 'Verify & Sign Up'}
+                                        </Button>
+                                    </form>
+
+                                    <div className="flex flex-col gap-2 pt-2">
+                                        <div className="text-center text-xs text-zinc-500">
+                                            Didn't receive code?{' '}
+                                            <button onClick={handleRegister} className="text-violet-500 hover:underline font-bold">Resend OTP</button>
+                                        </div>
+                                        <Button variant="ghost" onClick={() => setStep('form')} className="text-zinc-500 hover:text-foreground text-xs font-bold">
+                                            Change email address
+                                        </Button>
                                     </div>
-
-                                    <Button disabled={loading} type="submit" className="w-full h-11 mt-2 rounded-lg bg-zinc-50 text-zinc-900 hover:bg-zinc-200 font-bold transition-all transform hover:scale-[1.01] active:scale-[0.99]">
-                                        {loading ? 'Processing...' : 'Create Account'}
-                                        {!loading && <ArrowRight className="h-4 w-4 ml-2" />}
-                                    </Button>
-                                </form>
-
-                                <div className="text-center text-sm text-zinc-500">
-                                    By clicking create account, you agree to our{' '}
-                                    <Link to="/terms" className="text-zinc-300 hover:underline">Terms of Service</Link>
-                                </div>
-                            </CardContent>
-                        </>
-                    ) : (
-                        <>
-                            <CardHeader className="space-y-1 text-center">
-                                <div className="w-12 h-12 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-2 border border-indigo-500/20">
-                                    <CheckCircle2 className="text-indigo-400" size={24} />
-                                </div>
-                                <CardTitle className="text-2xl font-bold">Verify Email</CardTitle>
-                                <CardDescription className="text-zinc-400">
-                                    We've sent a 6-digit code to <br />
-                                    <span className="text-zinc-200 font-medium">{email}</span>
-                                </CardDescription>
-                            </CardHeader>
-
-                            <CardContent className="grid gap-5">
-                                <form onSubmit={handleVerifyOtp} className="grid gap-4">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="otp" className="text-zinc-300 text-center mb-2">One-Time Password</Label>
-                                        <Input
-                                            id="otp"
-                                            placeholder="000000"
-                                            value={otp}
-                                            onChange={(e) => setOtp(e.target.value)}
-                                            className="text-center text-2xl tracking-[0.5em] h-14 bg-zinc-950 border-zinc-800 text-zinc-50 placeholder:text-zinc-700"
-                                            required
-                                            maxLength={6}
-                                        />
-                                    </div>
-
-                                    <Button disabled={loading} type="submit" className="w-full h-11 mt-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 font-bold shadow-lg shadow-indigo-600/20">
-                                        {loading ? 'Verifying...' : 'Verify & Sign Up'}
-                                    </Button>
-                                </form>
-
-                                <div className="text-center text-sm text-zinc-500">
-                                    Didn't receive the code?{' '}
-                                    <button onClick={handleRegister} className="text-indigo-400 hover:underline">Resend OTP</button>
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => setStep('form')}
-                                    className="text-zinc-400 hover:text-zinc-200"
-                                >
-                                    Change email address
-                                </Button>
-                            </CardContent>
-                        </>
-                    )}
+                                </CardContent>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </Card>
             </div>
         </section>

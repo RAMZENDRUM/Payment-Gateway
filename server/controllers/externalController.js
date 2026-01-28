@@ -80,11 +80,14 @@ exports.directWalletTransfer = async (req, res) => {
         );
 
         // 4. Record transaction
+        const senderBalAfter = currentBalance - amount;
+        const receiverBalAfter = parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount);
+
         const transaction = await client.query(
-            `INSERT INTO transactions (sender_id, receiver_id, amount, type, status, reference_id, created_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, NOW()) 
+            `INSERT INTO transactions (sender_id, receiver_id, amount, type, status, reference_id, created_at, sender_balance_after, receiver_balance_after, app_id) 
+             VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9) 
              RETURNING id, created_at`,
-            [fromUserId, toWalletId, amount, 'PAYMENT', 'SUCCESS', referenceId || orderId]
+            [fromUserId, toWalletId, amount, 'PAYMENT', 'SUCCESS', referenceId || orderId, senderBalAfter, receiverBalAfter, req.clientApp.id]
         );
 
         await client.query('COMMIT');
@@ -206,8 +209,8 @@ exports.createPaymentRequestExternal = async (req, res) => {
         }
 
         const request = await db.query(
-            'INSERT INTO payment_requests (receiver_id, amount, reference_id, token, expires_at, callback_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [merchantId, amount, referenceId, token, expiresAt, callbackUrl]
+            'INSERT INTO payment_requests (receiver_id, amount, reference_id, token, expires_at, callback_url, app_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [merchantId, amount, referenceId, token, expiresAt, callbackUrl, req.clientApp.id]
         );
 
         // Calculate deployment URL
@@ -269,11 +272,12 @@ exports.fulfillExternalPayment = async (req, res) => {
         await client.query('UPDATE wallets SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2', [amount, receiver_id]);
 
         // 4. Record transaction (sender_id is null for external payments)
+        const receiverBalAfter = parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount);
         const transaction = await client.query(
-            `INSERT INTO transactions (receiver_id, amount, type, status, reference_id, created_at) 
-             VALUES ($1, $2, $3, $4, $5, NOW()) 
+            `INSERT INTO transactions (receiver_id, amount, type, status, reference_id, created_at, receiver_balance_after, app_id) 
+             VALUES ($1, $2, $3, $4, $5, NOW(), $6, $7) 
              RETURNING id, created_at`,
-            [receiver_id, amount, 'PAYMENT', 'SUCCESS', reference_id]
+            [receiver_id, amount, 'PAYMENT', 'SUCCESS', reference_id, receiverBalAfter, reqData.app_id]
         );
 
         // 5. Mark request as completed

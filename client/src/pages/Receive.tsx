@@ -77,11 +77,11 @@ export default function Receive() {
 
                     {/* Left Column: Form & Actions */}
                     <div className="space-y-14 relative p-8 lg:p-12 bg-[#0c0c0e]/50 backdrop-blur-xl border border-zinc-400/10 rounded-[2.5rem] shadow-2xl">
-                        <div className="absolute -left-20 top-20 w-80 h-80 bg-blue-500/[0.03] rounded-full blur-3xl pointer-events-none" />
+                        <div className="absolute -left-20 top-20 w-80 h-80 bg-violet-500/[0.03] rounded-full blur-3xl pointer-events-none" />
 
                         <div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-wider mb-6 border border-blue-500/20">
-                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 text-violet-400 text-[10px] font-bold uppercase tracking-wider mb-6 border border-violet-500/20">
+                                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
                                 Payment Request
                             </div>
                             <h2 className="text-4xl font-bold text-white tracking-tight mb-4">Receive Assets</h2>
@@ -101,7 +101,7 @@ export default function Receive() {
                                 <div className="space-y-12">
                                     <div className="relative group/input">
                                         <Label className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.2em] mb-8 block">Requested Amount</Label>
-                                        <div className="flex items-center gap-6 pb-6 border-b border-zinc-800/50 group-focus-within/input:border-blue-500/50 transition-all duration-500">
+                                        <div className="flex items-center gap-6 pb-6 border-b border-zinc-800/50 group-focus-within/input:border-violet-500/50 transition-all duration-500">
                                             <span className="text-4xl text-zinc-600 font-bold select-none">₹</span>
                                             <input
                                                 type="number"
@@ -166,7 +166,7 @@ export default function Receive() {
 
                     {/* Right Column: Visual/QR */}
                     <div className="relative flex flex-col items-center justify-center pt-10">
-                        <div className="absolute inset-0 bg-blue-500/[0.05] rounded-full blur-[120px] opacity-30" />
+                        <div className="absolute inset-0 bg-violet-500/[0.05] rounded-full blur-[120px] opacity-30" />
 
                         <AnimatePresence mode="wait">
                             {!qrData ? (
@@ -201,10 +201,10 @@ export default function Receive() {
                                     </div>
 
                                     <div className="flex flex-col items-center gap-6">
-                                        <div className="flex items-center gap-3 text-blue-400 bg-blue-950/30 px-6 py-3 rounded-2xl border border-blue-500/20 backdrop-blur-md">
-                                            <div className="h-2 w-2 bg-blue-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(96,165,250,0.5)]" />
+                                        <div className="flex items-center gap-3 text-violet-400 bg-violet-950/30 px-6 py-3 rounded-2xl border border-violet-500/20 backdrop-blur-md">
+                                            <div className="h-2 w-2 bg-violet-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(167,139,250,0.5)]" />
                                             <span className="text-[11px] font-bold tracking-[0.1em] uppercase">Awaiting Payment</span>
-                                            <div className="w-[1px] h-3 bg-blue-500/20 mx-1" />
+                                            <div className="w-[1px] h-3 bg-violet-500/20 mx-1" />
                                             <span className="text-[11px] font-mono font-bold">{formatTime(timeLeft)}</span>
                                         </div>
 
@@ -212,7 +212,7 @@ export default function Receive() {
                                             {[1, 2, 3, 4].map(i => (
                                                 <div key={i} className="h-8 w-8 rounded-full border-2 border-[#08090b] bg-zinc-800" />
                                             ))}
-                                            <div className="h-8 w-8 rounded-full border-2 border-[#08090b] bg-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
+                                            <div className="h-8 w-8 rounded-full border-2 border-[#08090b] bg-violet-600 flex items-center justify-center text-[10px] font-bold text-white">
                                                 8k+
                                             </div>
                                         </div>

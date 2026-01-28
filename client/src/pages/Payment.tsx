@@ -128,11 +128,11 @@ export default function PaymentPage() {
                                         setCustomAmount("");
                                     }}
                                     className={`relative py-5 px-6 rounded-2xl text-left transition-all ${selectedAmount === amt && !customAmount
-                                        ? 'bg-blue-600/10 ring-1 ring-blue-500/20'
+                                        ? 'bg-violet-600/10 ring-1 ring-violet-500/20'
                                         : 'bg-zinc-900 border border-zinc-400/10 hover:border-zinc-400/20'
                                         }`}
                                 >
-                                    <div className={`text-[11px] font-medium mb-1 ${selectedAmount === amt ? 'text-blue-500' : 'text-zinc-500'}`}>
+                                    <div className={`text-[11px] font-medium mb-1 ${selectedAmount === amt ? 'text-violet-500' : 'text-zinc-500'}`}>
                                         Amount
                                     </div>
                                     <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
@@ -184,9 +184,9 @@ export default function PaymentPage() {
                                         <button
                                             key={method.id}
                                             onClick={() => setPaymentMethod(method.id as any)}
-                                            className={`flex flex-col items-center justify-center gap-3 h-24 rounded-2xl transition-all ${paymentMethod === method.id ? 'bg-blue-600/10 ring-1 ring-blue-500/20' : 'bg-transparent border border-zinc-400/10 hover:border-zinc-400/20'}`}
+                                            className={`flex flex-col items-center justify-center gap-3 h-24 rounded-2xl transition-all ${paymentMethod === method.id ? 'bg-violet-600/10 ring-1 ring-violet-500/20' : 'bg-transparent border border-zinc-400/10 hover:border-zinc-400/20'}`}
                                         >
-                                            <div className={paymentMethod === method.id ? 'text-blue-500' : 'text-zinc-600'}>
+                                            <div className={paymentMethod === method.id ? 'text-violet-500' : 'text-zinc-600'}>
                                                 {method.icon}
                                             </div>
                                             <span className={`text-[12px] font-medium ${paymentMethod === method.id ? 'text-white' : 'text-zinc-600'}`}>
@@ -207,7 +207,7 @@ export default function PaymentPage() {
                                             value={cardData.cardholderName}
                                             onChange={handleInputChange}
                                             required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-blue-500/40 transition-colors"
+                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-violet-500/40 transition-colors"
                                         />
                                     </div>
                                     <div className="space-y-3">
@@ -218,7 +218,7 @@ export default function PaymentPage() {
                                             value={cardData.cardNumber}
                                             onChange={handleInputChange}
                                             required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-blue-500/40 transition-colors"
+                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-violet-500/40 transition-colors"
                                         />
                                     </div>
                                     <div className="space-y-3">
@@ -229,7 +229,7 @@ export default function PaymentPage() {
                                             value={cardData.expiryDate}
                                             onChange={handleInputChange}
                                             required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-blue-500/40 transition-colors"
+                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-violet-500/40 transition-colors"
                                         />
                                     </div>
                                     <div className="space-y-3">
@@ -242,7 +242,7 @@ export default function PaymentPage() {
                                             value={cardData.cvv}
                                             onChange={handleInputChange}
                                             required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-blue-500/40 transition-colors"
+                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-violet-500/40 transition-colors"
                                         />
                                     </div>
                                 </div>
@@ -271,7 +271,7 @@ export default function PaymentPage() {
                                     100% Safe and Secure
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
+                                    <div className="h-1.5 w-1.5 bg-violet-500 rounded-full"></div>
                                     Bank Grade Encryption
                                 </div>
                             </div>

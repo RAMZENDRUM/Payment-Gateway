@@ -4,11 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { API_URL } from './lib/api';
 import { io } from 'socket.io-client';
+import { Bell } from 'lucide-react';
+
 
 interface User {
     id: string;
     email: string;
     full_name: string;
+    age?: number;
     upi_id?: string;
     balance?: number;
     virtualCard?: {
@@ -64,31 +67,91 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             socket.emit('join-user', user.id);
         });
 
+        socket.on('new-broadcast', (data: any) => {
+            toast.custom((t) => (
+                <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-violet-600 shadow-2xl shadow-violet-500/20 rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden`}>
+                    <div className="flex-1 w-0 p-4">
+                        <div className="flex items-start">
+                            <div className="flex-shrink-0 pt-0.5">
+                                <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center text-white border border-white/20">
+                                    <Bell size={20} />
+                                </div>
+                            </div>
+                            <div className="ml-3 flex-1">
+                                <p className="text-sm font-bold text-white uppercase tracking-wider">
+                                    System Broadcast
+                                </p>
+                                <p className="mt-1 text-xs font-medium text-violet-100">
+                                    {data.title}: {data.short_message}
+                                </p>
+                                <div onClick={() => navigate('/settings')} className="mt-2 pt-2 border-t border-white/10 text-[10px] font-bold text-white/60 uppercase tracking-widest cursor-pointer hover:text-white transition-colors">
+                                    Click to view details ➔
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ), { duration: 10000 });
+            fetchUser();
+        });
+
         socket.on('payment-received', (data: any) => {
-            toast.success(`Received ₹${data.amount} from ${data.sender_name}`, {
-                icon: '💰',
-                duration: 6000,
-                style: {
-                    borderRadius: '16px',
-                    background: '#0c0c0e',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                },
-            });
-            fetchUser(); // Refresh balance
+
+            toast.custom((t) => (
+                <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-[#0c0c0e]/90 backdrop-blur-xl border border-emerald-500/20 shadow-2xl shadow-emerald-500/10 rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden`}>
+                    <div className="flex-1 w-0 p-4">
+                        <div className="flex items-start">
+                            <div className="flex-shrink-0 pt-0.5">
+                                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+                                    <span className="text-xl">₹</span>
+                                </div>
+                            </div>
+                            <div className="ml-3 flex-1">
+                                <p className="text-sm font-bold text-white uppercase tracking-wider">
+                                    Payment Received
+                                </p>
+                                <p className="mt-1 text-xs font-semibold text-emerald-400">
+                                    +₹{data.amount} from {data.sender_name}
+                                </p>
+                                <div className="mt-2 pt-2 border-t border-white/5 flex justify-between items-center text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">
+                                    <span>Available Balance</span>
+                                    <span className="text-white">₹{data.newBalance?.toLocaleString() || '---'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ), { duration: 6000 });
+            fetchUser(); // Full sync
         });
 
         socket.on('payment-sent', (data: any) => {
-            toast.success(`Sent ₹${data.amount} to ${data.receiver_name}`, {
-                icon: '💸',
-                style: {
-                    borderRadius: '16px',
-                    background: '#0c0c0e',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                },
-            });
-            fetchUser(); // Refresh balance
+            toast.custom((t) => (
+                <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-[#0c0c0e]/90 backdrop-blur-xl border border-red-500/20 shadow-2xl shadow-red-500/10 rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden`}>
+                    <div className="flex-1 w-0 p-4">
+                        <div className="flex items-start">
+                            <div className="flex-shrink-0 pt-0.5">
+                                <div className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
+                                    <span className="text-xl">💸</span>
+                                </div>
+                            </div>
+                            <div className="ml-3 flex-1">
+                                <p className="text-sm font-bold text-white uppercase tracking-wider">
+                                    Payment Successful
+                                </p>
+                                <p className="mt-1 text-xs font-bold text-red-500">
+                                    -₹{data.amount} to {data.receiver_name}
+                                </p>
+                                <div className="mt-2 pt-2 border-t border-white/5 flex justify-between items-center text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">
+                                    <span>Remaining Balance</span>
+                                    <span className="text-white font-bold">₹{data.newBalance?.toLocaleString() || '---'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ), { duration: 6000 });
+            fetchUser(); // Full sync
         });
 
         return () => {

@@ -2,21 +2,19 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import {
+    Clock,
+    Send,
     Search,
-    Filter,
     Download,
+    ChevronRight,
     ArrowUpRight,
     ArrowDownLeft,
-    RotateCcw,
-    CreditCard,
-    Calendar,
-    ChevronRight,
-    MoreVertical,
     CheckCircle2,
     XCircle,
-    Clock
+    Calendar
 } from 'lucide-react';
 import axios from 'axios';
+import * as XLSX from 'xlsx';
 import { useAuth } from '../AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -39,6 +37,10 @@ interface Transaction {
     created_at: string;
     sender_name: string;
     receiver_name: string;
+    receiver_upi_id: string;
+    balance_after?: number;
+    app_name?: string;
+    app_id?: string;
 }
 
 export default function Transactions() {
@@ -71,58 +73,73 @@ export default function Transactions() {
 
     const filteredTransactions = useMemo(() => {
         return transactions.filter(tx => {
+            const isDebit = tx.sender_id === user?.id;
+            const otherParty = isDebit ? tx.receiver_name : tx.sender_name;
+            const searchLower = searchTerm.toLowerCase();
+
             const matchesSearch =
-                tx.reference_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                tx.sender_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                tx.receiver_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                tx.type?.toLowerCase().includes(searchTerm.toLowerCase());
+                (tx.id && tx.id.toLowerCase().includes(searchLower)) ||
+                (tx.reference_id && tx.reference_id.toLowerCase().includes(searchLower)) ||
+                (otherParty && otherParty.toLowerCase().includes(searchLower)) ||
+                (tx.amount && tx.amount.toString().includes(searchLower)) ||
+                (tx.app_name && tx.app_name.toLowerCase().includes(searchLower));
 
             let matchesFilter = true;
             if (filterType === 'payment') {
-                matchesFilter = tx.type === 'PAYMENT' && tx.sender_id === user?.id;
+                matchesFilter = tx.type === 'PAYMENT' && tx.sender_id === user?.id && !tx.app_id;
             } else if (filterType === 'received') {
-                matchesFilter = tx.receiver_id === user?.id && tx.type !== 'RECHARGE';
+                matchesFilter = tx.receiver_id === user?.id && tx.type !== 'RECHARGE' && !tx.app_id;
             } else if (filterType === 'topup') {
                 matchesFilter = tx.type === 'RECHARGE';
             } else if (filterType === 'api') {
-                matchesFilter = tx.type === 'PAYMENT' && (tx.reference_id?.includes('zw_') || tx.reference_id?.includes('INV'));
+                matchesFilter = !!tx.app_id || (tx.type === 'PAYMENT' && (tx.reference_id?.includes('zw_') || tx.reference_id?.includes('INV')));
             }
 
             return matchesSearch && matchesFilter;
         });
     }, [transactions, searchTerm, filterType, user]);
 
-    const exportToCSV = () => {
+    const groupedTransactions = useMemo(() => {
+        const groups: { [key: string]: Transaction[] } = {};
+        filteredTransactions.forEach(tx => {
+            const date = new Date(tx.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            if (!groups[date]) groups[date] = [];
+            groups[date].push(tx);
+        });
+        return groups;
+    }, [filteredTransactions]);
+
+    const exportToExcel = () => {
         setIsExporting(true);
         try {
-            const headers = ['Date', 'Reference ID', 'Type', 'Amount', 'Sender', 'Receiver', 'Status'];
-            const rows = filteredTransactions.map(tx => [
-                new Date(tx.created_at).toLocaleString(),
-                tx.reference_id || tx.id,
-                tx.type,
-                tx.amount,
-                tx.sender_name || 'System',
-                tx.receiver_name || 'System',
-                tx.status
-            ]);
+            const data = filteredTransactions.map(tx => ({
+                'Date': new Date(tx.created_at).toLocaleDateString('en-IN'),
+                'Time': new Date(tx.created_at).toLocaleTimeString('en-IN', { hour12: false }),
+                'Transaction ID': tx.id,
+                'Reference': tx.reference_id || 'N/A',
+                'Type': tx.type,
+                'Context': tx.sender_id === user?.id ? `Paid to ${tx.receiver_name}` : `Received from ${tx.sender_name}`,
+                'Amount (INR)': tx.amount,
+                'Sign': tx.sender_id === user?.id ? '-' : '+',
+                'Balance After': tx.balance_after || 'N/A',
+                'Status': tx.status
+            }));
 
-            const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `zenwallet_transactions_${new Date().toISOString().slice(0, 10)}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            toast.success('Exported successfully');
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+
+            // Generate buffer
+            XLSX.writeFile(workbook, `ZenWallet_Statement_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            toast.success('Excel statement exported');
         } catch (err) {
             toast.error('Export failed');
         } finally {
             setIsExporting(false);
         }
     };
+
+
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -144,10 +161,10 @@ export default function Transactions() {
                 {/* Header Controls */}
                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div className="relative w-full md:max-w-md group">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-indigo-400 transition-colors" size={18} />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-violet-400 transition-colors" size={18} />
                         <Input
                             placeholder="Find transfers, recharges..."
-                            className="bg-zinc-900 border-zinc-800 pl-10 h-11 focus-visible:ring-indigo-500/30"
+                            className="bg-zinc-900 border-zinc-800 pl-10 h-11 focus-visible:ring-violet-500/30"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -178,11 +195,11 @@ export default function Transactions() {
                         <Button
                             variant="outline"
                             className="border-zinc-800 hover:bg-zinc-900 text-zinc-400 font-medium text-xs"
-                            onClick={exportToCSV}
+                            onClick={exportToExcel}
                             disabled={isExporting || filteredTransactions.length === 0}
                         >
                             <Download size={14} className="mr-2" />
-                            Export
+                            Export Excel
                         </Button>
                     </div>
                 </div>
@@ -190,7 +207,7 @@ export default function Transactions() {
                 <div className="border-pane">
                     <div className="bg-[#0c0c0e] px-6 py-4 flex items-center justify-between border-b border-white/5">
                         <h3 className="text-sm font-medium text-white flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-indigo-400" />
+                            <Calendar className="h-4 w-4 text-violet-400" />
                             Transaction Log
                         </h3>
                         <span className="text-[11px] text-zinc-500 font-medium">
@@ -201,7 +218,7 @@ export default function Transactions() {
                     <div>
                         {loading ? (
                             <div className="py-24 flex flex-col items-center justify-center space-y-4">
-                                <div className="h-8 w-8 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+                                <div className="h-8 w-8 border-2 border-violet-500/20 border-t-violet-500 rounded-full animate-spin"></div>
                                 <p className="text-zinc-600 text-[11px] font-medium">Synchronizing ledger...</p>
                             </div>
                         ) : filteredTransactions.length === 0 ? (
@@ -215,7 +232,7 @@ export default function Transactions() {
                                 </p>
                                 <Button
                                     variant="link"
-                                    className="text-indigo-400 text-xs mt-4"
+                                    className="text-violet-400 text-xs mt-4"
                                     onClick={() => { setSearchTerm(''); setFilterType('all'); }}
                                 >
                                     Clear filters
@@ -224,85 +241,102 @@ export default function Transactions() {
                         ) : (
                             <div className="overflow-x-auto scrollbar-hide">
                                 <table className="w-full text-left">
-                                    <thead>
-                                        <tr className="bg-[#101012]/30 text-zinc-500 text-[11px] font-medium tracking-tight border-b border-zinc-900">
-                                            <th className="px-6 py-4">Context</th>
-                                            <th className="px-6 py-4">Category</th>
-                                            <th className="px-6 py-4 text-right">Value</th>
-                                            <th className="px-6 py-4 text-center">Date & Time</th>
-                                            <th className="px-6 py-4 text-center">State</th>
-                                            <th className="px-6 py-4 text-right">More</th>
-                                        </tr>
-                                    </thead>
                                     <tbody className="divide-y divide-zinc-900/50">
                                         <AnimatePresence>
-                                            {filteredTransactions.map((tx, idx) => {
-                                                const isDebit = tx.sender_id === user?.id;
-                                                const otherParty = isDebit ? tx.receiver_name : tx.sender_name;
+                                            {Object.entries(groupedTransactions).map(([date, txs]) => (
+                                                <div key={date} className="contents">
+                                                    {/* Date Header (UP) */}
+                                                    <tr className="bg-zinc-950/50">
+                                                        <td colSpan={6} className="px-6 py-2.5 text-[10px] font-bold text-violet-400 uppercase tracking-[0.2em] border-y border-white/5">
+                                                            {date}
+                                                        </td>
+                                                    </tr>
+                                                    {/* Column Headers (DOWN) */}
+                                                    <tr className="bg-[#101012]/30 text-zinc-500 text-[9px] font-bold uppercase tracking-wider border-b border-zinc-900">
+                                                        <th className="px-6 py-2 font-bold">Time</th>
+                                                        <th className="px-6 py-2 font-bold">Context</th>
+                                                        <th className="px-6 py-2 text-right font-bold">Value (INR)</th>
+                                                        <th className="px-6 py-2 text-center font-bold">Wallet Balance</th>
+                                                        <th className="px-6 py-2 text-center font-bold">State</th>
+                                                        <th className="px-6 py-2 text-right font-bold">Actions</th>
+                                                    </tr>
+                                                    {txs.map((tx) => {
+                                                        const isDebit = tx.sender_id === user?.id;
+                                                        const otherParty = isDebit ? tx.receiver_name : tx.sender_name;
 
-                                                return (
-                                                    <motion.tr
-                                                        key={tx.id}
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        onClick={() => {
-                                                            setSelectedTx(tx);
-                                                            setShowReceipt(true);
-                                                        }}
-                                                        className="group hover:bg-white/[0.01] transition-all cursor-pointer"
-                                                    >
-                                                        <td className="px-6 py-5">
-                                                            <div className="flex items-center gap-4">
-                                                                <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 ${isDebit ? 'bg-red-500/5 border-red-500/10 text-red-400' : 'bg-emerald-500/5 border-emerald-500/10 text-emerald-400'
-                                                                    }`}>
-                                                                    {isDebit ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-[13px] font-medium text-zinc-200 group-hover:text-white transition-colors">
-                                                                        {otherParty || 'System Transfer'}
-                                                                    </p>
-                                                                    <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mt-1">
-                                                                        ID: {tx.id.slice(0, 12).toUpperCase()}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-5">
-                                                            <span className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-400">
-                                                                {tx.type}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-6 py-5 text-right">
-                                                            <div className="flex flex-col items-end">
-                                                                <span className={`text-[13px] font-semibold tabular-nums ${isDebit ? 'text-zinc-200' : 'text-emerald-400'}`}>
-                                                                    {isDebit ? '-' : '+'}₹{Math.abs(tx.amount).toLocaleString()}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-5 text-center">
-                                                            <div className="flex flex-col items-center">
-                                                                <span className="text-[12px] font-medium text-zinc-300">
-                                                                    {new Date(tx.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                                                                </span>
-                                                                <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mt-0.5">
-                                                                    {new Date(tx.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-5 text-center">
-                                                            <div className="flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-zinc-900/50 border border-zinc-800/50 w-fit mx-auto">
-                                                                {getStatusIcon(tx.status)}
-                                                                <span className="text-[10px] font-medium text-zinc-500">{tx.status === 'SUCCESS' ? 'Settled' : tx.status}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-5 text-right">
-                                                            <button className="p-2 hover:bg-zinc-800/50 rounded-lg text-zinc-600 hover:text-white transition-all">
-                                                                <ChevronRight size={14} />
-                                                            </button>
-                                                        </td>
-                                                    </motion.tr>
-                                                );
-                                            })}
+                                                        return (
+                                                            <motion.tr
+                                                                key={tx.id}
+                                                                initial={{ opacity: 0 }}
+                                                                animate={{ opacity: 1 }}
+                                                                className="group hover:bg-white/[0.01] transition-all cursor-pointer"
+                                                            >
+                                                                <td className="px-6 py-5" onClick={() => { setSelectedTx(tx); setShowReceipt(true); }}>
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-[11px] font-bold text-zinc-400 tabular-nums">
+                                                                            {new Date(tx.created_at).toLocaleTimeString('en-IN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-5" onClick={() => { setSelectedTx(tx); setShowReceipt(true); }}>
+                                                                    <div className="flex items-center gap-4">
+                                                                        <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 ${isDebit ? 'bg-red-500/5 border-red-500/10 text-red-500' : 'bg-emerald-500/5 border-emerald-500/10 text-emerald-500'
+                                                                            }`}>
+                                                                            {isDebit ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-[13px] font-bold text-zinc-200 group-hover:text-white transition-colors">
+                                                                                {tx.app_name ? <span className="text-violet-400 font-bold">{tx.app_name} <span className="text-[10px] text-zinc-600 ml-1">(API)</span></span> : (otherParty || 'System Transfer')}
+                                                                            </p>
+                                                                            <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mt-1">
+                                                                                ID: {tx.id.slice(0, 12).toUpperCase()}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-5 text-right" onClick={() => { setSelectedTx(tx); setShowReceipt(true); }}>
+                                                                    <div className="flex flex-col items-end">
+                                                                        <span className={`text-[13px] font-bold tabular-nums ${isDebit ? 'text-red-500' : 'text-emerald-500'}`}>
+                                                                            {isDebit ? '-' : '+'}₹{Math.abs(tx.amount).toLocaleString()}
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-5 text-center" onClick={() => { setSelectedTx(tx); setShowReceipt(true); }}>
+                                                                    <span className="text-[12px] font-bold text-zinc-500 tabular-nums">
+                                                                        ₹{tx.balance_after ? Number(tx.balance_after).toLocaleString() : '---'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-6 py-5 text-center" onClick={() => { setSelectedTx(tx); setShowReceipt(true); }}>
+                                                                    <div className="flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-zinc-900/50 border border-zinc-800/50 w-fit mx-auto">
+                                                                        {getStatusIcon(tx.status)}
+                                                                        <span className="text-[10px] font-bold text-zinc-500 uppercase">{tx.status === 'SUCCESS' ? 'Settled' : tx.status}</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-5 text-right">
+                                                                    <div className="flex items-center justify-end gap-2">
+                                                                        {isDebit && !tx.app_id && tx.type !== 'RECHARGE' && (
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="ghost"
+                                                                                className="h-8 px-3 text-[10px] font-bold uppercase text-violet-400 hover:text-violet-300 hover:bg-violet-400/10"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    navigate(`/send?to=${tx.receiver_upi_id}`);
+                                                                                }}
+                                                                            >
+                                                                                Pay Again
+                                                                            </Button>
+                                                                        )}
+                                                                        <button onClick={() => { setSelectedTx(tx); setShowReceipt(true); }} className="p-2 hover:bg-zinc-800/50 rounded-lg text-zinc-600 hover:text-white transition-all">
+                                                                            <ChevronRight size={14} />
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </motion.tr>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ))}
                                         </AnimatePresence>
                                     </tbody>
                                 </table>
@@ -322,7 +356,7 @@ export default function Transactions() {
                                         ₹{filteredTransactions.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}
                                     </h4>
                                 </div>
-                                <div className="p-3 bg-indigo-500/5 rounded-xl text-indigo-400 group-hover:scale-110 transition-transform border border-indigo-500/10">
+                                <div className="p-3 bg-violet-500/5 rounded-xl text-violet-400 group-hover:scale-110 transition-transform border border-violet-500/10">
                                     <Clock size={20} />
                                 </div>
                             </div>

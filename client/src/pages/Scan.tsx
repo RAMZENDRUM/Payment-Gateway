@@ -90,14 +90,23 @@ export default function Scan() {
                     await scanner?.start(
                         { facingMode: "environment" },
                         {
-                            fps: 30, // Optimized for scanning speed
-                            qrbox: { width: 280, height: 280 },
+                            fps: 60, // Maximum frame rate for fluidity
+                            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                                // Large responsive scan area for easier capture
+                                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                                const size = Math.floor(minEdge * 0.8);
+                                return { width: size, height: size };
+                            },
                             aspectRatio: 1.0,
+                            experimentalFeatures: {
+                                useBarCodeDetectorIfSupported: true // Ultra-fast hardware scanning
+                            },
                             videoConstraints: {
                                 facingMode: "environment",
                                 focusMode: { ideal: "continuous" },
-                                width: { ideal: 1280 },
-                                height: { ideal: 720 }
+                                whiteBalanceMode: { ideal: "continuous" },
+                                width: { ideal: 1920 }, // High-res for sharper edges
+                                height: { ideal: 1080 }
                             } as any
                         },
                         onScanSuccess,

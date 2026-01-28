@@ -82,7 +82,7 @@ const AnimatedNumber = ({ value, decimals = 2 }: { value: number; decimals?: num
 const MetricCard = ({ title, value, unit = '', icon, description, decimals = 2 }: MetricCardProps) => (
     <div className="p-6 dashboard-card group">
         <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-xl bg-blue-500/5 text-blue-500 group-hover:bg-blue-500/10 transition-colors">
+            <div className="p-2 rounded-xl bg-violet-500/5 text-violet-500 group-hover:bg-violet-500/10 transition-colors">
                 {icon}
             </div>
             <span className="text-[13px] font-medium text-zinc-500">{title}</span>
@@ -200,22 +200,22 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="p-8 dashboard-card relative group cursor-pointer" onClick={() => navigate('/profile')}>
                         <h3 className="text-white text-base font-medium flex items-center gap-2.5 mb-2">
-                            <Shield className="text-indigo-400" size={18} />
+                            <Shield className="text-violet-400" size={18} />
                             Security Identity
                         </h3>
                         <p className="text-zinc-500 text-sm font-medium">Configure network endpoints and biometric locking protocols for your local node instance.</p>
-                        <div className="mt-6 flex items-center gap-2 text-xs text-blue-500 font-medium">
+                        <div className="mt-6 flex items-center gap-2 text-xs text-violet-500 font-medium">
                             Manage Security Settings <Plus size={12} />
                         </div>
                     </div>
 
                     <div className="p-8 dashboard-card relative group cursor-pointer" onClick={() => navigate('/wallet')}>
                         <h3 className="text-white text-base font-medium flex items-center gap-2.5 mb-2">
-                            <Wallet className="text-blue-500" size={18} />
+                            <Wallet className="text-violet-500" size={18} />
                             Node Settlement
                         </h3>
                         <p className="text-zinc-500 text-sm font-medium">Real-time ledger access with instant liquidity injection and withdrawal capabilities.</p>
-                        <div className="mt-6 flex items-center gap-2 text-xs text-blue-500 font-medium">
+                        <div className="mt-6 flex items-center gap-2 text-xs text-violet-500 font-medium">
                             Injection Balance <Plus size={12} />
                         </div>
                     </div>
@@ -273,7 +273,7 @@ export default function Dashboard() {
 
             {/* Float Actions */}
             <div className="fixed bottom-10 right-10 flex flex-col gap-4">
-                <button onClick={() => navigate('/send')} className="h-12 w-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20 hover:scale-105 transition-all"><SendIcon size={20} /></button>
+                <button onClick={() => navigate('/send')} className="h-12 w-12 bg-violet-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-violet-600/20 hover:scale-105 transition-all"><SendIcon size={20} /></button>
                 <button onClick={() => navigate('/receive')} className="h-12 w-12 bg-slate-800 text-white rounded-2xl flex items-center justify-center border border-slate-700 hover:scale-105 transition-all"><QrCode size={20} /></button>
             </div>
         </AppLayout>

@@ -26,7 +26,7 @@ const NavItem = ({ icon, label, path, isActive, onClick }: NavItemProps) => (
         className={`
             w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all
             ${isActive
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/10'
+                ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/10'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
             }
         `}
@@ -58,21 +58,21 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
     ];
 
     return (
-        <div className="flex h-screen w-screen bg-[#08090b] overflow-hidden font-sans selection:bg-blue-500/30 selection:text-white">
+        <div className="flex h-screen w-screen bg-background text-foreground overflow-hidden font-sans selection:bg-violet-500/30 selection:text-white transition-colors duration-300">
             {/* Background flares for global depth */}
-            <div className="fixed top-[-10%] right-[-5%] w-[40%] h-[50%] bg-blue-600/[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
-            <div className="fixed bottom-[-10%] left-[-5%] w-[30%] h-[40%] bg-indigo-600/[0.02] blur-[120px] rounded-full pointer-events-none z-0" />
+            <div className="fixed top-[-10%] right-[-5%] w-[40%] h-[50%] bg-violet-600/[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
+            <div className="fixed bottom-[-10%] left-[-5%] w-[30%] h-[40%] bg-purple-600/[0.02] blur-[120px] rounded-full pointer-events-none z-0" />
 
             {/* Left Sidebar */}
             <aside className="w-64 flex-shrink-0 bg-transparent flex flex-col z-20 transition-all">
                 {/* Logo/Brand */}
                 <div className="px-8 py-10">
                     <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-white text-black rounded-xl flex items-center justify-center shadow-2xl">
+                        <div className="h-8 w-8 bg-zinc-900 text-white dark:bg-white dark:text-black rounded-xl flex items-center justify-center shadow-2xl transition-all">
                             <Wallet size={16} strokeWidth={2.5} />
                         </div>
                         <div>
-                            <h2 className="text-base font-semibold text-white tracking-tight">ZenWallet</h2>
+                            <h2 className="text-base font-bold text-foreground tracking-tight">ZenWallet</h2>
                         </div>
                     </div>
                 </div>
@@ -89,7 +89,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                             className={`
                                 w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-medium transition-all
                                 ${location.pathname === item.path
-                                    ? 'bg-blue-600/10 text-blue-500 shadow-sm'
+                                    ? 'bg-violet-600/10 text-violet-500 shadow-sm'
                                     : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.02]'
                                 }
                             `}
@@ -129,11 +129,11 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-auto bg-transparent flex flex-col relative custom-scrollbar z-10">
+            <main className="flex-1 overflow-auto bg-transparent flex flex-col relative custom-scrollbar z-10 transition-colors duration-300">
                 {title && (
-                    <header className="px-10 pt-6 pb-4 sticky top-0 bg-[#08090b]/60 backdrop-blur-xl z-20">
+                    <header className="px-10 pt-6 pb-4 sticky top-0 bg-background/60 backdrop-blur-xl z-20 transition-all border-b border-border/50">
                         <div className="flex flex-col gap-0.5">
-                            <h2 className="text-2xl font-bold text-white tracking-tight">{title}</h2>
+                            <h2 className="text-2xl font-bold text-foreground tracking-tight">{title}</h2>
                             {subtitle && <p className="text-sm font-medium text-zinc-500 mt-1">{subtitle}</p>}
                         </div>
                     </header>

@@ -55,10 +55,10 @@ export default function Wallet() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <button
                             onClick={() => navigate('/scan')}
-                            className="border-pane py-10 transition-all text-center group hover:bg-blue-500/[0.02]"
+                            className="border-pane py-10 transition-all text-center group hover:bg-violet-500/[0.02]"
                         >
-                            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-blue-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <QrCode size={22} className="text-blue-400" />
+                            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-violet-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <QrCode size={22} className="text-violet-400" />
                             </div>
                             <h3 className="text-[15px] font-medium text-white mb-2">Scan QR</h3>
                             <p className="text-[11px] text-zinc-500 leading-relaxed max-w-[160px] mx-auto font-medium">Scan any Zen or External QR code to pay instantly.</p>
@@ -77,10 +77,10 @@ export default function Wallet() {
 
                         <button
                             onClick={() => navigate('/receive')}
-                            className="border-pane py-10 transition-all text-center group hover:bg-indigo-500/[0.02]"
+                            className="border-pane py-10 transition-all text-center group hover:bg-violet-500/[0.02]"
                         >
-                            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-indigo-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <QrCode size={22} className="text-indigo-400" />
+                            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-violet-500/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <QrCode size={22} className="text-violet-400" />
                             </div>
                             <h3 className="text-[15px] font-medium text-white mb-2">My QR Code</h3>
                             <p className="text-[11px] text-zinc-500 leading-relaxed max-w-[160px] mx-auto font-medium">Generate a secure uplink for incoming payments.</p>

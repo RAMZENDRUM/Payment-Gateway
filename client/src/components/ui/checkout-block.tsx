@@ -406,7 +406,7 @@ export default function Checkout() {
                                 className={cn(
                                     "flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors",
                                     currentStep >= step
-                                        ? "bg-indigo-600 border-indigo-600 text-white"
+                                        ? "bg-violet-600 border-violet-600 text-white"
                                         : "border-zinc-800 text-zinc-600"
                                 )}
                             >
@@ -432,7 +432,7 @@ export default function Checkout() {
                                 className={cn(
                                     "w-12 h-0.5",
                                     currentStep > step
-                                        ? "bg-indigo-600"
+                                        ? "bg-violet-600"
                                         : "bg-zinc-800"
                                 )}
                             />
@@ -450,7 +450,7 @@ export default function Checkout() {
                         <Card className="flex flex-col gap-6 bg-zinc-950 border-zinc-900">
                             <CardHeader>
                                 <h2 className="text-xl font-semibold flex items-center gap-2 text-white">
-                                    <CreditCard className="h-5 w-5 text-indigo-500" />
+                                    <CreditCard className="h-5 w-5 text-violet-500" />
                                     Payment Information
                                 </h2>
                             </CardHeader>
@@ -501,16 +501,16 @@ export default function Checkout() {
                                         className={cn(
                                             "flex items-center gap-3 p-4 border rounded-ele transition-colors text-left relative overflow-hidden",
                                             selectedPaymentType === "zenwallet"
-                                                ? "border-indigo-500 bg-indigo-500/10 ring-1 ring-indigo-500/50"
+                                                ? "border-violet-500 bg-violet-500/10 ring-1 ring-violet-500/50"
                                                 : "border-zinc-800 bg-zinc-900/50 hover:border-zinc-700"
                                         )}
                                     >
-                                        {selectedPaymentType === "zenwallet" && <div className="absolute inset-0 bg-indigo-500/5 animate-pulse" />}
-                                        <Wallet className={cn("h-5 w-5 z-10", selectedPaymentType === "zenwallet" ? "text-indigo-400" : "text-zinc-500")} />
+                                        {selectedPaymentType === "zenwallet" && <div className="absolute inset-0 bg-violet-500/5 animate-pulse" />}
+                                        <Wallet className={cn("h-5 w-5 z-10", selectedPaymentType === "zenwallet" ? "text-violet-400" : "text-zinc-500")} />
                                         <div className="z-10">
                                             <div className="font-medium text-zinc-200 flex items-center gap-2">
                                                 ZenWallet
-                                                {user?.virtualCard && <Badge variant="secondary" className="text-[10px] h-4 px-1 bg-indigo-500/20 text-indigo-300 border-indigo-500/20">AUTOFILLED</Badge>}
+                                                {user?.virtualCard && <Badge variant="secondary" className="text-[10px] h-4 px-1 bg-violet-500/20 text-violet-300 border-violet-500/20">AUTOFILLED</Badge>}
                                             </div>
                                             <div className="text-xs text-zinc-500">
                                                 Pay with Virtual Card
@@ -554,7 +554,7 @@ export default function Checkout() {
                                                     placeholder="username@bank"
                                                     value={upiId}
                                                     onChange={(e) => setUpiId(e.target.value)}
-                                                    className="pl-10 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-indigo-600"
+                                                    className="pl-10 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-violet-600"
                                                 />
                                             </div>
                                             <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-tight">
@@ -569,7 +569,7 @@ export default function Checkout() {
                                 {(selectedPaymentType === "card" || selectedPaymentType === "zenwallet") && (
                                     <div className="flex flex-col gap-5 border-t border-zinc-800 pt-6 animate-in fade-in slide-in-from-top-2 duration-300">
                                         {selectedPaymentType === "zenwallet" && !user?.virtualCard && (
-                                            <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-md text-sm text-indigo-300 mb-2">
+                                            <div className="p-3 bg-violet-500/10 border border-violet-500/20 rounded-md text-sm text-violet-300 mb-2">
                                                 Sign in to ZenWallet to use your virtual card.
                                             </div>
                                         )}
@@ -591,7 +591,7 @@ export default function Checkout() {
                                                     handlePaymentChange("nameOnCard", e.target.value)
                                                 }
                                                 leftIcon={<User className="h-4 w-4" />}
-                                                className="bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-indigo-600"
+                                                className="bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-violet-600"
                                             />
                                         </div>
                                         <div className="flex flex-col gap-2">
@@ -605,7 +605,7 @@ export default function Checkout() {
                                                     handlePaymentChange("cardNumber", e.target.value)
                                                 }
                                                 leftIcon={<CreditCard className="h-4 w-4" />}
-                                                className="bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-indigo-600"
+                                                className="bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-violet-600"
                                             />
                                         </div>
                                         <div className="grid grid-cols-3 gap-4">
@@ -668,7 +668,7 @@ export default function Checkout() {
                                                         handlePaymentChange("cvv", e.target.value)
                                                     }
                                                     leftIcon={<Lock className="h-4 w-4" />}
-                                                    className="bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-indigo-600"
+                                                    className="bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-violet-600"
                                                 />
                                             </div>
                                         </div>
@@ -686,7 +686,7 @@ export default function Checkout() {
                                             onCheckedChange={(checked) =>
                                                 setSavePaymentMethod(checked === true)
                                             }
-                                            className="border-zinc-700 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                                            className="border-zinc-700 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
                                         />
                                         <Label htmlFor="savePayment" className="text-sm text-zinc-400 font-normal cursor-pointer">
                                             Save payment method for future purchases
@@ -699,7 +699,7 @@ export default function Checkout() {
                                     onClick={nextStep}
                                     disabled={!validateStep(1)}
                                     size="lg"
-                                    className="bg-indigo-600 hover:bg-indigo-500 text-white uppercase tracking-widest font-bold h-12 px-8"
+                                    className="bg-violet-600 hover:bg-violet-500 text-white uppercase tracking-widest font-bold h-12 px-8"
                                 >
                                     Review Order
                                 </Button>
@@ -752,18 +752,18 @@ export default function Checkout() {
                                         onCheckedChange={(checked) =>
                                             setAgreeToTerms(checked === true)
                                         }
-                                        className="border-zinc-700 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 mt-1"
+                                        className="border-zinc-700 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600 mt-1"
                                     />
                                     <Label
                                         htmlFor="agreeTerms"
                                         className="text-sm leading-relaxed text-zinc-400 font-normal"
                                     >
                                         I agree to the{" "}
-                                        <span className="text-indigo-400 hover:underline cursor-pointer">
+                                        <span className="text-violet-400 hover:underline cursor-pointer">
                                             Terms of Service
                                         </span>{" "}
                                         and{" "}
-                                        <span className="text-indigo-400 hover:underline cursor-pointer">
+                                        <span className="text-violet-400 hover:underline cursor-pointer">
                                             Privacy Policy
                                         </span>. I authorize Apex Electronics to charge my payment method for the total amount.
                                     </Label>
@@ -837,7 +837,7 @@ export default function Checkout() {
                                             Go to Dashboard
                                         </Button>
                                         <Button
-                                            className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold"
+                                            className="bg-violet-600 hover:bg-violet-500 text-white font-bold"
                                             onClick={() => window.location.reload()}
                                         >
                                             View Ticket
