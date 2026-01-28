@@ -35,6 +35,7 @@ import {
     CheckCircle2,
     ArrowLeft
 } from "lucide-react";
+import toast from 'react-hot-toast';
 
 export default function Register() {
     const [step, setStep] = useState<'form' | 'otp'>('form');
@@ -56,8 +57,9 @@ export default function Register() {
         try {
             await register(email, password, fullName, phoneNumber, purpose);
             setStep('otp');
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
+            toast.error(err.response?.data?.message || "Operation failed. Please check your connection.");
         } finally {
             setLoading(false);
         }
