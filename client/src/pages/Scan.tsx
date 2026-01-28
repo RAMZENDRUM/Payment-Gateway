@@ -19,12 +19,7 @@ interface ScanResult {
 }
 
 export default function Scan() {
-    const [scanResult, setScanResult] = useState<ScanResult | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [status, setStatus] = useState<'idle' | 'confirming' | 'success' | 'error'>('idle');
-    const navigate = useNavigate();
-    const scannerRef = useRef<any>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isScanning, setIsScanning] = useState(false);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -55,6 +50,7 @@ export default function Scan() {
                 callbackUrl: '/dashboard'
             });
             setStatus('confirming');
+            setIsScanning(false);
             return;
         }
         try {
@@ -68,6 +64,7 @@ export default function Scan() {
                 callbackUrl: res.data.callback_url
             });
             setStatus('confirming');
+            setIsScanning(false);
         } catch (err) {
             toast.error('Invalid or expired QR code');
         }
@@ -77,7 +74,7 @@ export default function Scan() {
         let scanner: Html5Qrcode | null = null;
         const readerElement = document.getElementById('reader');
 
-        if (status === 'idle' && !window.location.search.includes('token') && readerElement) {
+        if (isScanning && status === 'idle' && !window.location.search.includes('token') && readerElement) {
             scanner = new Html5Qrcode('reader');
 
             const startScanner = async () => {
@@ -93,6 +90,7 @@ export default function Scan() {
                     );
                 } catch (err) {
                     console.error("Failed to start scanner:", err);
+                    setIsScanning(false);
                 }
             };
 
@@ -112,7 +110,7 @@ export default function Scan() {
                 }
             };
         }
-    }, [status]);
+    }, [isScanning, status]);
 
     function onScanSuccess(result: string) {
         try {
@@ -214,12 +212,34 @@ export default function Scan() {
                                 animate={{ opacity: 1 }}
                                 className="w-full"
                             >
-                                <div id="reader" className="overflow-hidden rounded-[2.5rem] bg-[#0c0c0e]/50 backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-white/[0.02] [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>div]:hidden"></div>
-                                <div id="file-scanner" className="hidden"></div>
-                                <div className="mt-12 flex flex-col items-center gap-6">
-                                    <p className="text-zinc-500 text-xs font-medium tracking-widest">Center QR code within the frame</p>
+                                <div className="relative group">
+                                    <div id="reader" className={`overflow-hidden rounded-[2.5rem] bg-[#0c0c0e]/50 backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-white/[0.02] [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>div]:hidden transition-all duration-500 ${isScanning ? 'opacity-100' : 'opacity-40 grayscale'}`}>
+                                        {!isScanning && (
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                                                    <Loader2 className="text-zinc-600 animate-pulse" size={32} />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="absolute inset-0 rounded-[2.5rem] border-2 border-dashed border-white/10 pointer-events-none" />
+                                </div>
 
-                                    <div className="w-full h-px bg-white/[0.05] max-w-[100px]" />
+                                <div id="file-scanner" className="hidden"></div>
+
+                                <div className="mt-12 flex flex-col items-center gap-6 w-full">
+                                    <Button
+                                        onClick={() => setIsScanning(!isScanning)}
+                                        className={`w-full h-16 rounded-2xl font-bold transition-all transform active:scale-95 ${isScanning ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20' : 'bg-white text-black hover:bg-zinc-200 shadow-xl shadow-white/5'}`}
+                                    >
+                                        {isScanning ? 'Stop Camera' : 'Start Camera'}
+                                    </Button>
+
+                                    <div className="flex items-center gap-4 w-full">
+                                        <div className="h-px bg-white/[0.05] flex-1" />
+                                        <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">or</span>
+                                        <div className="h-px bg-white/[0.05] flex-1" />
+                                    </div>
 
                                     <input
                                         type="file"
@@ -233,7 +253,7 @@ export default function Scan() {
                                         variant="outline"
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={loading}
-                                        className="bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 h-14 px-8 rounded-2xl flex items-center gap-3 transition-all"
+                                        className="w-full bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 h-14 rounded-2xl flex items-center gap-3 transition-all"
                                     >
                                         {loading ? <Loader2 className="animate-spin" size={18} /> : <ImageIcon size={18} />}
                                         <span className="text-xs font-bold uppercase tracking-widest">Upload from Gallery</span>
