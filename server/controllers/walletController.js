@@ -254,13 +254,13 @@ exports.fulfillPayment = async (req, res) => {
         // Mark request as completed
         await client.query('UPDATE payment_requests SET status = $1 WHERE token = $2', ['COMPLETED', token]);
 
+        // Get user names for nice notifications
+        const sender = await client.query('SELECT full_name FROM users WHERE id = $1', [senderId]);
+        const receiver = await client.query('SELECT full_name FROM users WHERE id = $1', [receiver_id]);
+
         // Emit Socket Events
         const io = req.app.get('io');
         if (io) {
-            // Get user names for nice notifications
-            const sender = await client.query('SELECT full_name FROM users WHERE id = $1', [senderId]);
-            const receiver = await client.query('SELECT full_name FROM users WHERE id = $1', [receiver_id]);
-
             // Notify receiver
             io.to(`user_${receiver_id}`).emit('payment-received', {
                 amount,
