@@ -106,29 +106,29 @@ export default function ApiKeys() {
                 {/* Streamlined Generate Section */}
                 <div className="space-y-6">
                     <div>
-                        <h3 className="text-sm font-semibold text-white mb-2">Create Application</h3>
-                        <p className="text-zinc-500 text-xs font-medium">Link a new store or platform to your ZenWallet account.</p>
+                        <h3 className="text-sm font-bold text-foreground mb-2 uppercase tracking-widest">Connect Application</h3>
+                        <p className="text-muted-foreground text-[11px] font-medium italic">Link a new store or platform to your node instance.</p>
                     </div>
 
-                    <div className="dashboard-card p-6 bg-white/[0.01]">
-                        <div className="flex flex-col sm:flex-row gap-4 items-end max-w-2xl">
-                            <div className="space-y-2 w-full flex-1">
-                                <Label htmlFor="appName" className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest px-1">App Name</Label>
+                    <div className="dashboard-card p-8 bg-card/10 backdrop-blur-sm border-border/40">
+                        <div className="flex flex-col sm:flex-row gap-5 items-end max-w-2xl">
+                            <div className="space-y-2.5 w-full flex-1">
+                                <Label htmlFor="appName" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Application Identifier</Label>
                                 <Input
                                     id="appName"
                                     value={newAppName}
                                     onChange={(e) => setNewAppName(e.target.value)}
-                                    placeholder="e.g. Acme Store"
-                                    className="h-11 bg-white/[0.02] border-zinc-400/10 text-sm font-medium rounded-xl focus-visible:ring-1 focus-visible:ring-white/5"
+                                    placeholder="e.g. Acme Global Store"
+                                    className="h-12 bg-muted/40 border-border text-base font-bold rounded-2xl focus-visible:ring-violet-500/20 shadow-sm"
                                 />
                             </div>
 
                             <Button
                                 onClick={createKey}
                                 disabled={generating}
-                                className="h-11 px-8 bg-white hover:bg-zinc-200 text-black font-bold text-xs rounded-xl transition-all active:scale-95 shadow-xl"
+                                className="h-12 px-8 bg-foreground text-background hover:bg-foreground/90 font-black text-[11px] uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-xl shadow-foreground/5"
                             >
-                                {generating ? "Creating..." : "Generate Key"}
+                                {generating ? "Protocol Active..." : "Generate Key"}
                             </Button>
 
                             <IntegrationGuideModal />
@@ -138,9 +138,9 @@ export default function ApiKeys() {
 
                 {/* Compact List Section */}
                 <div className="space-y-6 pt-4">
-                    <div className="flex items-center justify-between border-b border-white/[0.03] pb-4 px-1">
-                        <h3 className="text-sm font-semibold text-white">Your Applications</h3>
-                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{apps.length} Total</span>
+                    <div className="flex items-center justify-between border-b border-border/40 pb-5 px-1">
+                        <h3 className="text-sm font-black text-foreground uppercase tracking-widest">Active Up-links</h3>
+                        <span className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] bg-muted px-3 py-1 rounded-md">{apps.length} Total</span>
                     </div>
 
                     {loading ? (
@@ -155,47 +155,47 @@ export default function ApiKeys() {
                             <p className="text-zinc-500 text-xs font-medium">No applications connected yet.</p>
                         </div>
                     ) : (
-                        <div className="bg-white/[0.01] border border-zinc-400/10 rounded-2xl overflow-hidden shadow-sm">
+                        <div className="bg-card/5 border border-border/40 rounded-[2rem] overflow-hidden shadow-sm backdrop-blur-sm">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="border-b border-white/[0.03] bg-white/[0.02]">
-                                            <th className="py-4 px-6 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Application</th>
-                                            <th className="py-4 px-6 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Secret Key</th>
-                                            <th className="py-4 px-6 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Created</th>
-                                            <th className="py-4 px-6 text-right text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Actions</th>
+                                        <tr className="border-b border-border/40 bg-muted/40 transition-colors">
+                                            <th className="py-5 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Application</th>
+                                            <th className="py-5 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Secret Key</th>
+                                            <th className="py-5 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Settled Since</th>
+                                            <th className="py-5 px-6 text-right text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Command</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/[0.03]">
+                                    <tbody className="divide-y divide-border/20">
                                         {apps.map((app) => (
-                                            <tr key={app.id} className="group hover:bg-white/[0.01] transition-colors">
-                                                <td className="py-4 px-6">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-zinc-400/10 flex items-center justify-center text-xs font-bold text-white">
+                                            <tr key={app.id} className="group hover:bg-muted/10 transition-colors">
+                                                <td className="py-6 px-6">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 rounded-2xl bg-muted border border-border/10 flex items-center justify-center text-xs font-black text-foreground shadow-sm">
                                                             {app.name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div>
-                                                            <div className="text-xs font-bold text-white">{app.name}</div>
-                                                            <div className="text-[10px] text-zinc-600 font-mono mt-0.5">{app.id.slice(0, 8)}...</div>
+                                                            <div className="text-sm font-black text-foreground group-hover:text-violet-500 transition-colors">{app.name}</div>
+                                                            <div className="text-[9px] text-muted-foreground font-mono mt-1 opacity-60 tracking-widest uppercase">{app.id.slice(0, 12)}...</div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="py-4 px-6">
-                                                    <div className="flex items-center gap-2 max-w-[200px] lg:max-w-md">
-                                                        <code className="text-[11px] text-zinc-500 font-mono truncate bg-white/[0.02] px-2 py-1 rounded-md border border-white/[0.03]">
+                                                <td className="py-6 px-6">
+                                                    <div className="flex items-center gap-3 max-w-[200px] lg:max-w-md">
+                                                        <code className="text-[11px] text-muted-foreground font-mono truncate bg-muted/20 px-3 py-1.5 rounded-xl border border-border/20 shadow-inner">
                                                             {app.api_key}
                                                         </code>
                                                         <button
                                                             onClick={() => copyToClipboard(app.api_key)}
-                                                            className="text-zinc-400 hover:text-white transition-colors p-1"
+                                                            className="text-muted-foreground hover:text-violet-500 transition-colors p-2 rounded-lg hover:bg-muted"
                                                             title="Copy Key"
                                                         >
-                                                            <Copy size={12} />
+                                                            <Copy size={13} />
                                                         </button>
                                                     </div>
                                                 </td>
-                                                <td className="py-4 px-6">
-                                                    <div className="text-[11px] text-zinc-500 font-medium">
+                                                <td className="py-6 px-6">
+                                                    <div className="text-[11px] text-muted-foreground font-bold italic">
                                                         {new Date(app.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
                                                     </div>
                                                 </td>
@@ -221,29 +221,29 @@ export default function ApiKeys() {
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={!!keyToDelete} onOpenChange={(open) => !open && setKeyToDelete(null)}>
-                <DialogContent className="bg-[#0c0c0e] border-zinc-400/10 sm:max-w-[400px] rounded-[2rem] p-8 shadow-2xl">
+                <DialogContent className="bg-card border-border sm:max-w-[420px] rounded-[2.5rem] p-10 shadow-2xl backdrop-blur-xl">
                     <DialogHeader>
-                        <div className="mx-auto h-12 w-12 rounded-2xl bg-red-500/10 flex items-center justify-center mb-6">
-                            <AlertTriangle className="text-red-500" size={24} />
+                        <div className="mx-auto h-16 w-16 rounded-[1.5rem] bg-red-500/10 flex items-center justify-center mb-8 border border-red-500/20">
+                            <AlertTriangle className="text-red-500" size={28} />
                         </div>
-                        <DialogTitle className="text-xl font-bold text-center text-white">Revoke Access?</DialogTitle>
-                        <DialogDescription className="text-center text-zinc-500 pt-3 text-sm font-medium">
-                            This will immediately disable the API key for <span className="text-white">"{apps.find(a => a.id === keyToDelete)?.name}"</span>.
-                            This action is permanent.
+                        <DialogTitle className="text-2xl font-black text-center text-foreground tracking-tight">Revoke Protocol?</DialogTitle>
+                        <DialogDescription className="text-center text-muted-foreground pt-4 text-sm font-medium leading-relaxed">
+                            This will immediately de-authorize <span className="text-foreground font-black">"{apps.find(a => a.id === keyToDelete)?.name}"</span>.
+                            Active transmissions will fail permanently.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="mt-8 grid grid-cols-2 gap-3">
+                    <div className="mt-10 grid grid-cols-2 gap-4">
                         <Button
                             variant="outline"
                             onClick={() => setKeyToDelete(null)}
-                            className="h-12 border-zinc-400/10 text-zinc-400 hover:bg-white/5 hover:text-white rounded-xl font-bold text-xs"
+                            className="h-14 border-border bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all"
                         >
-                            Cancel
+                            Abort
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={confirmDelete}
-                            className="h-12 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs shadow-lg shadow-red-900/20"
+                            className="h-14 bg-red-600 hover:bg-red-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all"
                         >
                             Revoke Key
                         </Button>

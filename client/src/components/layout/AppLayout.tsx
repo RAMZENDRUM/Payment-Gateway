@@ -8,9 +8,12 @@ import {
     LogOut,
     Code,
     QrCode,
-    User as UserIcon
+    User as UserIcon,
+    Zap
 } from 'lucide-react';
 import { useAuth } from '@/AuthContext';
+import { useTheme } from '@/ThemeContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavItemProps {
     icon: React.ReactNode;
@@ -46,6 +49,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
     const navigate = useNavigate();
     const location = useLocation();
     const { logout, user } = useAuth();
+    const { isTransitioning, theme } = useTheme();
 
     const navItems = [
         { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
@@ -58,30 +62,73 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
     ];
 
     return (
-        <div className="flex h-screen w-screen bg-background text-foreground overflow-hidden font-sans selection:bg-violet-500/30 selection:text-white transition-colors duration-300">
-            {/* Background flares for global depth */}
+        <div className="flex h-screen w-screen bg-background text-foreground overflow-hidden font-sans transition-colors duration-500">
+            {/* Background flares */}
             <div className="fixed top-[-10%] right-[-5%] w-[40%] h-[50%] bg-violet-600/[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
             <div className="fixed bottom-[-10%] left-[-5%] w-[30%] h-[40%] bg-purple-600/[0.02] blur-[120px] rounded-full pointer-events-none z-0" />
 
+            {/* Digital Shutter Transition */}
+            <AnimatePresence>
+                {isTransitioning && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[9999] flex flex-col pointer-events-none"
+                    >
+                        {/* Upper Shutter */}
+                        <motion.div
+                            initial={{ y: '-100%' }}
+                            animate={{ y: '0%' }}
+                            exit={{ y: '-100%' }}
+                            transition={{ duration: 0.4, ease: "circIn" }}
+                            className="h-1/2 w-full bg-foreground flex items-end justify-center pb-8"
+                        >
+                            <motion.div
+                                animate={{ opacity: [0, 1, 0] }}
+                                transition={{ duration: 0.8, repeat: Infinity }}
+                                className="h-[2px] w-48 bg-background/20 rounded-full"
+                            />
+                        </motion.div>
+
+                        {/* Shutter Mid-line Flash */}
+                        <motion.div
+                            initial={{ scaleX: 0, opacity: 0 }}
+                            animate={{ scaleX: 1, opacity: 1 }}
+                            exit={{ scaleX: 0, opacity: 0 }}
+                            transition={{ duration: 0.2, delay: 0.3 }}
+                            className="h-[1px] w-full bg-primary shadow-[0_0_20px_rgba(139,92,246,0.5)] z-10"
+                        />
+
+                        {/* Lower Shutter */}
+                        <motion.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: '0%' }}
+                            exit={{ y: '100%' }}
+                            transition={{ duration: 0.4, ease: "circIn" }}
+                            className="h-1/2 w-full bg-foreground flex items-start justify-center pt-8"
+                        >
+                            <div className="flex items-center gap-2 text-background/40 font-black text-[10px] uppercase tracking-[0.5em]">
+                                <Zap size={12} className="fill-current" />
+                                Frequency Shift
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Left Sidebar */}
-            <aside className="w-64 flex-shrink-0 bg-transparent flex flex-col z-20 transition-all">
-                {/* Logo/Brand */}
+            <aside className="w-64 flex-shrink-0 bg-transparent flex flex-col z-20 transition-all border-r border-border/10">
                 <div className="px-8 py-10">
                     <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-zinc-900 text-white dark:bg-white dark:text-black rounded-xl flex items-center justify-center shadow-2xl transition-all">
+                        <div className="h-8 w-8 bg-foreground text-background rounded-xl flex items-center justify-center shadow-2xl transition-all">
                             <Wallet size={16} strokeWidth={2.5} />
                         </div>
-                        <div>
-                            <h2 className="text-base font-bold text-foreground tracking-tight">ZenWallet</h2>
-                        </div>
+                        <h2 className="text-base font-bold text-foreground tracking-tight">ZenWallet</h2>
                     </div>
                 </div>
 
-                {/* Navigation */}
                 <nav className="flex-1 px-4 space-y-1 mt-4">
-                    <div className="px-4 mb-6">
-                        <span className="text-[11px] font-medium text-zinc-600 tracking-widest">Navigation</span>
-                    </div>
                     {navItems.map((item) => (
                         <button
                             key={item.path}
@@ -89,8 +136,8 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                             className={`
                                 w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-medium transition-all
                                 ${location.pathname === item.path
-                                    ? 'bg-violet-600/10 text-violet-500 shadow-sm'
-                                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.02]'
+                                    ? 'bg-primary/10 text-primary shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
                                 }
                             `}
                         >
@@ -100,28 +147,17 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                     ))}
                 </nav>
 
-                {/* User Section */}
                 <div className="p-6">
-                    <div
-                        onClick={() => navigate('/profile')}
-                        className="p-4 rounded-2xl flex items-center gap-3 hover:bg-white/[0.02] transition-colors cursor-pointer group"
-                    >
-                        <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center border border-white/5 text-zinc-400 group-hover:text-white transition-colors">
+                    <div onClick={() => navigate('/profile')} className="p-4 rounded-2xl flex items-center gap-3 hover:bg-muted/30 transition-colors cursor-pointer group">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center border border-border/10 text-muted-foreground group-hover:text-foreground">
                             {user?.full_name?.charAt(0).toUpperCase() || 'A'}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-zinc-400 group-hover:text-white truncate transition-colors">{user?.full_name?.split(' ')[0] || 'Administrator'}</p>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                                <div className="h-1 w-1 bg-emerald-500 rounded-full" />
-                                <p className="text-[10px] font-medium text-zinc-600">Secure Node Connected</p>
-                            </div>
+                            <p className="text-sm font-medium text-foreground group-hover:text-primary truncate">{user?.full_name?.split(' ')[0] || 'Admin'}</p>
+                            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-tight">Secure Node</p>
                         </div>
                     </div>
-
-                    <button
-                        onClick={logout}
-                        className="w-full flex items-center gap-3 mt-4 px-4 py-3 text-zinc-600 hover:text-red-400 rounded-2xl text-xs font-medium transition-all"
-                    >
+                    <button onClick={logout} className="w-full flex items-center gap-3 mt-4 px-4 py-3 text-muted-foreground hover:text-destructive rounded-2xl text-xs font-medium transition-all">
                         <LogOut size={14} />
                         <span>Sign Out</span>
                     </button>
@@ -129,18 +165,17 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-auto bg-transparent flex flex-col relative custom-scrollbar z-10 transition-colors duration-300">
+            <main className="flex-1 overflow-auto bg-transparent flex flex-col relative custom-scrollbar z-10">
                 {title && (
-                    <header className="px-10 pt-6 pb-4 sticky top-0 bg-background/60 backdrop-blur-xl z-20 transition-all border-b border-border/50">
+                    <header className="px-10 pt-6 pb-4 sticky top-0 bg-background/60 backdrop-blur-md z-20 transition-all border-b border-border/50">
                         <div className="flex flex-col gap-0.5">
-                            <h2 className="text-2xl font-bold text-foreground tracking-tight">{title}</h2>
-                            {subtitle && <p className="text-sm font-medium text-zinc-500 mt-1">{subtitle}</p>}
+                            <h2 className="text-2xl font-bold text-foreground tracking-tight uppercase">{title}</h2>
+                            {subtitle && <p className="text-sm font-medium text-muted-foreground mt-1 italic">{subtitle}</p>}
                         </div>
                     </header>
                 )}
-
-                <div className="flex-1 px-10 py-2">
-                    <div className="max-w-7xl">
+                <div className="flex-1 px-10 py-8">
+                    <div className="max-w-7xl animate-in fade-in duration-500">
                         {children}
                     </div>
                 </div>

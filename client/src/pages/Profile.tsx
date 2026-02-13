@@ -76,16 +76,16 @@ export default function Profile() {
                         {/* 1. Identity Header */}
                         <div className="flex items-center gap-6 p-2">
                             <div className="relative">
-                                <div className="h-20 w-20 rounded-2xl bg-zinc-900 flex items-center justify-center text-3xl font-medium text-white shadow-none">
+                                <div className="h-24 w-24 rounded-3xl bg-muted border border-border/10 flex items-center justify-center text-3xl font-black text-foreground shadow-sm">
                                     {user?.full_name?.charAt(0).toUpperCase()}
                                 </div>
-                                <div className="absolute -bottom-1 -right-1 p-1.5 bg-zinc-950 rounded-lg text-violet-500">
-                                    <Fingerprint size={16} />
+                                <div className="absolute -bottom-1 -right-1 p-2 bg-card border border-border/40 rounded-xl text-violet-500 shadow-xl">
+                                    <Fingerprint size={18} />
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <h2 className="text-2xl font-bold text-white tracking-tight">{user?.full_name}</h2>
-                                <p className="text-zinc-400 font-medium text-sm flex items-center gap-2">
+                                <h2 className="text-2xl font-bold text-foreground tracking-tight">{user?.full_name}</h2>
+                                <p className="text-muted-foreground font-medium text-sm flex items-center gap-2">
                                     <Mail size={14} className="text-violet-500/30" />
                                     {user?.email}
                                 </p>
@@ -97,21 +97,21 @@ export default function Profile() {
                         </div>
 
                         {/* 2. Asset ID Card */}
-                        <div className="dashboard-card border-none shadow-none p-8 relative overflow-hidden group bg-white/[0.01]">
+                        <div className="dashboard-card border border-border/40 shadow-sm p-8 relative overflow-hidden group bg-card/10 backdrop-blur-sm">
                             <div className="absolute top-0 right-0 p-6 opacity-[0.03] transition-opacity pointer-events-none">
                                 <Zap size={80} className="text-violet-500" />
                             </div>
                             <div className="relative z-10">
-                                <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Personal Asset ID</p>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em] mb-4 opacity-70">Official Asset Handle</p>
                                 <div className="flex items-center justify-between gap-4">
-                                    <h3 className="text-2xl font-bold text-white tracking-tighter">
+                                    <h3 className="text-2xl font-black text-foreground tracking-tighter uppercase whitespace-nowrap overflow-hidden text-ellipsis">
                                         {user?.upi_id || 'Connecting...'}
                                     </h3>
                                     <button
                                         onClick={() => copyToClipboard(user?.upi_id || '', 'ID')}
-                                        className="p-2.5 bg-zinc-900 rounded-xl text-zinc-500 hover:text-white transition-all hover:bg-zinc-800"
+                                        className="p-3 bg-muted border border-border/10 rounded-2xl text-muted-foreground hover:text-foreground transition-all flex items-center justify-center shadow-sm"
                                     >
-                                        <Copy size={16} />
+                                        <Copy size={18} />
                                     </button>
                                 </div>
                                 <div className="mt-8 flex items-center gap-2 text-zinc-500 font-medium text-[10px] italic">
@@ -123,22 +123,22 @@ export default function Profile() {
 
                         {/* 3. Security Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="dashboard-card border-none shadow-none p-6 flex items-start gap-4 hover:bg-white/[0.01] transition-colors bg-white/[0.01]">
-                                <div className="p-2.5 bg-zinc-900 rounded-xl text-zinc-500">
-                                    <Shield size={16} />
+                            <div className="dashboard-card border border-border/40 shadow-sm p-6 flex items-start gap-4 hover:bg-muted/40 transition-colors bg-card/5 backdrop-blur-sm rounded-3xl">
+                                <div className="p-3 bg-muted border border-border/10 rounded-2xl text-muted-foreground shadow-sm">
+                                    <Shield size={18} />
                                 </div>
-                                <div>
-                                    <h4 className="text-[10px] font-bold text-white uppercase tracking-widest mb-1">Cold Storage</h4>
-                                    <p className="text-[10px] text-zinc-500 leading-relaxed font-medium">Encrypted offline management.</p>
+                                <div className="pt-1">
+                                    <h4 className="text-[11px] font-black text-foreground uppercase tracking-[0.15em] mb-1.5">Cold Storage</h4>
+                                    <p className="text-[10px] text-muted-foreground leading-relaxed font-bold italic opacity-70">Encrypted offline management.</p>
                                 </div>
                             </div>
-                            <div className="dashboard-card border-none shadow-none p-6 flex items-start gap-4 hover:bg-white/[0.01] transition-colors bg-white/[0.01]">
-                                <div className="p-2.5 bg-zinc-900 rounded-xl text-zinc-500">
-                                    <Lock size={16} />
+                            <div className="dashboard-card border border-border/40 shadow-sm p-6 flex items-start gap-4 hover:bg-muted/40 transition-colors bg-card/5 backdrop-blur-sm rounded-3xl">
+                                <div className="p-3 bg-muted border border-border/10 rounded-2xl text-muted-foreground shadow-sm">
+                                    <Lock size={18} />
                                 </div>
-                                <div>
-                                    <h4 className="text-[10px] font-bold text-white uppercase tracking-widest mb-1">Identity Protocol</h4>
-                                    <p className="text-[10px] text-zinc-500 leading-relaxed font-medium">AES-256 secure shielding.</p>
+                                <div className="pt-1">
+                                    <h4 className="text-[11px] font-black text-foreground uppercase tracking-[0.15em] mb-1.5">Identity Protocol</h4>
+                                    <p className="text-[10px] text-muted-foreground leading-relaxed font-bold italic opacity-70">AES-256 secure shielding.</p>
                                 </div>
                             </div>
                         </div>
@@ -210,58 +210,60 @@ export default function Profile() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
                             onClick={() => !loading && setShowAuthModal(false)}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="relative w-full max-w-sm bg-zinc-950 rounded-[2rem] p-8 shadow-2xl"
+                            className="relative w-full max-w-sm bg-card border border-border/50 rounded-[2rem] p-8 shadow-2xl"
                         >
                             <div className="space-y-6 text-center">
                                 <div className="space-y-1">
-                                    <h3 className="text-lg font-medium text-white tracking-tight">Verify Identity</h3>
-                                    <p className="text-zinc-500 text-[11px] font-medium tracking-tight">Security confirmation required</p>
+                                    <h3 className="text-lg font-black text-foreground tracking-tight uppercase">Verify Identity</h3>
+                                    <p className="text-muted-foreground text-[11px] font-bold tracking-widest uppercase opacity-70">Security confirmation required</p>
                                 </div>
 
                                 <form onSubmit={handleVerify} className="flex gap-3">
                                     <div className="relative flex-1 group/modal-input">
-                                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within/modal-input:text-zinc-400 transition-colors">
-                                            <Lock size={14} />
+                                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within/modal-input:text-primary transition-colors">
+                                            <Lock size={16} />
                                         </div>
-                                        <Input
-                                            type={showPassword ? "text" : "password"}
-                                            placeholder="Security code..."
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            required
-                                            autoFocus
-                                            className="h-12 pl-10 pr-10 bg-zinc-900 border-white/[0.03] text-sm rounded-2xl focus-visible:ring-1 focus-visible:ring-white/10 placeholder:text-zinc-700 transition-all"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 p-1 transition-colors"
-                                        >
-                                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                        </button>
+                                        <div className="relative">
+                                            <Input
+                                                type={showPassword ? "text" : "password"}
+                                                placeholder="Enter security PIN..."
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                                autoFocus
+                                                className="h-12 pl-10 pr-10 bg-muted/40 border-border/50 text-foreground text-sm font-bold rounded-2xl focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-muted-foreground/60 transition-all"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors"
+                                            >
+                                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                            </button>
+                                        </div>
                                     </div>
                                     <Button
                                         type="submit"
-                                        className="h-12 w-12 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl flex-shrink-0 active:scale-95 transition-all p-0 border border-white/[0.02]"
+                                        className="h-12 w-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl flex-shrink-0 active:scale-95 transition-all p-0 border border-primary/10 shadow-lg shadow-primary/20"
                                         disabled={loading}
                                     >
                                         {loading ? (
                                             <RefreshCw size={18} className="animate-spin" />
                                         ) : (
-                                            <ArrowRight size={18} />
+                                            <ArrowRight size={18} strokeWidth={2.5} />
                                         )}
                                     </Button>
                                 </form>
                                 <button
                                     onClick={() => setShowAuthModal(false)}
-                                    className="w-full text-center text-[11px] text-zinc-600 hover:text-zinc-400 font-medium pt-2 transition-colors uppercase tracking-widest"
+                                    className="w-full text-center text-[10px] text-muted-foreground hover:text-foreground font-black pt-2 transition-colors uppercase tracking-[0.2em] opacity-60"
                                 >
                                     Cancel
                                 </button>

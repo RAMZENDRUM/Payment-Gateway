@@ -228,27 +228,16 @@ export default function Login() {
                                     Password
                                 </Label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500 group-focus-within:text-violet-500 transition-colors" />
                                     <Input
                                         id="password"
-                                        type={showPassword ? "text" : "password"}
+                                        type="password"
                                         placeholder="••••••••••••"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="pl-11 pr-11 h-12 bg-background/50 border-border text-foreground placeholder:text-zinc-600 focus-visible:ring-violet-500/20 focus-visible:border-violet-500 text-base rounded-xl"
+                                        leftIcon={<Lock size={18} />}
+                                        className="h-12 bg-background/50 border-border text-foreground placeholder:text-zinc-600 focus-visible:ring-violet-500/20 focus-visible:border-violet-500 text-base rounded-xl"
                                         required
                                     />
-                                    <button
-                                        type="button"
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-zinc-500 hover:text-foreground transition-colors"
-                                        onClick={() => setShowPassword((v) => !v)}
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className="h-5 w-5" />
-                                        ) : (
-                                            <Eye className="h-5 w-5" />
-                                        )}
-                                    </button>
                                 </div>
                             </div>
 
@@ -272,29 +261,7 @@ export default function Login() {
                             </Button>
                         </form>
 
-                        <div className="relative my-2">
-                            <Separator className="bg-border" />
-                            <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-card px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
-                                Or continue with
-                            </span>
-                        </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <Button
-                                variant="outline"
-                                className="h-11 rounded-xl border-border bg-background text-zinc-500 hover:text-foreground hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-all"
-                            >
-                                <Github className="h-5 w-5 mr-2.5" />
-                                GitHub
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="h-11 rounded-xl border-border bg-background text-zinc-500 hover:text-foreground hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-all"
-                            >
-                                <Chrome className="h-5 w-5 mr-2.5" />
-                                Google
-                            </Button>
-                        </div>
                     </CardContent>
 
                     <CardFooter className="flex flex-col gap-4 pb-8 pt-2">

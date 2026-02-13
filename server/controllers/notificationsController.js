@@ -27,6 +27,19 @@ exports.markAsRead = async (req, res) => {
     }
 };
 
+exports.markAllAsRead = async (req, res) => {
+    try {
+        await db.query(
+            'UPDATE notifications SET is_read = TRUE WHERE (user_id = $1 OR user_id IS NULL) AND is_read = FALSE',
+            [req.user.id]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 exports.sendGlobalMessage = async (req, res) => {
     const { title, shortMessage, fullMessage } = req.body;
 

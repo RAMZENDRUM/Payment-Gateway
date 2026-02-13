@@ -5,25 +5,19 @@ import toast from "react-hot-toast";
 import {
     CreditCard,
     ShieldCheck,
-    ArrowLeft,
     Coins,
-    Plus,
-    Check,
     Lock
 } from "lucide-react";
 import { FaPaypal, FaApple } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
 import AppLayout from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import TransactionReceipt, { TransactionData } from "@/components/ui/transaction-receipt";
-
-
 import { API_URL } from '@/lib/api';
 
 const AMOUNTS = [50, 100, 200, 500, 1000, 2000];
@@ -75,7 +69,6 @@ export default function PaymentPage() {
             return;
         }
 
-        // Potential check for existing balance + new amount
         if (user && (((user.balance as number) || 0) + finalAmount > 1000000)) {
             toast.error(`Transaction failed. Your wallet cannot hold more than ₹1,000,000 (Current: ₹${user.balance})`);
             return;
@@ -114,8 +107,8 @@ export default function PaymentPage() {
                     {/* Left Column: Amount Selection */}
                     <div className="lg:col-span-4 space-y-10">
                         <div>
-                            <h3 className="text-sm font-semibold text-white mb-4">Add Money</h3>
-                            <p className="text-zinc-500 text-sm font-medium leading-relaxed">Choose an amount to add to your ZenWallet balance.</p>
+                            <h3 className="text-sm font-black text-foreground uppercase tracking-tight mb-4">Add Money</h3>
+                            <p className="text-muted-foreground text-sm font-medium leading-relaxed italic opacity-80">Choose an amount to add to your ZenWallet balance.</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -128,14 +121,14 @@ export default function PaymentPage() {
                                         setCustomAmount("");
                                     }}
                                     className={`relative py-5 px-6 rounded-2xl text-left transition-all ${selectedAmount === amt && !customAmount
-                                        ? 'bg-violet-600/10 ring-1 ring-violet-500/20'
-                                        : 'bg-zinc-900 border border-zinc-400/10 hover:border-zinc-400/20'
+                                        ? 'bg-primary/10 ring-1 ring-primary/20 shadow-lg shadow-primary/5'
+                                        : 'bg-card border border-border/60 hover:border-primary/20 hover:shadow-md'
                                         }`}
                                 >
-                                    <div className={`text-[11px] font-medium mb-1 ${selectedAmount === amt ? 'text-violet-500' : 'text-zinc-500'}`}>
+                                    <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${selectedAmount === amt ? 'text-primary' : 'text-muted-foreground'}`}>
                                         Amount
                                     </div>
-                                    <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
+                                    <div className="text-2xl font-black text-foreground tabular-nums tracking-tighter">
                                         ₹{amt.toLocaleString()}
                                     </div>
                                 </motion.button>
@@ -144,8 +137,8 @@ export default function PaymentPage() {
 
                         <div className="space-y-4 pt-4">
                             <div className="relative group">
-                                <Label className="text-[13px] font-medium text-zinc-500 block mb-3 px-1">Other Amount</Label>
-                                <Coins className="absolute left-4 bottom-[18px] text-zinc-700" size={14} />
+                                <Label className="text-[10px] font-black text-muted-foreground block mb-3 px-1 uppercase tracking-[0.2em] opacity-70">Custom Amount</Label>
+                                <Coins className="absolute left-4 bottom-[18px] text-muted-foreground" size={14} />
                                 <Input
                                     max="200000"
                                     step="1"
@@ -155,15 +148,15 @@ export default function PaymentPage() {
                                         setCustomAmount(e.target.value.replace(/\D/g, ''));
                                         setSelectedAmount(0);
                                     }}
-                                    className="h-14 pl-12 bg-white/[0.02] border-zinc-400/10 text-sm font-medium rounded-2xl focus-visible:ring-1 focus-visible:ring-white/5"
+                                    className="h-14 pl-12 bg-muted/30 border-border text-sm font-bold rounded-2xl focus-visible:ring-1 focus-visible:ring-primary/20 transition-all font-mono"
                                 />
                             </div>
                         </div>
 
-                        <div className="p-6 dashboard-card flex gap-4">
+                        <div className="p-6 bg-card border border-border/50 rounded-[1.5rem] flex gap-4 shadow-sm">
                             <ShieldCheck className="text-emerald-500 shrink-0" size={18} />
-                            <div className="text-[12px] text-zinc-500 leading-relaxed font-medium">
-                                Total to add <span className="text-white">₹{finalAmount || 0}</span>.
+                            <div className="text-[11px] text-muted-foreground leading-relaxed font-bold">
+                                Total to add <span className="text-foreground">₹{finalAmount || 0}</span>.
                                 Money once added to wallet cannot be refunded to source.
                             </div>
                         </div>
@@ -173,7 +166,7 @@ export default function PaymentPage() {
                     <div className="lg:col-span-8">
                         <div className="space-y-12">
                             <div>
-                                <h3 className="text-sm font-semibold text-white mb-8">Payment Mode</h3>
+                                <h3 className="text-sm font-black text-foreground uppercase tracking-tight mb-8">Payment Mode</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {[
                                         { id: 'card', icon: <CreditCard size={18} />, label: 'Debit/Credit Card' },
@@ -184,12 +177,15 @@ export default function PaymentPage() {
                                         <button
                                             key={method.id}
                                             onClick={() => setPaymentMethod(method.id as any)}
-                                            className={`flex flex-col items-center justify-center gap-3 h-24 rounded-2xl transition-all ${paymentMethod === method.id ? 'bg-violet-600/10 ring-1 ring-violet-500/20' : 'bg-transparent border border-zinc-400/10 hover:border-zinc-400/20'}`}
+                                            className={`flex flex-col items-center justify-center gap-3 h-28 rounded-2xl transition-all ${paymentMethod === method.id
+                                                ? 'bg-primary/5 ring-1 ring-primary/20 shadow-lg shadow-primary/5'
+                                                : 'bg-card border border-border/40 hover:border-primary/20 hover:bg-muted/30'
+                                                }`}
                                         >
-                                            <div className={paymentMethod === method.id ? 'text-violet-500' : 'text-zinc-600'}>
+                                            <div className={paymentMethod === method.id ? 'text-primary' : 'text-muted-foreground'}>
                                                 {method.icon}
                                             </div>
-                                            <span className={`text-[12px] font-medium ${paymentMethod === method.id ? 'text-white' : 'text-zinc-600'}`}>
+                                            <span className={`text-[11px] font-black uppercase tracking-tight ${paymentMethod === method.id ? 'text-foreground' : 'text-muted-foreground'}`}>
                                                 {method.label}
                                             </span>
                                         </button>
@@ -200,50 +196,53 @@ export default function PaymentPage() {
                             <form onSubmit={handleCheckout} className="space-y-10">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                                     <div className="space-y-3">
-                                        <Label className="text-[13px] font-medium text-zinc-500 block px-1">Card Holder Name</Label>
+                                        <Label className="text-[10px] font-black text-muted-foreground block px-1 uppercase tracking-[0.2em] opacity-60">Card Holder Name</Label>
                                         <Input
                                             name="cardholderName"
-                                            placeholder="As per bank records"
+                                            placeholder="AS PER BANK RECORDS"
                                             value={cardData.cardholderName}
                                             onChange={handleInputChange}
                                             required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-violet-500/40 transition-colors"
+                                            className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-[14px] font-black uppercase tracking-wider focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30"
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-[13px] font-medium text-zinc-500 block px-1">Card Number</Label>
+                                        <Label className="text-[10px] font-black text-muted-foreground block px-1 uppercase tracking-[0.2em] opacity-60">Card Number</Label>
                                         <Input
                                             name="cardNumber"
                                             placeholder="XXXX XXXX XXXX XXXX"
                                             value={cardData.cardNumber}
                                             onChange={handleInputChange}
                                             required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-violet-500/40 transition-colors"
+                                            className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-[14px] font-black uppercase tracking-widest focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30 font-mono"
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-[13px] font-medium text-zinc-500 block px-1">Expiry (MM/YY)</Label>
+                                        <Label className="text-[10px] font-black text-muted-foreground block px-1 uppercase tracking-[0.2em] opacity-60">Expiry (MM/YY)</Label>
                                         <Input
                                             name="expiryDate"
                                             placeholder="MM / YY"
                                             value={cardData.expiryDate}
                                             onChange={handleInputChange}
                                             required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-violet-500/40 transition-colors"
+                                            className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-[14px] font-black uppercase tracking-widest focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30 font-mono"
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-[13px] font-medium text-zinc-500 block px-1">CVV</Label>
-                                        <Input
-                                            name="cvv"
-                                            type="password"
-                                            maxLength={3}
-                                            placeholder="XXX"
-                                            value={cardData.cvv}
-                                            onChange={handleInputChange}
-                                            required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-zinc-400/20 rounded-none px-1 h-12 text-[14px] font-medium focus-visible:ring-0 focus-visible:border-violet-500/40 transition-colors"
-                                        />
+                                        <Label className="text-[10px] font-black text-muted-foreground block px-1 uppercase tracking-[0.2em] opacity-60">CVV</Label>
+                                        <div className="relative">
+                                            <Input
+                                                name="cvv"
+                                                type="password"
+                                                maxLength={3}
+                                                placeholder="•••"
+                                                value={cardData.cvv}
+                                                onChange={handleInputChange}
+                                                required={paymentMethod === 'card'}
+                                                className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-[14px] font-black uppercase tracking-widest focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30 font-mono pr-8"
+                                            />
+                                            <Lock size={14} className="absolute right-2 top-4 text-muted-foreground/40" />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -251,12 +250,12 @@ export default function PaymentPage() {
                                     <Button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full h-16 bg-white hover:bg-zinc-200 text-black font-bold text-base rounded-2xl active:scale-95 transition-all shadow-2xl"
+                                        className="w-full h-16 bg-foreground text-background hover:bg-foreground/90 font-black text-[13px] uppercase tracking-[0.2em] rounded-2xl active:scale-95 transition-all shadow-xl"
                                     >
                                         {loading ? (
                                             <div className="flex items-center gap-3">
-                                                <div className="h-4 w-4 border-2 border-zinc-500 border-t-black rounded-full animate-spin"></div>
-                                                <span>Adding Money...</span>
+                                                <div className="h-4 w-4 border-2 border-background/30 border-t-background rounded-full animate-spin"></div>
+                                                <span>Processing Transaction...</span>
                                             </div>
                                         ) : (
                                             `Add ₹${finalAmount || 0} to Wallet`
@@ -265,14 +264,14 @@ export default function PaymentPage() {
                                 </div>
                             </form>
 
-                            <div className="flex items-center gap-12 pt-8 text-xs font-medium text-zinc-600">
+                            <div className="flex items-center gap-12 pt-8 text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
                                 <div className="flex items-center gap-2">
-                                    <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full"></div>
-                                    100% Safe and Secure
+                                    <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                                    100% Secure
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="h-1.5 w-1.5 bg-violet-500 rounded-full"></div>
-                                    Bank Grade Encryption
+                                    <div className="h-1.5 w-1.5 bg-primary rounded-full animate-pulse"></div>
+                                    256-Bit Encryption
                                 </div>
                             </div>
                         </div>

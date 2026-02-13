@@ -93,10 +93,13 @@ export default function ForgotPassword() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="w-full max-w-[440px] relative z-10"
             >
-                <Link to="/login" className="inline-flex items-center gap-2 text-zinc-500 hover:text-foreground transition-all mb-10 text-[10px] font-bold uppercase tracking-widest group">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="inline-flex items-center gap-2 text-zinc-500 hover:text-foreground transition-all mb-10 text-[10px] font-bold uppercase tracking-widest group bg-transparent border-none outline-none cursor-pointer p-0"
+                >
                     <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to authentication
-                </Link>
+                    Back to previous page
+                </button>
 
                 <AnimatePresence mode="wait">
                     {step === 1 && (

@@ -63,16 +63,16 @@ export default function Send() {
                 <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 xl:gap-24 items-start">
 
                     {/* Left Column: Form */}
-                    <div className="order-2 lg:order-1 relative p-8 lg:p-12 bg-[#0c0c0e]/50 backdrop-blur-xl border border-zinc-400/10 rounded-[2.5rem] shadow-2xl">
+                    <div className="order-2 lg:order-1 relative p-8 lg:p-12 bg-card/50 backdrop-blur-xl border border-border rounded-[2.5rem] shadow-2xl">
                         <div className="absolute -left-20 top-20 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
 
                         <div className="mb-14">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 text-violet-400 text-[10px] font-bold uppercase tracking-wider mb-6 border border-violet-500/20">
-                                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider mb-6 border border-primary/20">
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                                 Secured Transaction
                             </div>
-                            <h2 className="text-4xl font-bold text-white tracking-tight mb-4">Transfer Money</h2>
-                            <p className="text-zinc-500 text-sm font-medium leading-relaxed max-w-xs">Pay anyone instantly using their UPI ID or mobile number.</p>
+                            <h2 className="text-4xl font-black text-foreground tracking-tight mb-4 uppercase">Transfer Money</h2>
+                            <p className="text-muted-foreground text-sm font-medium leading-relaxed max-w-xs italic opacity-80">Pay anyone instantly using their unique ID or mobile endpoint.</p>
                         </div>
 
                         <AnimatePresence mode="wait">
@@ -86,9 +86,9 @@ export default function Send() {
                                 >
                                     <div className="space-y-12">
                                         <div className="relative group/input">
-                                            <Label className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.2em] mb-8 block">Amount to Send</Label>
-                                            <div className="flex items-center gap-6 pb-6 border-b border-zinc-800/50 group-focus-within/input:border-violet-500/50 transition-all duration-500">
-                                                <span className="text-4xl text-zinc-600 font-bold select-none">₹</span>
+                                            <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-8 block opacity-60">Amount to Send</Label>
+                                            <div className="flex items-center gap-6 pb-6 border-b border-border/60 group-focus-within/input:border-primary transition-all duration-500">
+                                                <span className="text-4xl text-muted-foreground font-black select-none opacity-40">₹</span>
                                                 <input
                                                     type="number"
                                                     required
@@ -96,14 +96,14 @@ export default function Send() {
                                                     max="200000"
                                                     step="1"
                                                     placeholder="0"
-                                                    className="w-full bg-transparent border-none p-0 text-7xl font-bold tracking-tighter text-white focus:outline-none placeholder:text-zinc-900 tabular-nums"
+                                                    className="w-full bg-transparent border-none p-0 text-7xl font-black tracking-tighter text-foreground focus:outline-none placeholder:text-muted/20 tabular-nums"
                                                     value={amount}
                                                     onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
                                                 />
                                             </div>
-                                            <div className="flex justify-between mt-6 text-[11px] font-bold uppercase tracking-widest text-zinc-500">
-                                                <span>ZenWallet Balance</span>
-                                                <span className="text-violet-400">₹{user?.balance?.toLocaleString() || '0'}</span>
+                                            <div className="flex justify-between mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">
+                                                <span>Current Balance</span>
+                                                <span className="text-primary">₹{user?.balance?.toLocaleString() || '0'}</span>
                                             </div>
 
                                             {/* Quick Amount Picks */}
@@ -113,7 +113,7 @@ export default function Send() {
                                                         key={amt}
                                                         type="button"
                                                         onClick={() => setAmount(amt.toString())}
-                                                        className="flex-1 h-10 rounded-xl bg-white/[0.02] border border-white/[0.05] text-[11px] font-bold text-zinc-400 hover:bg-white/5 hover:text-white transition-all uppercase tracking-wider"
+                                                        className="flex-1 h-11 rounded-xl bg-muted/30 border border-border/50 text-[10px] font-black text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all uppercase tracking-widest shadow-sm"
                                                     >
                                                         +₹{amt}
                                                     </button>
@@ -123,21 +123,21 @@ export default function Send() {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-3">
-                                                <Label className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest block px-1">Receiver Address</Label>
+                                                <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block px-1 opacity-60">Receiver Address</Label>
                                                 <Input
                                                     type="text"
                                                     placeholder="e.g. user@zen"
                                                     required
-                                                    className="h-14 bg-white/[0.01] border-zinc-800 text-sm rounded-2xl focus-visible:ring-1 focus-visible:ring-violet-500/20 font-medium transition-all"
+                                                    className="h-14 bg-muted/20 border-border text-sm rounded-2xl focus-visible:ring-1 focus-visible:ring-primary/20 font-bold tracking-tight transition-all"
                                                     value={receiverUpiId}
                                                     onChange={(e) => setReceiverUpiId(e.target.value)}
                                                 />
                                             </div>
                                             <div className="space-y-3">
-                                                <Label className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest block px-1">Payment Note</Label>
+                                                <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block px-1 opacity-60">Payment Note</Label>
                                                 <Input
                                                     placeholder="Add a comment"
-                                                    className="h-14 bg-white/[0.01] border-zinc-800 text-sm rounded-2xl focus-visible:ring-1 focus-visible:ring-white/5 font-medium transition-all"
+                                                    className="h-14 bg-muted/20 border-border text-sm rounded-2xl focus-visible:ring-1 focus-visible:ring-primary/20 font-bold tracking-tight transition-all"
                                                     value={referenceId}
                                                     onChange={(e) => setReferenceId(e.target.value)}
                                                 />
@@ -149,9 +149,9 @@ export default function Send() {
                                         disabled={loading}
                                         type="submit"
                                         size="lg"
-                                        className="w-full h-16 bg-white hover:bg-zinc-200 text-black font-bold text-sm uppercase tracking-widest rounded-2xl transition-all active:scale-[0.98] shadow-2xl shadow-white/5"
+                                        className="w-full h-16 bg-foreground text-background hover:bg-foreground/90 font-black text-[11px] uppercase tracking-[0.3em] rounded-2xl transition-all active:scale-[0.98] shadow-2xl border-none"
                                     >
-                                        {loading ? 'Authorizing...' : 'Complete Payment'}
+                                        {loading ? 'Authorizing Transcation...' : 'Execute Payment'}
                                     </Button>
                                 </motion.form>
                             ) : (
@@ -161,26 +161,26 @@ export default function Send() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     className="py-12 text-center lg:text-left"
                                 >
-                                    <div className="h-20 w-20 bg-emerald-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/20 mb-10 mx-auto lg:mx-0 -rotate-6">
-                                        <CheckCircle2 className="h-10 w-10 text-black" />
+                                    <div className="h-20 w-20 bg-emerald-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/10 mb-10 mx-auto lg:mx-0 -rotate-3">
+                                        <CheckCircle2 className="h-10 w-10 text-white" />
                                     </div>
-                                    <h3 className="text-4xl font-bold text-white tracking-tight mb-6">Payment Sent</h3>
-                                    <p className="text-zinc-500 text-base mb-12 max-w-sm font-medium leading-relaxed">
-                                        You've successfully transferred <span className="text-white">₹{parseFloat(amount).toLocaleString()}</span> to <span className="text-violet-400">{receiverUpiId}</span>.
+                                    <h3 className="text-4xl font-black text-foreground tracking-tight mb-6 uppercase">Payment Executed</h3>
+                                    <p className="text-muted-foreground text-base mb-12 max-w-sm font-medium leading-relaxed italic opacity-80">
+                                        Successfully transferred <span className="text-foreground font-black not-italic">₹{parseFloat(amount).toLocaleString()}</span> to <span className="text-primary font-black not-italic">{receiverUpiId}</span>.
                                     </p>
                                     <div className="flex gap-4">
                                         <Button
                                             onClick={() => navigate('/dashboard')}
-                                            className="h-12 px-8 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-bold text-xs uppercase tracking-widest"
+                                            className="h-12 px-8 bg-muted text-foreground hover:bg-muted/80 rounded-xl font-black text-[10px] uppercase tracking-widest"
                                         >
-                                            Dashboard
+                                            Return Home
                                         </Button>
                                         <Button
                                             variant="outline"
                                             onClick={() => { setSuccess(false); setAmount(''); setReceiverUpiId(''); }}
-                                            className="h-12 px-8 border-zinc-800 text-zinc-400 hover:text-white rounded-xl font-bold text-xs uppercase tracking-widest"
+                                            className="h-12 px-8 border-border text-muted-foreground hover:text-foreground rounded-xl font-black text-[10px] uppercase tracking-widest"
                                         >
-                                            Next Payment
+                                            Next Transfer
                                         </Button>
                                     </div>
                                 </motion.div>
@@ -216,14 +216,14 @@ export default function Send() {
                             <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
                         </div>
 
-                        <div className="dashboard-card p-8 flex items-center justify-between group cursor-help">
+                        <div className="dashboard-card p-8 flex items-center justify-between group cursor-help bg-card border-border/40">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Global Reach</p>
-                                <h4 className="text-white text-sm font-medium">ZEN-24 Network Status</h4>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60">Global Reach</p>
+                                <h4 className="text-foreground text-sm font-bold uppercase tracking-tight">ZEN-24 Network Status</h4>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-emerald-500 uppercase">Operational</span>
-                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Operational</span>
+                                <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
                             </div>
                         </div>
                     </div>

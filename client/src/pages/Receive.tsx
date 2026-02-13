@@ -71,7 +71,7 @@ export default function Receive() {
     };
 
     return (
-        <AppLayout title="Receive INR" subtitle="Generate a security token to receive INR from another user.">
+        <AppLayout title="Receive Money" subtitle="Generate a security token to receive assets from another user.">
             <div className="w-full h-full flex items-center justify-center animate-in fade-in duration-700 p-4 lg:p-12">
                 <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-24 items-start animate-in fade-in slide-in-from-bottom-2 duration-700">
 
@@ -84,7 +84,7 @@ export default function Receive() {
                                 <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
                                 Payment Request
                             </div>
-                            <h2 className="text-4xl font-bold text-white tracking-tight mb-4">Receive Assets</h2>
+                            <h2 className="text-4xl font-black text-foreground tracking-tight mb-4 uppercase">Receive Money</h2>
                             <p className="text-zinc-500 text-sm font-medium leading-relaxed max-w-xs">
                                 Generate a unique QR code or payment link to receive funds instantly from any user.
                             </p>

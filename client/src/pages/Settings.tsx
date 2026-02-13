@@ -152,6 +152,16 @@ export default function Settings() {
         } catch (err) { /* silent */ }
     };
 
+    const handleMarkAllRead = async () => {
+        try {
+            await axios.put(`${API_URL}/notifications/mark-all-read`);
+            setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+            toast.success('All notifications marked as read');
+        } catch (err) {
+            toast.error('Failed to mark all as read');
+        }
+    };
+
     const tabs = [
         { id: 'profile', label: 'Profile', icon: <User size={16} /> },
         { id: 'security', label: 'Security', icon: <Lock size={16} /> },
@@ -169,10 +179,10 @@ export default function Settings() {
             <div className="flex flex-col">
                 <div className="border-b border-white/5 sticky top-0 z-20 bg-background/80 backdrop-blur-xl">
                     <div className="max-w-5xl py-4">
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center justify-between mb-8">
                             <div>
-                                <h1 className="text-xl font-bold text-foreground tracking-tight">Settings</h1>
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mt-1">Manage your identity & security</p>
+                                <h1 className="text-2xl font-black text-foreground tracking-tight uppercase">Control Center</h1>
+                                <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.25em] mt-1.5 opacity-70">Identity & Security Node Configuration</p>
                             </div>
                         </div>
 
@@ -181,9 +191,9 @@ export default function Settings() {
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`relative pb-4 text-[11px] font-bold uppercase tracking-widest transition-all outline-none ${activeTab === tab.id
-                                        ? 'text-violet-400'
-                                        : 'text-zinc-500 hover:text-zinc-300'
+                                    className={`relative pb-4 text-[11px] font-black uppercase tracking-[0.2em] transition-all outline-none ${activeTab === tab.id
+                                        ? 'text-violet-500'
+                                        : 'text-muted-foreground hover:text-foreground'
                                         }`}
                                 >
                                     <div className="flex items-center gap-2">
@@ -220,8 +230,8 @@ export default function Settings() {
                                         <CheckCircle2 size={24} />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-bold text-foreground">Verify New Email</h2>
-                                        <p className="text-zinc-500 text-xs mt-1">Check your inbox for the 6-digit code</p>
+                                        <h2 className="text-2xl font-black text-foreground tracking-tight">VERIFY IDENTITY</h2>
+                                        <p className="text-muted-foreground text-xs font-medium mt-2">Authorization required to update sensitive records.</p>
                                     </div>
                                     <form onSubmit={handleVerifyEmail} className="space-y-4">
                                         <Input
@@ -240,33 +250,33 @@ export default function Settings() {
                                 <motion.div key="profile" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
                                     <form onSubmit={handleUpdateProfile} className="space-y-6">
                                         <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Full Legal Name</label>
+                                            <div className="space-y-2.5">
+                                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Network Identity</label>
                                                 <Input
                                                     value={fullName}
                                                     onChange={(e) => setFullName(e.target.value)}
-                                                    className="bg-card border-border h-11 rounded-xl text-sm font-medium focus:ring-1 focus:ring-violet-500/20"
+                                                    className="bg-muted/40 border-border h-12 rounded-2xl text-[14px] font-bold focus:ring-violet-500/20 shadow-sm"
                                                 />
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Age</label>
+                                            <div className="space-y-2.5">
+                                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Lifecycle Count</label>
                                                 <Input
                                                     type="number"
                                                     value={age}
                                                     onChange={(e) => setAge(e.target.value)}
-                                                    className="bg-card border-border h-11 rounded-xl text-sm font-medium"
+                                                    className="bg-muted/40 border-border h-12 rounded-2xl text-[14px] font-bold shadow-sm"
                                                 />
                                             </div>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Email Address</label>
+                                        <div className="space-y-2.5">
+                                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Communication Uplink</label>
                                             <Input
                                                 type="email"
                                                 value={newEmail}
                                                 onChange={(e) => setNewEmail(e.target.value)}
-                                                leftIcon={<Mail size={14} className="text-zinc-600" />}
-                                                className="bg-card border-border h-11 rounded-xl text-sm font-medium"
+                                                leftIcon={<Mail size={16} className="text-muted-foreground/60" />}
+                                                className="bg-muted/40 border-border h-12 rounded-2xl text-[14px] font-bold shadow-sm"
                                             />
                                         </div>
 
@@ -283,17 +293,17 @@ export default function Settings() {
                                             </motion.div>
                                         )}
 
-                                        <div className="flex items-center justify-between pt-4 border-t border-border">
-                                            <p className="text-[11px] text-zinc-500 font-medium italic">Changes are saved globally across your account.</p>
+                                        <div className="flex items-center justify-between pt-8 border-t border-border/40">
+                                            <p className="text-[11px] text-muted-foreground font-medium italic">Record updates are propagated globally across all node clusters.</p>
                                             <Button
                                                 type="submit"
                                                 loading={loading}
                                                 disabled={isUpToDate && !savedStatus}
-                                                className={`h-11 px-6 rounded-xl font-bold text-xs transition-all border-none flex items-center gap-2 ${savedStatus
-                                                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                                                className={`h-12 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all border-none flex items-center gap-2 shadow-xl ${savedStatus
+                                                    ? 'bg-emerald-500 text-white'
                                                     : isUpToDate
-                                                        ? 'bg-zinc-800/50 text-zinc-500 cursor-not-allowed border border-border'
-                                                        : 'bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-600/20'
+                                                        ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
+                                                        : 'bg-foreground text-background hover:bg-foreground/90'
                                                     }`}
                                             >
                                                 {savedStatus ? (
@@ -309,37 +319,37 @@ export default function Settings() {
                                 </motion.div>
                             ) : activeTab === 'security' ? (
                                 <motion.div key="security" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-                                    <header className="space-y-1">
-                                        <h1 className="text-2xl font-bold text-foreground">Security</h1>
-                                        <p className="text-sm text-zinc-500 font-medium">Protect your account with advanced security features.</p>
+                                    <header className="space-y-1.5">
+                                        <h1 className="text-2xl font-black text-foreground tracking-tight uppercase">Security Protocols</h1>
+                                        <p className="text-xs text-muted-foreground font-medium italic">Protect your digital identity with multi-layer encryption.</p>
                                     </header>
                                     <div className="grid gap-4">
-                                        <div className="p-4 bg-card border border-border rounded-2xl flex items-center justify-between group hover:border-violet-500/20 transition-all">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20">
-                                                    <Lock size={18} />
+                                        <div className="p-6 bg-card border border-border/60 rounded-[2rem] flex items-center justify-between group hover:border-violet-500/30 transition-all shadow-sm">
+                                            <div className="flex items-center gap-5">
+                                                <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20 shadow-inner">
+                                                    <Lock size={20} />
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-sm font-bold text-foreground">Password</h4>
-                                                    <p className="text-[11px] text-zinc-500 mt-0.5">Change your secret password</p>
+                                                    <h4 className="text-[15px] font-black text-foreground uppercase tracking-tight">Identity Key</h4>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1 opacity-70">Update node access credentials</p>
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" size="sm" onClick={() => navigate('/forgot-password')} className="h-8 text-[11px] font-bold text-zinc-400 hover:text-foreground">
-                                                Reset Now
+                                            <Button variant="ghost" size="sm" onClick={() => navigate('/forgot-password')} className="h-10 px-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all">
+                                                Execute Reset
                                             </Button>
                                         </div>
-                                        <div className="p-4 bg-card border border-border rounded-2xl flex items-center justify-between group hover:border-violet-500/20 transition-all">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500 border border-sky-500/20">
-                                                    <Smartphone size={18} />
+                                        <div className="p-6 bg-card border border-border/60 rounded-[2rem] flex items-center justify-between group hover:border-sky-500/30 transition-all shadow-sm">
+                                            <div className="flex items-center gap-5">
+                                                <div className="h-12 w-12 rounded-2xl bg-sky-500/10 flex items-center justify-center text-sky-500 border border-sky-500/20 shadow-inner">
+                                                    <Smartphone size={20} />
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-sm font-bold text-foreground">Two-Factor Authentication</h4>
-                                                    <p className="text-[11px] text-zinc-500 mt-0.5">Currently: Disabled</p>
+                                                    <h4 className="text-[15px] font-black text-foreground uppercase tracking-tight">Biometric Link</h4>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1 opacity-70">State: <span className="text-sky-500">Standby (Disabled)</span></p>
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" size="sm" className="h-8 text-[11px] font-bold text-sky-500 hover:bg-sky-500/10">
-                                                Enable
+                                            <Button variant="ghost" size="sm" className="h-10 px-5 text-[10px] font-black uppercase tracking-widest text-sky-600 hover:bg-sky-500/10 rounded-xl transition-all">
+                                                Authorize
                                             </Button>
                                         </div>
                                     </div>
@@ -381,11 +391,21 @@ export default function Settings() {
                                     )}
 
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest px-1">Activity Stream</h3>
-                                            <button onClick={fetchNotifications} className="text-zinc-500 hover:text-violet-400 p-1">
-                                                <RefreshCw size={14} className={notifLoading ? 'animate-spin' : ''} />
-                                            </button>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.25em] px-1 opacity-70">Event Stream</h3>
+                                            <div className="flex items-center gap-4">
+                                                {notifications.some(n => !n.is_read) && (
+                                                    <button
+                                                        onClick={handleMarkAllRead}
+                                                        className="text-[10px] font-bold text-violet-500 hover:text-violet-400 uppercase tracking-wider transition-colors"
+                                                    >
+                                                        Mark all as read
+                                                    </button>
+                                                )}
+                                                <button onClick={fetchNotifications} className="text-zinc-500 hover:text-violet-400 p-1">
+                                                    <RefreshCw size={14} className={notifLoading ? 'animate-spin' : ''} />
+                                                </button>
+                                            </div>
                                         </div>
 
                                         {notifications.length === 0 ? (
@@ -420,10 +440,10 @@ export default function Settings() {
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center justify-between gap-4">
-                                                                <h4 className={`text-sm font-bold ${n.is_read ? 'text-zinc-500' : 'text-foreground'}`}>{n.title}</h4>
-                                                                <span className="text-[10px] text-zinc-500 font-medium">{new Date(n.created_at).toLocaleDateString()}</span>
+                                                                <h4 className={`text-[13px] font-black uppercase tracking-tight ${n.is_read ? 'text-muted-foreground/60' : 'text-foreground'}`}>{n.title}</h4>
+                                                                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest bg-muted px-2 py-0.5 rounded-md">{new Date(n.created_at).toLocaleDateString()}</span>
                                                             </div>
-                                                            <p className="text-xs text-zinc-500 mt-1">{n.short_message}</p>
+                                                            <p className="text-[11px] text-muted-foreground font-medium mt-1.5 italic opacity-80">{n.short_message}</p>
 
                                                             <AnimatePresence>
                                                                 {expandedNotif === n.id && n.full_message && (
@@ -446,9 +466,9 @@ export default function Settings() {
                                 </motion.div>
                             ) : activeTab === 'appearance' ? (
                                 <motion.div key="appearance" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-                                    <div className="space-y-1">
-                                        <h2 className="text-xl font-bold text-foreground">Theme & Interface</h2>
-                                        <p className="text-sm text-zinc-500 font-medium">Personalize the visual density and mode of your workspace.</p>
+                                    <div className="space-y-2">
+                                        <h2 className="text-2xl font-black text-foreground tracking-tight uppercase">Visual Frequency</h2>
+                                        <p className="text-xs text-muted-foreground font-medium italic">Adjust the electromagnetic spectrum of your terminal interface.</p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <button
@@ -458,10 +478,12 @@ export default function Settings() {
                                                 : 'bg-card border-border hover:border-violet-500/20'
                                                 }`}
                                         >
-                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-violet-500 text-white' : 'bg-zinc-800 text-zinc-500'
-                                                }`}>
+                                            <motion.div
+                                                animate={{ scale: theme === 'dark' ? 1.05 : 1, rotate: theme === 'dark' ? 0 : -10 }}
+                                                className={`h-10 w-10 rounded-xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-violet-500 text-white' : 'bg-muted text-muted-foreground'
+                                                    }`}>
                                                 <Moon size={20} />
-                                            </div>
+                                            </motion.div>
                                             <h3 className="font-bold text-sm text-foreground">Midnight Dark</h3>
                                             <p className="text-[10px] text-zinc-500 mt-1">Optimal for focused late-night sessions.</p>
                                         </button>
@@ -472,18 +494,20 @@ export default function Settings() {
                                                 : 'bg-card border-border hover:border-violet-500/20'
                                                 }`}
                                         >
-                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center mb-4 ${theme === 'light' ? 'bg-violet-500 text-white' : 'bg-zinc-200 text-zinc-400'
-                                                }`}>
+                                            <motion.div
+                                                animate={{ scale: theme === 'light' ? 1.05 : 1, rotate: theme === 'light' ? 0 : 45 }}
+                                                className={`h-10 w-10 rounded-xl flex items-center justify-center mb-4 ${theme === 'light' ? 'bg-violet-500 text-white' : 'bg-muted text-muted-foreground'
+                                                    }`}>
                                                 <Sun size={20} />
-                                            </div>
+                                            </motion.div>
                                             <h3 className="font-bold text-sm text-foreground">Clean Light</h3>
                                             <p className="text-[10px] text-zinc-500 mt-1">High contrast for daylight environments.</p>
                                         </button>
                                     </div>
-                                    <div className="p-4 bg-amber-500/5 border border-amber-500/10 rounded-2xl flex items-start gap-3">
-                                        <Palette size={18} className="text-amber-500 shrink-0 mt-0.5" />
-                                        <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">
-                                            Theme settings are applied instantly to your local system. Cloud sync for appearance is currently in experimental phase.
+                                    <div className="p-5 bg-muted/40 border border-border/40 rounded-[2rem] flex items-start gap-4 shadow-sm backdrop-blur-sm">
+                                        <Palette size={20} className="text-violet-500 shrink-0 mt-0.5" />
+                                        <p className="text-[11px] text-muted-foreground font-medium leading-relaxed italic">
+                                            Frequency shifts are applied instantly to this local node. Cloud-based synchronization is currently in technical preview.
                                         </p>
                                     </div>
                                 </motion.div>

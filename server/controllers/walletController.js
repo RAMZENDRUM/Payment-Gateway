@@ -18,7 +18,8 @@ exports.getTransactions = async (req, res) => {
     try {
         const transactions = await db.query(
             `SELECT t.*, 
-                u_s.full_name as sender_name, 
+                u_s.full_name as sender_name,
+                u_s.upi_id as sender_upi_id,
                 u_r.full_name as receiver_name,
                 u_r.upi_id as receiver_upi_id,
                 a.name as app_name,
@@ -29,7 +30,7 @@ exports.getTransactions = async (req, res) => {
                 END as balance_after
              FROM transactions t
              LEFT JOIN users u_s ON t.sender_id = u_s.id
-             JOIN users u_r ON t.receiver_id = u_r.id
+             LEFT JOIN users u_r ON t.receiver_id = u_r.id
              LEFT JOIN apps a ON t.app_id = a.id
              WHERE t.sender_id = $1 OR t.receiver_id = $1
              ORDER BY t.created_at DESC`,
@@ -81,7 +82,7 @@ exports.sendCoins = async (req, res) => {
         await client.query('BEGIN');
 
         // Get receiver by UPI ID (upi_id column)
-        const receiver = await client.query('SELECT id FROM users WHERE upi_id = $1', [receiverUpiId]);
+        const receiver = await client.query('SELECT id, full_name, upi_id FROM users WHERE upi_id = $1', [receiverUpiId]);
         if (receiver.rows.length === 0) {
             throw new Error('Receiver ZenWallet ID not found');
         }
@@ -120,7 +121,7 @@ exports.sendCoins = async (req, res) => {
 
         const transaction = txResult.rows[0];
 
-        // Fetch names for the receipt
+        // Fetch sender info for the receipt
         const sender = await client.query('SELECT full_name, upi_id FROM users WHERE id = $1', [senderId]);
 
         await client.query('COMMIT');

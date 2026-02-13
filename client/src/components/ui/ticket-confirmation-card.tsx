@@ -12,7 +12,8 @@ const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="3"
+        stroke="currentColor"
+        strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
     >
@@ -29,13 +30,12 @@ const XCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="3"
+        strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
     >
-        <circle cx="12" cy="12" r="10" />
-        <line x1="15" y1="9" x2="9" y2="15" />
-        <line x1="9" y1="9" x2="15" y2="15" />
+        <path d="M18 6 6 18" />
+        <path d="M6 6 18 18" />
     </svg>
 );
 
@@ -132,7 +132,7 @@ const AnimatedTicket = React.forwardRef<HTMLDivElement, TicketProps>(
                 <div
                     ref={ref}
                     className={cn(
-                        "relative w-full max-w-[280px] bg-white/[0.03] backdrop-blur-3xl text-white rounded-[2.5rem] font-sans overflow-hidden border border-white/[0.05]",
+                        "relative w-full max-w-[320px] bg-card text-foreground rounded-[2rem] font-sans overflow-hidden border border-border shadow-2xl",
                         "animate-in fade-in zoom-in duration-500",
                         className
                     )}
@@ -140,59 +140,60 @@ const AnimatedTicket = React.forwardRef<HTMLDivElement, TicketProps>(
                 >
                     {/* Top Status Header */}
                     <div className={cn(
-                        "p-8 flex flex-col items-center text-center",
-                        isSuccess ? "bg-emerald-500/[0.02]" : "bg-red-500/[0.02]"
+                        "p-10 flex flex-col items-center text-center pb-8",
+                        isSuccess ? "bg-emerald-500/5" : "bg-destructive/5"
                     )}>
                         <div className={cn(
-                            "h-12 w-12 rounded-full flex items-center justify-center mb-4 transition-transform duration-500",
-                            isSuccess ? "bg-emerald-500 shadow-2xl shadow-emerald-500/20" : "bg-red-500 shadow-2xl shadow-red-500/20"
+                            "h-16 w-16 rounded-full flex items-center justify-center mb-6 transition-transform duration-500",
+                            isSuccess ? "bg-emerald-500 text-white shadow-2xl shadow-emerald-500/30" : "bg-destructive text-destructive-foreground shadow-2xl shadow-destructive/30"
                         )}>
-                            {isSuccess ? <CheckCircleIcon className="text-black w-6 h-6" /> : <XCircleIcon className="text-white w-6 h-6" />}
+                            {isSuccess ? <CheckCircleIcon className="w-8 h-8" /> : <XCircleIcon className="w-8 h-8" />}
                         </div>
 
-                        <h2 className="text-xl font-medium tracking-tighter mb-1 uppercase">
-                            {isSuccess ? "Approved" : "Denied"}
+                        <h2 className="text-2xl font-black tracking-tight mb-2 uppercase text-foreground">
+                            {isSuccess ? "Payment Approved" : "Transaction Failed"}
                         </h2>
-                        <p className="text-[10px] text-zinc-600 font-medium tracking-[3px] uppercase">
-                            {isSuccess ? "Transaction Secure" : "Protocol Failed"}
+                        <p className="text-[10px] text-muted-foreground font-black tracking-[0.3em] uppercase opacity-70">
+                            {isSuccess ? "Securely Transmitted" : "Network Rejection"}
                         </p>
                     </div>
 
                     {/* Ticket Body */}
-                    <div className="px-8 py-4 space-y-4 relative">
-                        {/* Decorative Punch Holes blending with global bg */}
-                        <div className="absolute -left-3 top-[-10px] w-6 h-6 rounded-full bg-[#08090b]" />
-                        <div className="absolute -right-3 top-[-10px] w-6 h-6 rounded-full bg-[#08090b]" />
+                    <div className="px-8 pb-8 pt-0 space-y-6 relative bg-card">
 
-                        <div className="border-t border-dashed border-white/[0.05] pt-6 space-y-4">
-                            <div className="flex flex-col items-center py-1">
-                                <span className="text-[9px] text-zinc-600 font-medium uppercase tracking-[3px] mb-2">Destination</span>
-                                <span className="text-base font-medium truncate max-w-full text-center px-1 tracking-tight">{receiverTitle}</span>
+                        <div className="border-t-2 border-dashed border-border/60 pt-8 space-y-8">
+                            <div className="flex flex-col items-center">
+                                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-3 opacity-60">Beneficiary</span>
+                                <span className="text-lg font-bold truncate max-w-full text-center px-1 tracking-tight text-foreground">{receiverTitle}</span>
                             </div>
 
-                            <div className="flex flex-col items-center pb-4">
-                                <span className="text-[9px] text-zinc-600 font-medium uppercase tracking-[3px] mb-2">Quantity</span>
-                                <span className="text-4xl font-medium tracking-tighter text-white tabular-nums">{formattedAmount}</span>
+                            <div className="flex flex-col items-center">
+                                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-2 opacity-60">Total Amount</span>
+                                <span className="text-5xl font-black tracking-tighter text-foreground tabular-nums flex items-start gap-1">
+                                    <span className="text-2xl mt-1 opacity-40">₹</span>
+                                    {amount.toLocaleString()}
+                                </span>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/[0.02]">
-                                <div className="space-y-1">
-                                    <span className="text-[8px] text-zinc-700 font-medium uppercase tracking-[2px] block">Node Path</span>
-                                    <span className="text-[10px] font-mono text-zinc-500 uppercase break-all block">{ticketId}</span>
+                            <div className="grid grid-cols-2 gap-8 pt-6 border-t border-border/40">
+                                <div className="space-y-1.5">
+                                    <span className="text-[8px] text-muted-foreground font-black uppercase tracking-[0.2em] block opacity-60">Reference ID</span>
+                                    <span className="text-[10px] font-mono text-foreground font-bold uppercase break-all block tracking-widest">{ticketId}</span>
                                 </div>
-                                <div className="space-y-1 text-right">
-                                    <span className="text-[8px] text-zinc-700 font-medium uppercase tracking-[2px] block">Timestamp</span>
-                                    <span className="text-[10px] font-medium text-zinc-500 block uppercase">{formattedDate.split(',')[0]}</span>
+                                <div className="space-y-1.5 text-right">
+                                    <span className="text-[8px] text-muted-foreground font-black uppercase tracking-[0.2em] block opacity-60">Timestamp</span>
+                                    <span className="text-[10px] font-bold text-foreground block uppercase tracking-wide">{formattedDate.split(',')[0]}</span>
+                                    <span className="text-[9px] font-medium text-muted-foreground block uppercase">{formattedDate.split(',')[1]}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Bottom Branding */}
-                    <div className="py-6 flex flex-col items-center">
-                        <div className="flex items-center gap-2 opacity-20 transition-opacity hover:opacity-50">
-                            <div className="h-4 w-4 bg-white text-black rounded-lg flex items-center justify-center text-[8px] font-black">Z</div>
-                            <span className="text-[8px] font-medium tracking-[4px] uppercase">Zen Protocol</span>
+                    <div className="py-5 bg-muted/30 flex flex-col items-center border-t border-border">
+                        <div className="flex items-center gap-2 opacity-40 transition-opacity hover:opacity-100 group cursor-help">
+                            <div className="h-5 w-5 bg-primary text-primary-foreground rounded-md flex items-center justify-center text-[10px] font-black group-hover:scale-110 transition-transform">Z</div>
+                            <span className="text-[9px] font-black tracking-[0.3em] uppercase text-foreground">Verified by Zen</span>
                         </div>
                     </div>
                 </div>
