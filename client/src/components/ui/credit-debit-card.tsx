@@ -24,17 +24,17 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
 
         const getCardTheme = () => {
             if (spending >= 1000000) return {
-                bg: "bg-black",
-                border: "border-yellow-400/50 shadow-[0_0_20px_rgba(250,204,21,0.2)]",
-                glow: "after:content-[''] after:absolute after:inset-0 after:rounded-[1.5rem] after:shadow-[inset_0_0_15px_rgba(250,204,21,0.15)]"
+                bgColor: "#000000",
+                border: "border-yellow-400/50 shadow-[0_0_25px_rgba(250,204,21,0.4)]",
+                glow: "after:content-[''] after:absolute after:inset-0 after:rounded-[1.5rem] after:shadow-[inset_0_0_15px_rgba(250,204,21,0.3)]"
             };
-            if (spending >= 800000) return { bg: "bg-emerald-950/40", border: "border-emerald-400/40 shadow-[0_0_15px_rgba(52,211,153,0.1)]" };
-            if (spending >= 600000) return { bg: "bg-red-950/40", border: "border-amber-700/40 shadow-[0_0_15px_rgba(185,28,28,0.1)]" };
-            if (spending >= 400000) return { bg: "bg-[#0a0f1c]", border: "border-violet-500/40 shadow-[0_0_15px_rgba(139,92,246,0.1)]" };
-            if (spending >= 300000) return { bg: "bg-[#0a1c12]", border: "border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.1)]" };
-            if (spending >= 200000) return { bg: "bg-[#121212]", border: "border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.15)]" };
-            if (spending >= 100000) return { bg: "bg-[#140b2a]", border: "border-orange-500/40 shadow-[0_0_15px_rgba(249,115,22,0.15)]" };
-            return { bg: "bg-[#1c1c1c]", border: "border-slate-700/50" };
+            if (spending >= 800000) return { bgColor: "#022c22", border: "border-emerald-500/40 shadow-[0_0_25px_rgba(16,185,129,0.25)]" };
+            if (spending >= 600000) return { bgColor: "#2a0a0a", border: "border-red-500/40 shadow-[0_0_25px_rgba(239,68,68,0.25)]" };
+            if (spending >= 400000) return { bgColor: "#0f0a22", border: "border-violet-500/40 shadow-[0_0_25px_rgba(139,92,246,0.25)]" };
+            if (spending >= 300000) return { bgColor: "#0a1c12", border: "border-emerald-500/40 shadow-[0_0_25px_rgba(16,185,129,0.25)]" };
+            if (spending >= 200000) return { bgColor: "#180a0a", border: "border-red-500/40 shadow-[0_0_25px_rgba(239,68,68,0.25)]" };
+            if (spending >= 100000) return { bgColor: "#1a0b0b", border: "border-orange-500/40 shadow-[0_0_25px_rgba(249,115,22,0.25)]" };
+            return { bgColor: "#09090b", border: "border-white/10 shadow-lg" };
         };
 
         const theme = getCardTheme();
@@ -69,12 +69,14 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
                     )}
                 >
                     {/* --- CARD FRONT --- */}
-                    <div className={cn(
-                        "absolute h-full w-full rounded-2xl transition-all duration-500 text-white [backface-visibility:hidden] border p-[1px]",
-                        theme.bg,
-                        theme.border,
-                        (theme as any).glow
-                    )}>
+                    <div
+                        className={cn(
+                            "absolute h-full w-full rounded-2xl transition-all duration-500 text-white [backface-visibility:hidden] border p-[1px]",
+                            theme.border,
+                            (theme as any).glow
+                        )}
+                        style={{ backgroundColor: theme.bgColor }}
+                    >
                         <div className="relative flex h-full flex-col justify-between p-4">
                             <div className="flex items-start justify-between">
                                 <div className="flex flex-col">
@@ -130,11 +132,13 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
                     </div>
 
                     {/* --- CARD BACK --- */}
-                    <div className={cn(
-                        "absolute h-full w-full rounded-2xl transition-all duration-500 text-white [backface-visibility:hidden] [transform:rotateY(180deg)] border",
-                        theme.bg,
-                        theme.border
-                    )}>
+                    <div
+                        className={cn(
+                            "absolute h-full w-full rounded-2xl transition-all duration-500 text-white [backface-visibility:hidden] [transform:rotateY(180deg)] border",
+                            theme.border
+                        )}
+                        style={{ backgroundColor: theme.bgColor }}
+                    >
                         <div className="flex h-full flex-col">
                             <div className="mt-4 h-8 w-full bg-zinc-800/80" />
                             <div className="mx-4 mt-4 flex justify-end">

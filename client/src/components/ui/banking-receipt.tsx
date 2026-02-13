@@ -114,9 +114,9 @@ export const BankingReceipt: React.FC<BankingReceiptProps> = ({ transaction, onC
     };
 
     return (
-        <div ref={receiptRef} className="w-full max-w-4xl bg-card text-foreground rounded-none shadow-2xl overflow-hidden relative flex flex-col md:flex-row items-stretch border border-border/10" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div ref={receiptRef} className="w-full max-w-4xl bg-card text-foreground rounded-none shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden relative flex flex-col md:flex-row items-stretch border border-border/60" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {/* Left Panel: Branding & Status */}
-            <div className="w-full md:w-2/5 bg-muted/30 border-r border-border/30 p-8 flex flex-col justify-between relative">
+            <div className="w-full md:w-2/5 bg-muted/60 border-r border-border/60 p-8 flex flex-col justify-between relative">
                 <div className="w-2 h-full bg-primary absolute left-0 top-0" />
 
                 <div className="space-y-8">
