@@ -1,9 +1,9 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Copy, Check } from "lucide-react";
+import toast from "react-hot-toast";
 
 // --- PROPS INTERFACE ---
-// Defines the types for the props that the component accepts.
-// This ensures type safety and provides clear documentation.
 interface FlippableCreditCardProps extends React.HTMLAttributes<HTMLDivElement> {
     cardholderName: string;
     cardNumber: string;
@@ -14,6 +14,14 @@ interface FlippableCreditCardProps extends React.HTMLAttributes<HTMLDivElement> 
 
 const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCardProps>(
     ({ className, cardholderName, cardNumber, expiryDate, cvv, spending = 0, ...props }, ref) => {
+        const [isFlipped, setIsFlipped] = React.useState(false);
+
+        const handleCardClick = (e: React.MouseEvent) => {
+            if (!props.id?.includes('locked')) {
+                setIsFlipped(!isFlipped);
+            }
+        };
+
         const getCardTheme = () => {
             if (spending >= 1000000) return {
                 bg: "bg-black",
@@ -30,22 +38,36 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
         };
 
         const theme = getCardTheme();
+
+        const copyToClipboard = (text: string, label: string, e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (!text || text.includes('•')) return;
+            navigator.clipboard.writeText(text.replace(/\s/g, ''));
+            toast.success(`${label} copied!`, {
+                icon: <Check className="h-4 w-4 text-emerald-500" />,
+                style: {
+                    borderRadius: '12px',
+                    background: '#09090b',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    fontSize: '12px'
+                },
+            });
+        };
+
         return (
-            // The main container uses `group` to control the flip effect on hover.
-            // `perspective` is used to create the 3D effect.
             <div
-                className={cn("group h-40 w-64 [perspective:1000px]", className)}
+                className={cn("group h-40 w-64 [perspective:1000px] cursor-pointer", className)}
                 ref={ref}
+                onClick={handleCardClick}
                 {...props}
             >
-                {/* The inner container handles the transform animation. */}
                 <div
                     className={cn(
                         "relative h-full w-full rounded-2xl shadow-xl transition-transform duration-700 [transform-style:preserve-3d]",
-                        !props.id?.includes('locked') && "group-hover:[transform:rotateY(180deg)]"
+                        isFlipped && "[transform:rotateY(180deg)]"
                     )}
                 >
-
                     {/* --- CARD FRONT --- */}
                     <div className={cn(
                         "absolute h-full w-full rounded-2xl transition-all duration-500 text-white [backface-visibility:hidden] border p-[1px]",
@@ -54,39 +76,55 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
                         (theme as any).glow
                     )}>
                         <div className="relative flex h-full flex-col justify-between p-4">
-                            {/* Card Header */}
                             <div className="flex items-start justify-between">
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-bold tracking-widest text-slate-400">ZENWALLET</span>
-                                    <span className="text-[7px] font-bold text-violet-500/80">SANDBOX NODE</span>
+                                    <span className="text-[7px] font-bold text-violet-500/80">SECURE VIRTUAL NODE</span>
                                 </div>
-                                <svg
-                                    className="h-9 w-9"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    x="0px"
-                                    y="0px"
-                                    viewBox="0 0 50 50"
+                                <div className="flex flex-col items-end gap-1">
+                                    <svg className="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+                                        <circle cx="25" cy="25" r="23" fill="none" stroke="currentColor" strokeWidth="1" className="text-white/10" />
+                                        <path d="M25 10 L25 40 M10 25 L40 25" stroke="currentColor" strokeWidth="1" className="text-violet-500/30" />
+                                        <rect x="15" y="15" width="20" height="20" rx="4" fill="currentColor" className="text-violet-500/20" />
+                                    </svg>
+                                    {!props.id?.includes('locked') && (
+                                        <span className="text-[6px] text-zinc-500 font-bold uppercase tracking-tighter animate-pulse">Click card to Flip</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex justify-center">
+                                <button
+                                    onClick={(e) => copyToClipboard(cardNumber, "Card number", e)}
+                                    className="group/copy px-4 py-2 hover:bg-white/[0.03] rounded-xl transition-all relative border border-transparent hover:border-white/5"
                                 >
-                                    <image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAB6VBMVEUAAACNcTiVeUKVeUOYfEaafEeUeUSYfEWZfEaykleyklaXe0SWekSZZjOYfEWYe0WXfUWXe0WcgEicfkiXe0SVekSXekSWekKYe0a9nF67m12ZfUWUeEaXfESVekOdgEmVeUWWekSniU+VeUKVeUOrjFKYfEWliE6WeESZe0GSe0WYfES7ml2Xe0WXeESUeEOWfEWcf0eWfESXe0SXfEWYekSVeUKXfEWxklawkVaZfEWWekOUekOWekSYfESZe0eXekWYfEWZe0WZe0eVeUSWeETAnmDCoWLJpmbxy4P1zoXwyoLIpWbjvXjivnjgu3bfu3beunWvkFWxkle/nmDivXiWekTnwXvkwHrCoWOuj1SXe0TEo2TDo2PlwHratnKZfEbQrWvPrWua fUfbt3PJp2agg0v0zYX0zYSfgkvKp2frxX7mwHrlv3rsxn/yzIPgvHfduXWXe0XuyIDzzISsjVO1lVm0lFitjVPzzIPqxX7duna0lVncuHTLqGjvyIHeuXXxyYGZfUayk1iyk1e2lln1zYTEomO2llrb tnOafkjFpGSbfkfZtXLhvHfkv3nqxH3mwXujhU3KqWizlFilh06khk2fgkqsjlPHpWXJp2erjVOhg0yWe0SliE+XekShhEvAn2D///+gx8TWAAAARnRSTlMACVCTtsRl7Pv7+vxkBab7pZv5+ZlL/UnU/f3SJCVe+Fx39naA9/75XSMh0/3SSkia+pil/KRj7Pr662JPkrbP7OLQ0JFOijI1MwAAAAFiS0dEorDd34wAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAg0IDx2lsiuJAAACLElEQVRIx2NgGAXkAUYmZhZWPICFmYkRVQcbOwenmzse4MbFzc6DpIGXj8PD04sA8PbhF+CFaxEU8iWkAQT8hEVgOkTF/InR4eUVICYO1SIhCRMLDAoKDvFDVhUaEhwUFAjjSUlDdMiEhcOEItzdI6OiYxA6YqODIt3dI2DcuDBZsBY5eVTr4xMSYcyk5BRUOXkFsBZFJTQnp6alQxgZmVloUkrKYC0qqmji2WE5EEZuWB6alKoKdi35YQUQRkFYPpFaCouKIYzi6EDitJSUlsGY5RWVRGjJLyxNy4ZxqtIqqvOxaVELQwZFZdkIJVU1RSiSalAt6rUwUBdWG1CP6pT6gNqwOrgCdQyHNYR5YQFhDXj8MiK1IAeyN6aORiyBjByVTc0FqBoKWpqwRCVSgilOaY2OaUPw29qjOzqLvTAchpos47u6EZyYnngUSRwpuTe6D+6qaFQdOPNLRzOM1dzhRZyW+CZouHk3dWLXglFcFIflQhj9YWjJGlZcaKAVSvjyPrRQ0oQVKDAQHlYFYUwIm4gqExGmBSkutaVQJeomwViTJqPK6OhCy2Q9sQBk8cY0DxjTJw0lAQWK6cOKfgNhpKK7ZMpUeF3jPa28BCETamiEqJKM+X1gxvWXpoUjVIVPnwErw71nmpgiqiQGBjNzbgs3j1nus+fMndc+Cwm0T52/oNR9lsdCS24ra7Tq1cbWjpXV3sHRCb1idXZ0sGdltXNxRateRwHRAACYHutzk/2I5QAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMy0wMi0xM1QwODoxNToyOSswMDowMEUnN7UAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjMtMDItMTNUMDg6MTU6MjkrMDA6MDA0eo8JAAAAKHRFWHRkYXRlOnRpbWVzdGFtcAAyMDIzLTAyLTEzVDA4OjE1OjI5KzAwOjAwY2+u1gAAAABJRU5ErkJggg==" />
-                                </svg>
-                                <p className="font-bold tracking-widest text-[10px] text-slate-500 uppercase">MASTERCARD</p>
+                                    <div className="font-mono text-sm tracking-[0.18em] text-slate-200 whitespace-nowrap group-hover/copy:text-white transition-colors">
+                                        {cardNumber}
+                                    </div>
+                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 opacity-0 group-hover/copy:opacity-100 transition-all flex items-center gap-1">
+                                        <span className="text-[6px] font-bold text-violet-500 uppercase tracking-widest">Click to copy</span>
+                                        <Copy size={6} className="text-violet-500" />
+                                    </div>
+                                </button>
                             </div>
 
-                            {/* Card Number */}
-                            <div className="text-center font-mono text-sm tracking-[0.15em] text-slate-200 whitespace-nowrap">
-                                {cardNumber}
-                            </div>
-
-                            {/* Card Footer */}
                             <div className="flex items-end justify-between">
-                                <div className="text-left">
-                                    <p className="text-[7px] font-bold uppercase text-slate-600 tracking-widest">Card Holder</p>
-                                    <p className="font-mono text-[10px] font-medium text-slate-300">{cardholderName}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[7px] font-bold uppercase text-slate-600 tracking-widest">Expires</p>
-                                    <p className="font-mono text-[10px] font-medium text-slate-300">{expiryDate}</p>
-                                </div>
+                                <button
+                                    onClick={(e) => copyToClipboard(cardholderName, "Holder name", e)}
+                                    className="text-left group/copy p-1.5 hover:bg-white/[0.03] rounded-lg transition-all border border-transparent hover:border-white/5 relative"
+                                >
+                                    <p className="text-[7px] font-bold uppercase text-slate-600 tracking-widest mb-0.5">Card Holder</p>
+                                    <p className="font-mono text-[9px] font-medium text-slate-300 group-hover/copy:text-white transition-colors">{cardholderName}</p>
+                                    <Copy size={6} className="absolute top-1 right-1 opacity-0 group-hover/copy:opacity-100 text-violet-500" />
+                                </button>
+                                <button
+                                    onClick={(e) => copyToClipboard(expiryDate, "Expiry date", e)}
+                                    className="text-right group/copy p-1.5 hover:bg-white/[0.03] rounded-lg transition-all border border-transparent hover:border-white/5 relative"
+                                >
+                                    <p className="text-[7px] font-bold uppercase text-slate-600 tracking-widest mb-0.5">Expires</p>
+                                    <p className="font-mono text-[9px] font-medium text-slate-300 group-hover/copy:text-white transition-colors">{expiryDate}</p>
+                                    <Copy size={6} className="absolute top-1 left-1 opacity-0 group-hover/copy:opacity-100 text-violet-500" />
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -98,32 +136,27 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
                         theme.border
                     )}>
                         <div className="flex h-full flex-col">
-                            {/* Magnetic Strip */}
-                            <div className="mt-6 h-8 w-full bg-neutral-900" />
-                            {/* CVV Section */}
+                            <div className="mt-4 h-8 w-full bg-zinc-800/80" />
                             <div className="mx-4 mt-4 flex justify-end">
-                                <div className="flex h-7 w-full items-center justify-end rounded-md bg-neutral-800 pr-4 border border-slate-700">
-                                    <p className="font-mono text-xs text-white">{cvv}</p>
-                                </div>
-                            </div>
-                            <p className="self-end pr-4 text-[7px] font-bold uppercase text-slate-600 mt-1">CVV / CVC</p>
-
-                            {/* Signature Logo */}
-                            <div className="mt-auto p-4 text-right flex justify-between items-end">
-                                <span className="text-[6px] text-zinc-600 w-1/2 leading-tight text-left">
-                                    This virtual node is used for secure Sandbox transaction validation.
-                                </span>
-                                <svg
-                                    className="h-6 w-6"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 48 48"
+                                <button
+                                    onClick={(e) => copyToClipboard(cvv, "CVV", e)}
+                                    className="group/copy bg-white h-6 w-10 flex items-center justify-center rounded relative"
                                 >
+                                    <span className="font-mono text-[10px] text-zinc-900 font-bold">{cvv}</span>
+                                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover/copy:opacity-100 transition-all flex items-center gap-1 whitespace-nowrap">
+                                        <span className="text-[6px] font-bold text-violet-400 uppercase tracking-widest">Copy CVV</span>
+                                        <Copy size={6} className="text-violet-400" />
+                                    </div>
+                                </button>
+                            </div>
+                            <div className="mt-auto p-4 flex justify-between items-center">
+                                <div className="text-slate-500 text-[6px] font-medium leading-tight max-w-[120px]">
+                                    This card is issued by ZenWallet for sandbox testing. Authorized use only.
+                                </div>
+                                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
                                     <path fill="#ff9800" d="M32 10A14 14 0 1 0 32 38A14 14 0 1 0 32 10Z" />
                                     <path fill="#d50000" d="M16 10A14 14 0 1 0 16 38A14 14 0 1 0 16 10Z" />
-                                    <path
-                                        fill="#ff3d00"
-                                        d="M18,24c0,4.755,2.376,8.95,6,11.48c3.624-2.53,6-6.725,6-11.48s-2.376-8.95-6-11.48 C20.376,15.05,18,19.245,18,24z"
-                                    />
+                                    <path fill="#ff3d00" d="M18,24c0,4.755,2.376,8.95,6,11.48c3.624-2.53,6-6.725,6-11.48s-2.376-8.95-6-11.48C20.376,15.05,18,19.245,18,24z" />
                                 </svg>
                             </div>
                         </div>
@@ -133,6 +166,7 @@ const FlippableCreditCard = React.forwardRef<HTMLDivElement, FlippableCreditCard
         );
     }
 );
+
 FlippableCreditCard.displayName = "FlippableCreditCard";
 
 export { FlippableCreditCard };

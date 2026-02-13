@@ -304,7 +304,7 @@ exports.getPaymentDetails = async (req, res) => {
     const { token } = req.params;
     try {
         const request = await db.query(
-            `SELECT pr.*, u.full_name as receiver_name, pr.callback_url 
+            `SELECT pr.*, u.full_name as receiver_name, u.upi_id as receiver_upi_id, pr.callback_url 
        FROM payment_requests pr
        JOIN users u ON pr.receiver_id = u.id
        WHERE pr.token = $1`,

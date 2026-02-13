@@ -2,17 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import Loader from '@/components/Loader';
 import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, XCircle, Loader2, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Loader2, Image as ImageIcon, Wallet, ArrowRight, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/AuthContext';
 
 import { API_URL } from '@/lib/api';
 
 interface ScanResult {
     token: string;
-    receiverId: string;
+    receiverId: string; // This is the UUID
+    receiverUpiId: string; // The @zenwallet ID
     receiverName: string;
     amount: number;
     referenceId?: string;
@@ -20,6 +22,7 @@ interface ScanResult {
 }
 
 export default function Scan() {
+    const { user } = useAuth();
     const [isScanning, setIsScanning] = useState(false);
     const [scanResult, setScanResult] = useState<ScanResult | null>(null);
     const [loading, setLoading] = useState(false);
@@ -51,6 +54,7 @@ export default function Scan() {
             setScanResult({
                 token: 'demo-token-123',
                 receiverId: 'merchant-id-abc',
+                receiverUpiId: 'merchant@zenwallet',
                 receiverName: 'Apex Electronics',
                 amount: 499.00,
                 referenceId: 'INV-2026-001',
@@ -65,8 +69,9 @@ export default function Scan() {
             setScanResult({
                 token,
                 receiverId: res.data.receiver_id,
+                receiverUpiId: res.data.receiver_upi_id || res.data.receiver_id, // Fallback if missing
                 receiverName: res.data.receiver_name,
-                amount: res.data.amount,
+                amount: parseFloat(res.data.amount),
                 referenceId: res.data.reference_id,
                 callbackUrl: res.data.callback_url
             });
@@ -138,15 +143,17 @@ export default function Scan() {
 
     function onScanSuccess(result: string) {
         console.log("🔍 Scan hit:", result);
+        // 1. Check for URL format
+        if (result.startsWith('http')) {
+            // Check for internal payment URL
+            if (result.includes('/scan?token=')) {
+                const token = result.split('token=')[1]?.split('&')[0];
+                if (token) {
+                    fetchPaymentDetails(token);
+                    return;
+                }
+            }
 
-        // Immediate stop for better UX
-        if (scannerRef.current) {
-            scannerRef.current.stop().catch(() => { });
-            setIsScanning(false);
-        }
-
-        // 1. Check for modern URL format (e.g. zenwallet.app/send?to=xyz)
-        if (result.includes('/send?to=')) {
             try {
                 const url = new URL(result);
                 const to = url.searchParams.get('to');
@@ -199,9 +206,7 @@ export default function Scan() {
             console.error(err);
         } finally {
             setLoading(false);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -231,21 +236,26 @@ export default function Scan() {
     };
 
     return (
-        <div className="min-h-screen w-full bg-zinc-950 text-white p-4 md:p-8">
-            <div className="max-w-xl mx-auto">
-                <header className="mb-12 flex items-center justify-between">
+        <div className="min-h-screen w-full bg-zinc-950 text-white p-4 md:p-8 flex flex-col items-center">
+            <div className="w-full max-w-lg mx-auto flex-1 flex flex-col">
+                <header className="mb-8 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-zinc-500 hover:text-white transition-colors">
-                            <ArrowLeft size={18} />
+                            <ArrowLeft size={20} />
                         </button>
                         <div>
-                            <h1 className="text-xl font-semibold text-white tracking-tight">Scan any QR</h1>
-                            <p className="text-zinc-500 text-xs font-medium mt-1">ZenWallet, GPay, PhonePe & more</p>
+                            <h1 className="text-xl font-bold text-white tracking-tight">Scan & Pay</h1>
+                            <p className="text-zinc-500 text-xs font-medium">Secure Payment Gateway</p>
                         </div>
                     </div>
+                    {user && (
+                        <div className="h-10 w-10 bg-indigo-500/10 text-indigo-400 rounded-full flex items-center justify-center font-bold text-sm border border-indigo-500/20">
+                            {user.full_name?.charAt(0)}
+                        </div>
+                    )}
                 </header>
 
-                <div className="flex flex-col items-center justify-center min-h-[500px]">
+                <div className="flex-1 flex flex-col justify-center">
                     <AnimatePresence mode="wait">
                         {status === 'idle' && (
                             <motion.div
@@ -255,31 +265,32 @@ export default function Scan() {
                                 className="w-full"
                             >
                                 <div className="relative group">
-                                    <div id="reader" className={`overflow-hidden rounded-[2.5rem] bg-[#0c0c0e]/50 backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-white/[0.02] [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>div]:hidden transition-all duration-500 ${isScanning ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
+                                    <div id="reader" className={`overflow-hidden rounded-[2.5rem] bg-[#0c0c0e] backdrop-blur-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-white/10 [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>div]:hidden transition-all duration-500 ${isScanning ? 'opacity-100 min-h-[300px]' : 'opacity-0 h-0 overflow-hidden'}`}>
                                     </div>
                                     {!isScanning && (
-                                        <div className="flex flex-col items-center justify-center min-h-[400px]">
-                                            <Loader />
+                                        <div className="flex flex-col items-center justify-center min-h-[350px] bg-zinc-900/30 rounded-[2.5rem] border border-white/5 p-8">
+                                            <div className="w-20 h-20 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-500 mb-6 animate-pulse">
+                                                <Wallet size={32} />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-white mb-2">Ready to Scan</h3>
+                                            <p className="text-center text-zinc-500 text-sm max-w-[200px]">Scan any ZenWallet or standard UPI QR code to pay instantly.</p>
                                         </div>
-                                    )}
-                                    {isScanning && (
-                                        <div className="absolute inset-0 rounded-[2.5rem] border-2 border-dashed border-white/20 pointer-events-none animate-pulse" />
                                     )}
                                 </div>
 
                                 <div id="file-scanner" className="hidden"></div>
 
-                                <div className="mt-12 flex flex-col items-center gap-6 w-full">
+                                <div className="mt-8 flex flex-col gap-4 w-full px-4">
                                     <Button
                                         onClick={() => setIsScanning(!isScanning)}
-                                        className={`w-full h-16 rounded-2xl font-bold transition-all transform active:scale-95 ${isScanning ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20' : 'bg-white text-black hover:bg-zinc-200 shadow-xl shadow-white/5'}`}
+                                        className={`w-full h-14 rounded-2xl font-bold transition-all ${isScanning ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' : 'bg-white text-black hover:bg-zinc-200'}`}
                                     >
-                                        {isScanning ? 'Stop Hardware' : 'Start Hardware Interface'}
+                                        {isScanning ? 'Stop Camera' : 'Scan QR Code'}
                                     </Button>
 
                                     <div className="flex items-center gap-4 w-full">
                                         <div className="h-px bg-white/[0.05] flex-1" />
-                                        <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">or</span>
+                                        <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">OR</span>
                                         <div className="h-px bg-white/[0.05] flex-1" />
                                     </div>
 
@@ -295,7 +306,7 @@ export default function Scan() {
                                         variant="outline"
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={loading}
-                                        className="w-full bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 h-14 rounded-2xl flex items-center gap-3 transition-all"
+                                        className="w-full bg-transparent border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-900 h-14 rounded-2xl flex items-center justify-center gap-3"
                                     >
                                         {loading ? <Loader2 className="animate-spin" size={18} /> : <ImageIcon size={18} />}
                                         <span className="text-xs font-bold uppercase tracking-widest">Upload from Gallery</span>
@@ -307,51 +318,74 @@ export default function Scan() {
                         {status === 'confirming' && scanResult && (
                             <motion.div
                                 key="confirm"
-                                initial={{ opacity: 0, y: 10 }}
+                                initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="w-full space-y-12"
+                                className="w-full bg-[#0c0c0e] border border-white/5 rounded-[2rem] p-6 shadow-2xl shadow-indigo-500/10"
                             >
-                                <div className="space-y-2">
-                                    <h2 className="text-4xl font-bold text-white tracking-tight">Review Payment</h2>
-                                    <p className="text-base text-zinc-500 font-medium">Please verify the receiver details</p>
+                                <div className="text-center mb-8">
+                                    <div className="inline-flex items-center justify-center p-2 bg-indigo-500/10 rounded-full mb-4">
+                                        <ShieldCheck className="text-indigo-500 w-8 h-8" />
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-white tracking-tight">Confirm Payment</h2>
+                                    <p className="text-zinc-500 text-sm mt-1">Review the transaction details below</p>
                                 </div>
 
-                                <div className="space-y-10">
-                                    <div className="space-y-8">
-                                        <div className="flex justify-between items-center group">
-                                            <span className="text-[13px] font-medium text-zinc-500">Paying To</span>
-                                            <span className="font-semibold text-white text-sm">{scanResult.receiverName || scanResult.receiverId.slice(0, 12)}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center group">
-                                            <span className="text-[13px] font-medium text-zinc-500">UPI ID</span>
-                                            <span className="font-mono text-zinc-400 text-xs uppercase">{scanResult.receiverId}</span>
-                                        </div>
-                                        <div className="pt-10 border-t border-white/[0.05] flex justify-between items-center">
-                                            <span className="text-[13px] font-medium text-zinc-500">Payable Amount</span>
-                                            <span className="text-5xl font-bold text-white tabular-nums tracking-tight">₹{scanResult.amount.toLocaleString()}</span>
+                                <div className="space-y-6">
+                                    {/* Amount Card */}
+                                    <div className="bg-zinc-900/50 rounded-2xl p-6 text-center border border-white/5">
+                                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Total Amount</p>
+                                        <div className="text-5xl font-black text-white tabular-nums tracking-tighter">
+                                            <span className="text-3xl font-bold text-zinc-500 align-top mr-1">₹</span>
+                                            {scanResult.amount.toLocaleString()}
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 pt-4">
+                                    {/* Transaction Flow */}
+                                    <div className="relative bg-zinc-900/30 rounded-2xl p-5 border border-white/5">
+                                        {/* From */}
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 font-bold border border-white/5">
+                                                {user?.full_name?.charAt(0) || 'You'}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight">Paying From</p>
+                                                <p className="text-sm font-semibold text-white truncate">{user?.full_name}</p>
+                                                <p className="text-[10px] font-mono text-zinc-500 truncate">{user?.upi_id || user?.email}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="py-4 flex justify-center">
+                                            <div className="bg-zinc-800 p-1.5 rounded-full border border-zinc-700">
+                                                <ArrowRight className="w-4 h-4 text-zinc-400" />
+                                            </div>
+                                        </div>
+
+                                        {/* To */}
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 font-bold border border-indigo-500/20">
+                                                {scanResult.receiverName.charAt(0)}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-bold text-indigo-400/70 uppercase tracking-tight">Paying To</p>
+                                                <p className="text-sm font-semibold text-white truncate">{scanResult.receiverName}</p>
+                                                <p className="text-[10px] font-mono text-indigo-300/60 truncate">{scanResult.receiverUpiId}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4">
                                         <Button
                                             onClick={handlePayment}
                                             disabled={loading}
-                                            className="w-full h-16 bg-white hover:bg-zinc-200 text-black font-semibold text-base rounded-2xl shadow-2xl active:scale-95 transition-all"
+                                            className="w-full h-16 bg-white hover:bg-zinc-200 text-black font-extrabold text-lg rounded-2xl shadow-xl shadow-white/5 active:scale-95 transition-all flex items-center justify-center gap-3"
                                         >
-                                            {loading ? (
-                                                <div className="flex items-center gap-2">
-                                                    <Loader2 className="animate-spin" size={16} />
-                                                    <span>Processing...</span>
-                                                </div>
-                                            ) : (
-                                                'Proceed to Pay'
-                                            )}
+                                            {loading ? <Loader2 className="animate-spin" /> : 'Pay Now'}
                                         </Button>
                                         <button
                                             onClick={() => setStatus('idle')}
-                                            className="w-full text-center text-xs text-zinc-600 hover:text-white font-medium pt-4 transition-colors uppercase tracking-widest"
+                                            className="w-full mt-4 py-3 text-xs font-bold text-zinc-600 hover:text-red-400 uppercase tracking-widest transition-colors"
                                         >
-                                            Cancel Payment
+                                            Cancel Transaction
                                         </button>
                                     </div>
                                 </div>
@@ -363,33 +397,35 @@ export default function Scan() {
                                 key="success"
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="text-center w-full max-w-sm mx-auto"
+                                className="w-full text-center"
                             >
-                                <div className="w-20 h-20 bg-emerald-500 rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-emerald-500/20">
-                                    <CheckCircle2 size={32} className="text-black" />
+                                <div className="w-24 h-24 bg-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-emerald-500/30">
+                                    <CheckCircle2 size={42} className="text-black" />
                                 </div>
-                                <h2 className="text-4xl font-bold mb-4 text-white tracking-tight">Payment Successful</h2>
-                                <p className="text-zinc-500 mb-12 text-base font-medium">Transferred <span className="text-white">₹{scanResult.amount.toLocaleString()}</span> successfully.</p>
+                                <h2 className="text-3xl font-black text-white tracking-tight mb-2">Payment Sent!</h2>
+                                <p className="text-zinc-500 font-medium mb-12">
+                                    Successfully transferred <span className="text-white font-bold">₹{scanResult.amount.toLocaleString()}</span> to <span className="text-white font-bold">{scanResult.receiverName}</span>.
+                                </p>
 
                                 {scanResult.callbackUrl ? (
-                                    <div className="text-center space-y-4">
-                                        <p className="text-[11px] text-zinc-600 font-medium tracking-tight">Redirecting to origin...</p>
+                                    <div className="space-y-4">
+                                        <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-widest animate-pulse">Redirecting to merchant...</p>
                                         <Button
                                             onClick={() => {
                                                 const separator = scanResult.callbackUrl?.includes('?') ? '&' : '?';
                                                 window.location.href = `${scanResult.callbackUrl}${separator}status=success&token=${scanResult.token}`;
                                             }}
-                                            className="w-full h-14 bg-white text-black hover:bg-zinc-200 font-medium text-sm rounded-2xl shadow-2xl"
+                                            className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl"
                                         >
-                                            Return to Origin
+                                            Return to Merchant
                                         </Button>
                                     </div>
                                 ) : (
                                     <Button
                                         onClick={() => navigate('/dashboard')}
-                                        className="w-full h-14 bg-zinc-900 border border-white/5 hover:bg-zinc-800 text-white font-medium text-sm rounded-2xl shadow-2xl"
+                                        className="w-full h-14 bg-zinc-800 text-white font-bold rounded-2xl hover:bg-zinc-700"
                                     >
-                                        Exit to Dashboard
+                                        Go to Dashboard
                                     </Button>
                                 )}
                             </motion.div>
@@ -398,20 +434,20 @@ export default function Scan() {
                         {status === 'error' && (
                             <motion.div
                                 key="error"
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="text-center w-full max-w-sm mx-auto"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="w-full text-center"
                             >
-                                <div className="w-20 h-20 bg-red-500/10 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-red-500/20">
-                                    <XCircle size={32} />
+                                <div className="w-24 h-24 bg-red-500/10 border border-red-500/20 rounded-3xl flex items-center justify-center mx-auto mb-8">
+                                    <XCircle size={42} className="text-red-500" />
                                 </div>
-                                <h2 className="text-2xl font-medium mb-2 text-white">Transaction Denied</h2>
-                                <p className="text-zinc-500 mb-10 text-[15px] font-medium">The cryptographic operation failed.</p>
+                                <h2 className="text-2xl font-bold text-white mb-2">Transaction Failed</h2>
+                                <p className="text-zinc-500 text-sm mb-8">We couldn't process your payment at this time.</p>
                                 <Button
                                     onClick={() => setStatus('idle')}
-                                    className="w-full h-14 bg-zinc-900 border border-white/5 text-white hover:bg-zinc-800 font-medium text-sm rounded-2xl"
+                                    className="w-full h-14 bg-white text-black font-bold rounded-2xl hover:bg-zinc-200"
                                 >
-                                    Restart Hardware
+                                    Try Again
                                 </Button>
                             </motion.div>
                         )}

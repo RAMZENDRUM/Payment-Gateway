@@ -9,39 +9,67 @@ const MAX_BALANCE = 500000;
  * This is the new real-time payment flow
  */
 exports.directWalletTransfer = async (req, res) => {
-    const { fromUserId, toWalletId, amount, referenceId, orderId } = req.body;
+    let { fromUserId, toWalletId, amount, referenceId, orderId, cardNumber, cardCvv, cardExpiry, password } = req.body;
 
-    // Validation
-    if (!fromUserId || !toWalletId || !amount || !orderId) {
-        return res.status(400).json({
-            success: false,
-            message: 'fromUserId, toWalletId, amount, and orderId are required'
-        });
-    }
-
-    if (amount <= 0) {
-        return res.status(400).json({
-            success: false,
-            message: 'Amount must be greater than 0'
-        });
-    }
+    const bcrypt = require('bcryptjs'); // Ensure bcrypt is available
 
     const { client, release } = await db.getTransaction();
 
     try {
         await client.query('BEGIN');
 
-        // 1. Verify both users exist
+        // Flow A: direct Auth via Card + Password
+        if (!fromUserId && cardNumber && password) {
+            console.log('Authenticating via Card + Password...');
+            // 1. Resolve User ID from Card
+            const rawCard = cardNumber.replace(/\s/g, "");
+            // Split Expiry
+            let expiryMonth, expiryYear;
+            if (cardExpiry && cardExpiry.includes('/')) {
+                [expiryMonth, expiryYear] = cardExpiry.split('/');
+                expiryYear = `20${expiryYear}`;
+            }
+
+            const cardRes = await client.query(
+                `SELECT user_id FROM virtual_cards 
+                 WHERE card_number = $1 AND cvv = $2`, // And expiry if needed, but CVV is strong enough for lookup
+                [rawCard, cardCvv]
+            );
+
+            if (cardRes.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ success: false, message: 'Invalid Card Details' });
+            }
+            fromUserId = cardRes.rows[0].user_id;
+
+            // 2. Verify Password
+            const userRes = await client.query('SELECT password FROM users WHERE id = $1', [fromUserId]);
+            if (userRes.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ success: false, message: 'User not found' });
+            }
+
+            const validPassword = await bcrypt.compare(password, userRes.rows[0].password);
+            if (!validPassword) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ success: false, message: 'Invalid Password' });
+            }
+            console.log(`User Authenticated: ${fromUserId}`);
+        }
+
+        // Validation
+        if (!fromUserId || !toWalletId || !amount || !orderId) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'fromUserId (or card auth), toWalletId, amount, and orderId are required'
+            });
+        }
+
+        // 1. Verify both users exist (Sender already found if using card auth, but good to double check or re-select details)
         const sender = await client.query('SELECT id, full_name FROM users WHERE id = $1', [fromUserId]);
         const receiver = await client.query('SELECT id, full_name FROM users WHERE id = $1', [toWalletId]);
 
-        if (sender.rows.length === 0) {
-            throw new Error('SENDER_NOT_FOUND');
-        }
-
-        if (receiver.rows.length === 0) {
-            throw new Error('RECEIVER_NOT_FOUND');
-        }
 
         // 2. Check sender balance (with row lock)
         const senderWallet = await client.query(
@@ -367,29 +395,43 @@ exports.verifyCard = async (req, res) => {
 
     try {
         const rawCard = cardNumber.replace(/\s/g, "");
-        // Join with wallets to check balance
+        // Join with wallets to check balance and users to get identity
         const result = await db.query(
-            `SELECT vc.*, w.balance 
+            `SELECT vc.user_id, vc.*, w.balance, u.full_name, u.email 
              FROM virtual_cards vc
              JOIN wallets w ON vc.user_id = w.user_id
+             JOIN users u ON vc.user_id = u.id
              WHERE vc.card_number = $1 AND vc.cvv = $2 AND vc.expiry_month = $3 AND vc.expiry_year = $4`,
             [rawCard, cvv, expiryMonth, expiryYear]
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Invalid card details. Card not found in ZenWallet system.' });
+            return res.status(404).json({ success: false, message: 'Invalid card details. User not exists in ZenWallet system.' });
         }
 
         const card = result.rows[0];
+        console.log('Verified Card Data:', card);
 
         if (amount && parseFloat(card.balance) < parseFloat(amount)) {
             return res.status(200).json({
                 success: false,
-                message: `Insufficient funds. Your balance is ${card.balance} C, but this purchase requires ${amount} C.`
+                message: `Insufficient funds. Your balance is ${card.balance} C, but this purchase requires ${amount} C.`,
+                user: {
+                    fullName: card.full_name,
+                    email: card.email
+                }
             });
         }
 
-        res.json({ success: true, message: 'Card verified and balance sufficient' });
+        res.json({
+            success: true,
+            message: 'Card verified and balance sufficient',
+            user: {
+                id: card.user_id || card.userId || card.id, // Fallbacks
+                fullName: card.full_name,
+                email: card.email
+            }
+        });
     } catch (err) {
         console.error('Verify Card Error:', err);
         res.status(500).json({ success: false, message: 'Server error during card verification' });
