@@ -220,21 +220,18 @@ exports.directWalletTransfer = async (req, res) => {
 };
 
 exports.createPaymentRequestExternal = async (req, res) => {
-    const { amount, referenceId, merchantId, callbackUrl, preferredMethod } = req.body;
+    const { amount, referenceId, callbackUrl, preferredMethod } = req.body;
 
-    if (!amount || !merchantId) {
-        return res.status(400).json({ message: 'Amount and merchantId are required' });
+    if (!amount) {
+        return res.status(400).json({ message: 'Amount is required' });
     }
 
     try {
         const token = uuidv4();
         const expiresAt = new Date(Date.now() + 10 * 60000); // 10 minutes for external
 
-        // Verify merchant exists
-        const merchant = await db.query('SELECT id FROM users WHERE id = $1', [merchantId]);
-        if (merchant.rows.length === 0) {
-            return res.status(404).json({ message: 'Merchant not found' });
-        }
+        // Use API key owner as merchant (receiver)
+        const merchantId = req.clientApp.user_id;
 
         const request = await db.query(
             'INSERT INTO payment_requests (receiver_id, amount, reference_id, token, expires_at, callback_url, app_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
@@ -247,7 +244,7 @@ exports.createPaymentRequestExternal = async (req, res) => {
         res.json({
             success: true,
             data: {
-                paymentUrl: `${BASE_URL}/scan?token=${token}${preferredMethod ? `&method=${preferredMethod}` : ''}`,
+                paymentUrl: `${BASE_URL}/checkout?token=${token}${preferredMethod ? `&method=${preferredMethod}` : ''}`,
                 token: token,
                 qrData: JSON.stringify({
                     token,

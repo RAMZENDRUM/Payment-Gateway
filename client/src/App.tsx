@@ -49,6 +49,7 @@ function AppRoutes() {
             <Route path="/send" element={<PrivateRoute><Send /></PrivateRoute>} />
             <Route path="/receive" element={<PrivateRoute><Receive /></PrivateRoute>} />
             <Route path="/scan" element={<PrivateRoute><Scan /></PrivateRoute>} />
+            <Route path="/checkout" element={<PrivateRoute><Scan /></PrivateRoute>} />
             <Route path="/demo-checkout" element={<DemoCheckout />} />
             <Route path="/payment" element={<PrivateRoute><Payment /></PrivateRoute>} />
             <Route path="*" element={<Navigate to="/" />} />

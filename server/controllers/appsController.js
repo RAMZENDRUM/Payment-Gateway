@@ -89,3 +89,34 @@ exports.getWebhookLogs = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+exports.getAppTransactions = async (req, res) => {
+    const userId = req.user.id;
+    const appId = req.params.id;
+
+    try {
+        // Verify app ownership
+        const appCheck = await db.query('SELECT id FROM apps WHERE id = $1 AND user_id = $2', [appId, userId]);
+        if (appCheck.rows.length === 0) {
+            return res.status(404).json({ message: 'App not found' });
+        }
+
+        const transactions = await db.query(
+            `SELECT t.*, 
+                u_s.full_name as sender_name,
+                u_s.upi_id as sender_upi_id,
+                u_r.full_name as receiver_name,
+                u_r.upi_id as receiver_upi_id
+             FROM transactions t
+             LEFT JOIN users u_s ON t.sender_id = u_s.id
+             LEFT JOIN users u_r ON t.receiver_id = u_r.id
+             WHERE t.app_id = $1
+             ORDER BY t.created_at DESC`,
+            [appId]
+        );
+        res.json(transactions.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};

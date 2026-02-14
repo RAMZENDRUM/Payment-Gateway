@@ -35,6 +35,7 @@ export default function ApiKeys() {
     const [newAppName, setNewAppName] = useState('');
     const [generating, setGenerating] = useState(false);
     const [keyToDelete, setKeyToDelete] = useState<string | null>(null);
+    const [viewingTransactions, setViewingTransactions] = useState<string | null>(null);
 
     useEffect(() => {
         fetchApps();
@@ -199,7 +200,15 @@ export default function ApiKeys() {
                                                         {new Date(app.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
                                                     </div>
                                                 </td>
-                                                <td className="py-4 px-6 text-right">
+                                                <td className="py-4 px-6 text-right flex items-center justify-end gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setViewingTransactions(app.id)}
+                                                        className="h-8 px-3 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-lg font-bold text-[10px] uppercase tracking-wider"
+                                                    >
+                                                        <Sparkles size={13} className="mr-1" /> History
+                                                    </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
@@ -251,6 +260,14 @@ export default function ApiKeys() {
                 </DialogContent>
             </Dialog>
 
+            {/* Transaction History Dialog */}
+            <TransactionHistoryModal
+                appId={viewingTransactions}
+                appName={apps.find(a => a.id === viewingTransactions)?.name || ''}
+                open={!!viewingTransactions}
+                onOpenChange={(open) => !open && setViewingTransactions(null)}
+                token={token}
+            />
 
         </AppLayout>
     );
@@ -259,7 +276,7 @@ export default function ApiKeys() {
 function IntegrationGuideModal() {
     const [open, setOpen] = useState(false);
     const { user } = useAuth();
-
+    // ... (rest of IntegrationGuideModal)
     // Constructing the AI prompt
     const aiPrompt = `## Role
 Act as a Senior Backend Integration Engineer.
@@ -370,5 +387,101 @@ Write clean, robust code to handle this flow. specific to my tech stack.`;
                 </DialogContent>
             </Dialog>
         </>
+    );
+}
+
+// Transaction History Modal Component
+function TransactionHistoryModal({ appId, appName, open, onOpenChange, token }: { appId: string | null, appName: string, open: boolean, onOpenChange: (open: boolean) => void, token: string | null }) {
+    const [transactions, setTransactions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (open && appId) {
+            fetchTransactions();
+        }
+    }, [open, appId]);
+
+    const fetchTransactions = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get(`${API_URL}/apps/${appId}/transactions`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setTransactions(res.data);
+        } catch (err) {
+            toast.error("Failed to load transactions");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="bg-card border-border sm:max-w-4xl rounded-[2rem] p-0 overflow-hidden shadow-2xl backdrop-blur-xl h-[80vh] flex flex-col">
+                <DialogHeader className="p-8 pb-4 border-b border-border/40 bg-muted/20">
+                    <DialogTitle className="text-xl font-black text-foreground flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500">
+                            <Sparkles size={18} fill="currentColor" className="opacity-50" />
+                        </div>
+                        {appName} <span className="text-muted-foreground font-medium opacity-50 text-sm ml-2">Transaction History</span>
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="flex-1 overflow-auto bg-card/50 p-0">
+                    {loading ? (
+                        <div className="space-y-4 p-8">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="h-16 bg-muted/40 animate-pulse rounded-xl" />
+                            ))}
+                        </div>
+                    ) : transactions.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
+                            <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mb-4">
+                                <AlertTriangle className="text-muted-foreground/50" />
+                            </div>
+                            <p className="font-bold">No transactions found</p>
+                            <p className="text-xs opacity-60 mt-1">This app hasn't processed any payments yet.</p>
+                        </div>
+                    ) : (
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-muted/30 sticky top-0 z-10 backdrop-blur-md">
+                                <tr>
+                                    <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Date</th>
+                                    <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Reference</th>
+                                    <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Payer</th>
+                                    <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] text-right">Amount</th>
+                                    <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border/20">
+                                {transactions.map((tx) => (
+                                    <tr key={tx.id} className="hover:bg-muted/10 transition-colors">
+                                        <td className="py-4 px-6 text-xs font-medium text-muted-foreground">
+                                            {new Date(tx.created_at).toLocaleString()}
+                                        </td>
+                                        <td className="py-4 px-6 text-xs font-mono text-foreground font-bold">
+                                            {tx.reference_id || 'N/A'}
+                                        </td>
+                                        <td className="py-4 px-6 text-xs text-muted-foreground">
+                                            {tx.sender_name || 'External / Anonymous'}
+                                            <div className="text-[10px] opacity-50">{tx.sender_upi_id}</div>
+                                        </td>
+                                        <td className="py-4 px-6 text-right font-black text-foreground">
+                                            ₹{parseFloat(tx.amount).toLocaleString()}
+                                        </td>
+                                        <td className="py-4 px-6 text-right">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${tx.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                                                }`}>
+                                                {tx.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }
