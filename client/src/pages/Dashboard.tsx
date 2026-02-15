@@ -81,14 +81,14 @@ const MetricCard = ({ title, value, unit = '', icon, description, decimals = 2 }
             <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                 {icon}
             </div>
-            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60">{title}</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</span>
         </div>
         <div>
-            <div className="text-3xl font-black text-foreground tabular-nums tracking-tighter flex items-baseline">
-                <span className="text-xl font-bold text-muted-foreground mr-1.5 opacity-40">{unit}</span>
+            <div className="text-3xl font-bold text-foreground tabular-nums tracking-tight flex items-baseline">
+                <span className="text-xl font-medium text-muted-foreground mr-1.5 opacity-60">{unit}</span>
                 <AnimatedNumber value={value} decimals={decimals} />
             </div>
-            {description && <p className="text-[10px] text-muted-foreground mt-3 font-bold italic opacity-60">{description}</p>}
+            {description && <p className="text-xs text-muted-foreground mt-2 font-medium">{description}</p>}
         </div>
     </div>
 );
@@ -101,8 +101,8 @@ const MoneyFlowChart = React.memo(({ data }: { data: any[] }) => {
     return (
         <div className="flex-1 bg-card/30 rounded-[2rem] border border-border/40 overflow-hidden backdrop-blur-sm">
             <div className="px-8 pt-8 pb-2">
-                <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em] opacity-60">Flow Analysis</h3>
-                <p className="text-lg font-black text-foreground mt-1 uppercase tracking-tight">Net Capital Velocity</p>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider opacity-60">Flow Analysis</h3>
+                <p className="text-lg font-bold text-foreground mt-1">Capital Velocity</p>
             </div>
             <div className="p-8">
                 <div style={{ width: '100%', height: '260px' }}>
@@ -142,8 +142,8 @@ const TransactionQualityChart = React.memo(({ data }: { data: any[] }) => {
     return (
         <div className="flex-1 bg-card/30 rounded-[2rem] border border-border/40 overflow-hidden backdrop-blur-sm">
             <div className="px-8 pt-8 pb-2">
-                <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em] opacity-60">Tick Velocity</h3>
-                <p className="text-lg font-black text-foreground mt-1 uppercase tracking-tight">Transaction Intensity</p>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider opacity-60">Transaction Volume</h3>
+                <p className="text-lg font-bold text-foreground mt-1">Activity Intensity</p>
             </div>
             <div className="p-8">
                 <div style={{ width: '100%', height: '260px' }}>
@@ -185,43 +185,43 @@ export default function Dashboard() {
                 {/* Metrics */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <MetricCard title="Settlement Balance" value={totalRevenue || 0} unit="₹" icon={<DollarSign size={16} />} description="Liquid in ZenWallet" />
-                    <MetricCard title="Transmission Count" value={salesCount || 0} decimals={0} icon={<Repeat2 size={16} />} description="Lifetime node activity" />
-                    <MetricCard title="Average Payload" value={averageSale || 0} unit="₹" icon={<TrendingUp size={16} />} description="Per transaction mass" />
+                    <MetricCard title="Total Transactions" value={salesCount || 0} decimals={0} icon={<Repeat2 size={16} />} description="Lifetime activity" />
+                    <MetricCard title="Avg Transaction" value={averageSale || 0} unit="₹" icon={<TrendingUp size={16} />} description="Per transaction avg" />
                     <div className="p-6 bg-card/50 border-border/40 rounded-[2rem] group hover:border-emerald-500/20 transition-all">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
                                 <Activity size={16} />
                             </div>
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60">Uplink Status</span>
+                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Status</span>
                         </div>
-                        <div className="flex items-center gap-2.5 text-3xl font-black text-foreground tracking-tighter uppercase">
+                        <div className="flex items-center gap-2.5 text-3xl font-bold text-foreground tracking-tight">
                             Operational
                         </div>
-                        <p className="text-[10px] text-muted-foreground mt-3 font-bold italic opacity-60">Linked & Verified</p>
+                        <p className="text-xs text-muted-foreground mt-2 font-medium">Linked & Verified</p>
                     </div>
                 </div>
 
                 {/* Profile Link Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="p-8 bg-card/30 border border-border/40 rounded-[2.5rem] relative group cursor-pointer hover:bg-card/50 transition-all" onClick={() => navigate('/profile')}>
-                        <h3 className="text-foreground text-lg font-black flex items-center gap-3 mb-2 uppercase tracking-tight">
+                        <h3 className="text-foreground text-lg font-bold flex items-center gap-3 mb-2">
                             <Shield className="text-primary" size={20} />
-                            Identity Node
+                            Security & Profile
                         </h3>
-                        <p className="text-muted-foreground text-sm font-medium leading-relaxed italic opacity-80">Configure network endpoints and biometric locking protocols for your local instance.</p>
-                        <div className="mt-6 flex items-center gap-2 text-[10px] text-primary font-black uppercase tracking-[0.3em] group-hover:translate-x-2 transition-transform">
-                            Access Security <Plus size={12} />
+                        <p className="text-muted-foreground text-sm font-medium leading-relaxed opacity-80">Configure security settings and biometric methods.</p>
+                        <div className="mt-6 flex items-center gap-2 text-xs text-primary font-bold uppercase tracking-wider group-hover:translate-x-2 transition-transform">
+                            Manage Security <Plus size={12} />
                         </div>
                     </div>
 
                     <div className="p-8 bg-card/30 border border-border/40 rounded-[2.5rem] relative group cursor-pointer hover:bg-card/50 transition-all" onClick={() => navigate('/wallet')}>
-                        <h3 className="text-foreground text-lg font-black flex items-center gap-3 mb-2 uppercase tracking-tight">
+                        <h3 className="text-foreground text-lg font-bold flex items-center gap-3 mb-2">
                             <Wallet className="text-primary" size={20} />
-                            Capital Hub
+                            Wallet & Assets
                         </h3>
-                        <p className="text-muted-foreground text-sm font-medium leading-relaxed italic opacity-80">Real-time ledger access with instant liquidity injection and withdrawal capabilities.</p>
-                        <div className="mt-6 flex items-center gap-2 text-[10px] text-primary font-black uppercase tracking-[0.3em] group-hover:translate-x-2 transition-transform">
-                            Manage Assets <Plus size={12} />
+                        <p className="text-muted-foreground text-sm font-medium leading-relaxed opacity-80">Real-time ledger access with instant transfers.</p>
+                        <div className="mt-6 flex items-center gap-2 text-xs text-primary font-bold uppercase tracking-wider group-hover:translate-x-2 transition-transform">
+                            Manage Wallet <Plus size={12} />
                         </div>
                     </div>
                 </div>
@@ -235,7 +235,7 @@ export default function Dashboard() {
                 {/* Table */}
                 <div className="pt-8">
                     <div className="flex items-center justify-between mb-6 px-1">
-                        <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-60">Recent Transmissions</h3>
+                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">Recent Transactions</h3>
                     </div>
 
                     <div className="bg-card/30 border border-border/40 rounded-[2.5rem] overflow-hidden backdrop-blur-sm">
@@ -251,22 +251,22 @@ export default function Dashboard() {
                                                     {p.product.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <p className="text-[13px] font-black text-foreground uppercase tracking-tight">{p.product}</p>
-                                                    <p className="text-[10px] text-muted-foreground font-mono mt-1 tracking-tighter opacity-70">RID: {p.id.slice(0, 16).toUpperCase()}</p>
+                                                    <p className="text-sm font-bold text-foreground tracking-tight">{p.product}</p>
+                                                    <p className="text-xs text-muted-foreground font-mono mt-0.5 opacity-70">ID: {p.id.slice(0, 16).toUpperCase()}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-[15px] font-black text-foreground tabular-nums tracking-tighter">₹{p.amount.toLocaleString()}</p>
-                                                <p className="text-[10px] text-muted-foreground mt-1 font-bold italic opacity-60 uppercase">{p.time}</p>
+                                                <p className="text-sm font-bold text-foreground tabular-nums tracking-tight">₹{p.amount.toLocaleString()}</p>
+                                                <p className="text-xs text-muted-foreground mt-0.5 font-medium opacity-60 uppercase">{p.time}</p>
                                             </div>
                                         </div>
                                     ))}
                                     {latestPayments.length > 5 && (
                                         <button
                                             onClick={() => navigate('/transactions')}
-                                            className="w-full py-5 text-[10px] font-black text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center border-t border-border/20 uppercase tracking-[0.3em] opacity-60"
+                                            className="w-full py-5 text-xs font-bold text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center border-t border-border/20 uppercase tracking-widest opacity-60"
                                         >
-                                            View System Archives
+                                            View All Transactions
                                         </button>
                                     )}
                                 </>
