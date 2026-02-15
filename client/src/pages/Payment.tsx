@@ -107,8 +107,8 @@ export default function PaymentPage() {
                     {/* Left Column: Amount Selection */}
                     <div className="lg:col-span-4 space-y-10">
                         <div>
-                            <h3 className="text-sm font-black text-foreground uppercase tracking-tight mb-4">Add Money</h3>
-                            <p className="text-muted-foreground text-sm font-medium leading-relaxed italic opacity-80">Choose an amount to add to your ZenWallet balance.</p>
+                            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-2">Add Money</h3>
+                            <p className="text-muted-foreground text-sm font-medium">Choose an amount to add to your ZenWallet balance.</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -125,10 +125,10 @@ export default function PaymentPage() {
                                         : 'bg-card border border-border/60 hover:border-primary/20 hover:shadow-md'
                                         }`}
                                 >
-                                    <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${selectedAmount === amt ? 'text-primary' : 'text-muted-foreground'}`}>
+                                    <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${selectedAmount === amt ? 'text-primary' : 'text-muted-foreground'}`}>
                                         Amount
                                     </div>
-                                    <div className="text-2xl font-black text-foreground tabular-nums tracking-tighter">
+                                    <div className="text-2xl font-bold text-foreground tabular-nums tracking-tight">
                                         ₹{amt.toLocaleString()}
                                     </div>
                                 </motion.button>
@@ -137,7 +137,7 @@ export default function PaymentPage() {
 
                         <div className="space-y-4 pt-4">
                             <div className="relative group">
-                                <Label className="text-[10px] font-black text-muted-foreground block mb-3 px-1 uppercase tracking-[0.2em] opacity-70">Custom Amount</Label>
+                                <Label className="text-xs font-semibold text-muted-foreground block mb-2 px-1 uppercase tracking-wider">Custom Amount</Label>
                                 <Coins className="absolute left-4 bottom-[18px] text-muted-foreground" size={14} />
                                 <Input
                                     max="200000"
@@ -155,8 +155,8 @@ export default function PaymentPage() {
 
                         <div className="p-6 bg-card border border-border/50 rounded-[1.5rem] flex gap-4 shadow-sm">
                             <ShieldCheck className="text-emerald-500 shrink-0" size={18} />
-                            <div className="text-[11px] text-muted-foreground leading-relaxed font-bold">
-                                Total to add <span className="text-foreground">₹{finalAmount || 0}</span>.
+                            <div className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                Total to add <span className="text-foreground font-bold">₹{finalAmount || 0}</span>.
                                 Money once added to wallet cannot be refunded to source.
                             </div>
                         </div>
@@ -166,7 +166,7 @@ export default function PaymentPage() {
                     <div className="lg:col-span-8">
                         <div className="space-y-12">
                             <div>
-                                <h3 className="text-sm font-black text-foreground uppercase tracking-tight mb-8">Payment Mode</h3>
+                                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-8">Payment Mode</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {[
                                         { id: 'card', icon: <CreditCard size={18} />, label: 'Debit/Credit Card' },
@@ -185,7 +185,7 @@ export default function PaymentPage() {
                                             <div className={paymentMethod === method.id ? 'text-primary' : 'text-muted-foreground'}>
                                                 {method.icon}
                                             </div>
-                                            <span className={`text-[11px] font-black uppercase tracking-tight ${paymentMethod === method.id ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                            <span className={`text-xs font-semibold uppercase tracking-wide ${paymentMethod === method.id ? 'text-foreground' : 'text-muted-foreground'}`}>
                                                 {method.label}
                                             </span>
                                         </button>
@@ -196,50 +196,50 @@ export default function PaymentPage() {
                             <form onSubmit={handleCheckout} className="space-y-10">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black text-muted-foreground block px-1 uppercase tracking-[0.2em] opacity-60">Card Holder Name</Label>
+                                        <Label className="text-xs font-semibold text-muted-foreground block px-1 uppercase tracking-wider">Card Holder Name</Label>
                                         <Input
                                             name="cardholderName"
-                                            placeholder="AS PER BANK RECORDS"
+                                            placeholder="John Doe"
                                             value={cardData.cardholderName}
                                             onChange={handleInputChange}
                                             required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-[14px] font-black uppercase tracking-wider focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30"
+                                            className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-sm font-semibold uppercase tracking-wide focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30"
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black text-muted-foreground block px-1 uppercase tracking-[0.2em] opacity-60">Card Number</Label>
+                                        <Label className="text-xs font-semibold text-muted-foreground block px-1 uppercase tracking-wider">Card Number</Label>
                                         <Input
                                             name="cardNumber"
-                                            placeholder="XXXX XXXX XXXX XXXX"
+                                            placeholder="0000 0000 0000 0000"
                                             value={cardData.cardNumber}
                                             onChange={handleInputChange}
                                             required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-[14px] font-black uppercase tracking-widest focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30 font-mono"
+                                            className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-sm font-semibold tracking-wide focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30 font-mono"
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black text-muted-foreground block px-1 uppercase tracking-[0.2em] opacity-60">Expiry (MM/YY)</Label>
+                                        <Label className="text-xs font-semibold text-muted-foreground block px-1 uppercase tracking-wider">Expiry (MM/YY)</Label>
                                         <Input
                                             name="expiryDate"
                                             placeholder="MM / YY"
                                             value={cardData.expiryDate}
                                             onChange={handleInputChange}
                                             required={paymentMethod === 'card'}
-                                            className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-[14px] font-black uppercase tracking-widest focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30 font-mono"
+                                            className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-sm font-semibold tracking-wide focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30 font-mono"
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black text-muted-foreground block px-1 uppercase tracking-[0.2em] opacity-60">CVV</Label>
+                                        <Label className="text-xs font-semibold text-muted-foreground block px-1 uppercase tracking-wider">CVV</Label>
                                         <div className="relative">
                                             <Input
                                                 name="cvv"
                                                 type="password"
                                                 maxLength={3}
-                                                placeholder="•••"
+                                                placeholder="123"
                                                 value={cardData.cvv}
                                                 onChange={handleInputChange}
                                                 required={paymentMethod === 'card'}
-                                                className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-[14px] font-black uppercase tracking-widest focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30 font-mono pr-8"
+                                                className="bg-transparent border-none border-b border-border rounded-none px-1 h-12 text-sm font-semibold tracking-wide focus-visible:ring-0 focus-visible:border-primary transition-colors placeholder:text-muted/30 font-mono pr-8"
                                             />
                                             <Lock size={14} className="absolute right-2 top-4 text-muted-foreground/40" />
                                         </div>
@@ -250,12 +250,12 @@ export default function PaymentPage() {
                                     <Button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full h-16 bg-foreground text-background hover:bg-foreground/90 font-black text-[13px] uppercase tracking-[0.2em] rounded-2xl active:scale-95 transition-all shadow-xl"
+                                        className="w-full h-14 bg-foreground text-background hover:bg-foreground/90 font-bold text-sm rounded-xl active:scale-95 transition-all shadow-xl"
                                     >
                                         {loading ? (
                                             <div className="flex items-center gap-3">
                                                 <div className="h-4 w-4 border-2 border-background/30 border-t-background rounded-full animate-spin"></div>
-                                                <span>Processing Transaction...</span>
+                                                <span>Processing...</span>
                                             </div>
                                         ) : (
                                             `Add ₹${finalAmount || 0} to Wallet`
@@ -264,13 +264,13 @@ export default function PaymentPage() {
                                 </div>
                             </form>
 
-                            <div className="flex items-center gap-12 pt-8 text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
+                            <div className="flex items-center gap-8 pt-4 text-xs font-medium text-muted-foreground uppercase tracking-wider opacity-60">
                                 <div className="flex items-center gap-2">
-                                    <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                                    <ShieldCheck size={14} className="text-emerald-500" />
                                     100% Secure
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="h-1.5 w-1.5 bg-primary rounded-full animate-pulse"></div>
+                                    <Lock size={14} className="text-primary" />
                                     256-Bit Encryption
                                 </div>
                             </div>
