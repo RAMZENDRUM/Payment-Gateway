@@ -10,9 +10,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/components/layout/AppLayout';
-import TransactionReceipt, { TransactionData } from '@/components/ui/transaction-receipt';
+import TransactionReceipt from '@/components/ui/transaction-receipt';
+import type { TransactionData } from '@/components/ui/transaction-receipt';
 import { useAuth } from '@/AuthContext';
 import { API_URL } from '@/lib/api';
+import { PinModal } from '@/components/ui/PinModal';
 
 
 
@@ -31,21 +33,25 @@ export default function Send() {
     const [txDetails, setTxDetails] = useState<TransactionData | null>(null);
     const [showReceipt, setShowReceipt] = useState(false);
 
-    const handleSend = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!receiverUpiId || !amount) return;
-        if (parseFloat(amount) > 200000) {
-            toast.error('Maximum sending limit is ₹2,00,000');
-            return;
-        }
+    const [showPinModal, setShowPinModal] = useState(false);
 
+    const handleSend = async (pin: string) => {
+        if (!receiverUpiId || !amount) return;
         setLoading(true);
+        setShowPinModal(false);
         try {
-            const res = await axios.post(`${API_URL}/wallet/send`, {
+            const apiCall = axios.post(`${API_URL}/wallet/send`, {
                 receiverUpiId,
                 amount: parseFloat(amount),
-                referenceId
+                referenceId,
+                pin
             });
+
+            const [res] = await Promise.all([
+                apiCall,
+                new Promise(resolve => setTimeout(resolve, 1000))
+            ]);
+
             setTxDetails(res.data.transaction);
             setSuccess(true);
             setShowReceipt(true);
@@ -55,6 +61,21 @@ export default function Send() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleFormSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!receiverUpiId || !amount) return;
+        if (parseFloat(amount) > 200000) {
+            toast.error('Maximum sending limit is ₹2,00,000');
+            return;
+        }
+        if (!user?.hasPaymentPin) {
+            toast.error('Please setup your Payment PIN first');
+            navigate('/setup-pin');
+            return;
+        }
+        setShowPinModal(true);
     };
 
     return (
@@ -81,7 +102,7 @@ export default function Send() {
                                     key="send-form"
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    onSubmit={handleSend}
+                                    onSubmit={handleFormSubmit}
                                     className="space-y-12 relative z-10"
                                 >
                                     <div className="space-y-12">
@@ -238,6 +259,14 @@ export default function Send() {
                     navigate('/dashboard');
                 }}
                 transaction={txDetails}
+            />
+
+            <PinModal
+                isOpen={showPinModal}
+                onVerify={handleSend}
+                onCancel={() => setShowPinModal(false)}
+                amount={parseFloat(amount)}
+                title="Transfer Authorization"
             />
         </AppLayout>
     );
