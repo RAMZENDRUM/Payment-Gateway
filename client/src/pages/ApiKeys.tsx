@@ -107,14 +107,14 @@ export default function ApiKeys() {
                 {/* Streamlined Generate Section */}
                 <div className="space-y-6">
                     <div>
-                        <h3 className="text-sm font-bold text-foreground mb-2 uppercase tracking-widest">Connect Application</h3>
-                        <p className="text-muted-foreground text-[11px] font-medium italic">Link a new store or platform to your node instance.</p>
+                        <h3 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">Connect Application</h3>
+                        <p className="text-muted-foreground text-sm font-medium">Link a new store or platform to your node instance.</p>
                     </div>
 
                     <div className="dashboard-card p-8 bg-card/10 backdrop-blur-sm border-border/40">
                         <div className="flex flex-col sm:flex-row gap-5 items-end max-w-2xl">
                             <div className="space-y-2.5 w-full flex-1">
-                                <Label htmlFor="appName" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Application Identifier</Label>
+                                <Label htmlFor="appName" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">Application Identifier</Label>
                                 <Input
                                     id="appName"
                                     value={newAppName}
@@ -127,9 +127,9 @@ export default function ApiKeys() {
                             <Button
                                 onClick={createKey}
                                 disabled={generating}
-                                className="h-12 px-8 bg-foreground text-background hover:bg-foreground/90 font-black text-[11px] uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-xl shadow-foreground/5"
+                                className="h-12 px-8 bg-foreground text-background hover:bg-foreground/90 font-bold text-xs uppercase tracking-wider rounded-2xl transition-all active:scale-95 shadow-xl shadow-foreground/5"
                             >
-                                {generating ? "Protocol Active..." : "Generate Key"}
+                                {generating ? "Generating..." : "Generate Key"}
                             </Button>
 
                             <IntegrationGuideModal />
@@ -140,8 +140,8 @@ export default function ApiKeys() {
                 {/* Compact List Section */}
                 <div className="space-y-6 pt-4">
                     <div className="flex items-center justify-between border-b border-border/40 pb-5 px-1">
-                        <h3 className="text-sm font-black text-foreground uppercase tracking-widest">Active Up-links</h3>
-                        <span className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] bg-muted px-3 py-1 rounded-md">{apps.length} Total</span>
+                        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Active Up-links</h3>
+                        <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider bg-muted px-3 py-1 rounded-md">{apps.length} Total</span>
                     </div>
 
                     {loading ? (
@@ -161,10 +161,10 @@ export default function ApiKeys() {
                                 <table className="w-full text-left">
                                     <thead>
                                         <tr className="border-b border-border/40 bg-muted/40 transition-colors">
-                                            <th className="py-5 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Application</th>
-                                            <th className="py-5 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Secret Key</th>
-                                            <th className="py-5 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Settled Since</th>
-                                            <th className="py-5 px-6 text-right text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Command</th>
+                                            <th className="py-5 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Application</th>
+                                            <th className="py-5 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Secret Key</th>
+                                            <th className="py-5 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Settled Since</th>
+                                            <th className="py-5 px-6 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Command</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border/20">
@@ -172,12 +172,12 @@ export default function ApiKeys() {
                                             <tr key={app.id} className="group hover:bg-muted/10 transition-colors">
                                                 <td className="py-6 px-6">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 rounded-2xl bg-muted border border-border/10 flex items-center justify-center text-xs font-black text-foreground shadow-sm">
+                                                        <div className="w-10 h-10 rounded-2xl bg-muted border border-border/10 flex items-center justify-center text-xs font-bold text-foreground shadow-sm">
                                                             {app.name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div>
-                                                            <div className="text-sm font-black text-foreground group-hover:text-violet-500 transition-colors">{app.name}</div>
-                                                            <div className="text-[9px] text-muted-foreground font-mono mt-1 opacity-60 tracking-widest uppercase">{app.id.slice(0, 12)}...</div>
+                                                            <div className="text-sm font-bold text-foreground group-hover:text-violet-500 transition-colors">{app.name}</div>
+                                                            <div className="text-[9px] text-muted-foreground font-mono mt-1 opacity-60 tracking-wider uppercase">{app.id.slice(0, 12)}...</div>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -205,7 +205,7 @@ export default function ApiKeys() {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => setViewingTransactions(app.id)}
-                                                        className="h-8 px-3 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-lg font-bold text-[10px] uppercase tracking-wider"
+                                                        className="h-8 px-3 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-lg font-semibold text-xs uppercase"
                                                     >
                                                         <Sparkles size={13} className="mr-1" /> History
                                                     </Button>
@@ -213,7 +213,7 @@ export default function ApiKeys() {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => setKeyToDelete(app.id)}
-                                                        className="h-8 px-3 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg font-bold text-[10px] uppercase tracking-wider"
+                                                        className="h-8 px-3 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg font-semibold text-xs uppercase"
                                                     >
                                                         <Trash2 size={13} className="mr-1" /> Revoke
                                                     </Button>
@@ -235,9 +235,9 @@ export default function ApiKeys() {
                         <div className="mx-auto h-16 w-16 rounded-[1.5rem] bg-red-500/10 flex items-center justify-center mb-8 border border-red-500/20">
                             <AlertTriangle className="text-red-500" size={28} />
                         </div>
-                        <DialogTitle className="text-2xl font-black text-center text-foreground tracking-tight">Revoke Protocol?</DialogTitle>
+                        <DialogTitle className="text-2xl font-bold text-center text-foreground tracking-tight">Revoke Protocol?</DialogTitle>
                         <DialogDescription className="text-center text-muted-foreground pt-4 text-sm font-medium leading-relaxed">
-                            This will immediately de-authorize <span className="text-foreground font-black">"{apps.find(a => a.id === keyToDelete)?.name}"</span>.
+                            This will immediately de-authorize <span className="text-foreground font-semibold">"{apps.find(a => a.id === keyToDelete)?.name}"</span>.
                             Active transmissions will fail permanently.
                         </DialogDescription>
                     </DialogHeader>
@@ -245,14 +245,14 @@ export default function ApiKeys() {
                         <Button
                             variant="outline"
                             onClick={() => setKeyToDelete(null)}
-                            className="h-14 border-border bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all"
+                            className="h-14 border-border bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground rounded-2xl font-bold text-xs uppercase tracking-wide transition-all"
                         >
                             Abort
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={confirmDelete}
-                            className="h-14 bg-red-600 hover:bg-red-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all"
+                            className="h-14 bg-red-600 hover:bg-red-500 text-white rounded-2xl font-bold text-xs uppercase tracking-wide shadow-lg shadow-red-500/20 active:scale-95 transition-all"
                         >
                             Revoke Key
                         </Button>
@@ -419,7 +419,7 @@ function TransactionHistoryModal({ appId, appName, open, onOpenChange, token }: 
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="bg-card border-border sm:max-w-4xl rounded-[2rem] p-0 overflow-hidden shadow-2xl backdrop-blur-xl h-[80vh] flex flex-col">
                 <DialogHeader className="p-8 pb-4 border-b border-border/40 bg-muted/20">
-                    <DialogTitle className="text-xl font-black text-foreground flex items-center gap-3">
+                    <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500">
                             <Sparkles size={18} fill="currentColor" className="opacity-50" />
                         </div>
@@ -446,11 +446,11 @@ function TransactionHistoryModal({ appId, appName, open, onOpenChange, token }: 
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-muted/30 sticky top-0 z-10 backdrop-blur-md">
                                 <tr>
-                                    <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Date</th>
-                                    <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Reference</th>
-                                    <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Payer</th>
-                                    <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] text-right">Amount</th>
-                                    <th className="py-4 px-6 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] text-right">Status</th>
+                                    <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Date</th>
+                                    <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Reference</th>
+                                    <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Payer</th>
+                                    <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wide text-right">Amount</th>
+                                    <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wide text-right">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/20">
