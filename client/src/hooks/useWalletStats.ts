@@ -27,8 +27,12 @@ export const useWalletStats = () => {
                 axios.get(`${API_URL}/wallet/balance`),
                 axios.get(`${API_URL}/wallet/transactions`)
             ]);
-            setBalance(balRes.data?.balance ?? 0);
-            setTransactions(Array.isArray(transRes.data) ? transRes.data : []);
+            setBalance(parseFloat(balRes.data?.balance || '0'));
+            const txs = Array.isArray(transRes.data) ? transRes.data : [];
+            setTransactions(txs.map((t: any) => ({
+                ...t,
+                amount: parseFloat(t.amount)
+            })));
         } catch (err) {
             console.error(err);
         } finally {

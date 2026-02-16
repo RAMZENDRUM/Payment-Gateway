@@ -12,7 +12,7 @@ import { useTheme } from '../ThemeContext';
 import {
     User, Mail, Shield, Smartphone, Lock, CheckCircle2,
     Save, Bell, Palette, Sun, Moon, Send,
-    MessageSquare, RefreshCw, AlertCircle
+    MessageSquare, RefreshCw, AlertCircle, Fingerprint
 } from 'lucide-react';
 
 export default function Settings() {
@@ -176,9 +176,9 @@ export default function Settings() {
 
     return (
         <AppLayout>
-            <div className="flex flex-col">
+            <div className="flex flex-col h-full">
                 <div className="border-b border-white/5 sticky top-0 z-20 bg-background/80 backdrop-blur-xl">
-                    <div className="max-w-5xl py-4">
+                    <div className="w-full py-4">
                         <div className="flex items-center justify-between mb-8">
                             <div>
                                 <h1 className="text-2xl font-black text-foreground tracking-tight uppercase">Control Center</h1>
@@ -216,7 +216,7 @@ export default function Settings() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto pt-8">
-                    <div className="max-w-5xl">
+                    <div className="w-full">
                         <AnimatePresence mode="wait">
                             {showOtpScreen ? (
                                 <motion.div
@@ -248,58 +248,58 @@ export default function Settings() {
                                 </motion.div>
                             ) : activeTab === 'profile' ? (
                                 <motion.div key="profile" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-                                    <form onSubmit={handleUpdateProfile} className="space-y-6">
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2.5">
-                                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Network Identity</label>
+                                    <form onSubmit={handleUpdateProfile} className="space-y-8">
+                                        <div className="grid grid-cols-2 gap-8">
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Network Identity</label>
                                                 <Input
                                                     value={fullName}
                                                     onChange={(e) => setFullName(e.target.value)}
-                                                    className="bg-muted/40 border-border h-12 rounded-2xl text-[14px] font-bold focus:ring-violet-500/20 shadow-sm"
+                                                    className="bg-muted/40 border-border h-14 rounded-2xl text-[15px] font-bold focus:ring-violet-500/20 shadow-sm"
                                                 />
                                             </div>
-                                            <div className="space-y-2.5">
-                                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Lifecycle Count</label>
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Lifecycle Count</label>
                                                 <Input
                                                     type="number"
                                                     value={age}
                                                     onChange={(e) => setAge(e.target.value)}
-                                                    className="bg-muted/40 border-border h-12 rounded-2xl text-[14px] font-bold shadow-sm"
+                                                    className="bg-muted/40 border-border h-14 rounded-2xl text-[15px] font-bold shadow-sm"
                                                 />
                                             </div>
                                         </div>
 
-                                        <div className="space-y-2.5">
-                                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Communication Uplink</label>
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Communication Uplink</label>
                                             <Input
                                                 type="email"
                                                 value={newEmail}
                                                 onChange={(e) => setNewEmail(e.target.value)}
-                                                leftIcon={<Mail size={16} className="text-muted-foreground/60" />}
-                                                className="bg-muted/40 border-border h-12 rounded-2xl text-[14px] font-bold shadow-sm"
+                                                leftIcon={<Mail size={18} className="text-muted-foreground/60" />}
+                                                className="bg-muted/40 border-border h-14 rounded-2xl text-[15px] font-bold shadow-sm"
                                             />
                                         </div>
 
                                         {newEmail !== user?.email && (
-                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-2 pt-2">
-                                                <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest px-1">Confirm with Password</label>
+                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-3 pt-2">
+                                                <label className="text-[11px] font-bold text-amber-500 uppercase tracking-widest px-1">Confirm with Password</label>
                                                 <Input
                                                     type="password"
                                                     value={password}
                                                     onChange={(e) => setPassword(e.target.value)}
-                                                    className="bg-amber-500/5 border-amber-500/10 h-11 rounded-xl text-sm font-medium"
+                                                    className="bg-amber-500/5 border-amber-500/10 h-12 rounded-xl text-sm font-medium"
                                                     placeholder="Enter password to authorize change"
                                                 />
                                             </motion.div>
                                         )}
 
                                         <div className="flex items-center justify-between pt-8 border-t border-border/40">
-                                            <p className="text-[11px] text-muted-foreground font-medium italic">Record updates are propagated globally across all node clusters.</p>
+                                            <p className="text-xs text-muted-foreground font-medium italic">Record updates are propagated globally across all node clusters.</p>
                                             <Button
                                                 type="submit"
                                                 loading={loading}
                                                 disabled={isUpToDate && !savedStatus}
-                                                className={`h-12 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all border-none flex items-center gap-2 shadow-xl ${savedStatus
+                                                className={`h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest transition-all border-none flex items-center gap-3 shadow-xl ${savedStatus
                                                     ? 'bg-emerald-500 text-white'
                                                     : isUpToDate
                                                         ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
@@ -307,24 +307,24 @@ export default function Settings() {
                                                     }`}
                                             >
                                                 {savedStatus ? (
-                                                    <><CheckCircle2 size={16} /> Changes Saved</>
+                                                    <><CheckCircle2 size={18} /> Changes Saved</>
                                                 ) : isUpToDate ? (
-                                                    <><CheckCircle2 size={16} /> Up to date</>
+                                                    <><CheckCircle2 size={18} /> Up to date</>
                                                 ) : (
-                                                    <><Save size={16} /> Save Changes</>
+                                                    <><Save size={18} /> Save Changes</>
                                                 )}
                                             </Button>
                                         </div>
                                     </form>
                                 </motion.div>
                             ) : activeTab === 'security' ? (
-                                <motion.div key="security" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+                                <motion.div key="security" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                                     <header className="space-y-1.5">
-                                        <h1 className="text-2xl font-black text-foreground tracking-tight uppercase">Security Protocols</h1>
+                                        <h1 className="text-xl font-black text-foreground tracking-tight uppercase">Security Protocols</h1>
                                         <p className="text-xs text-muted-foreground font-medium italic">Protect your digital identity with multi-layer encryption.</p>
                                     </header>
                                     <div className="grid gap-4">
-                                        <div className="p-6 bg-card border border-border/60 rounded-[2rem] flex items-center justify-between group hover:border-violet-500/30 transition-all shadow-sm">
+                                        <div className="p-5 bg-card border border-border/60 rounded-[2rem] flex items-center justify-between group hover:border-violet-500/30 transition-all shadow-sm">
                                             <div className="flex items-center gap-5">
                                                 <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20 shadow-inner">
                                                     <Lock size={20} />
@@ -338,7 +338,21 @@ export default function Settings() {
                                                 Execute Reset
                                             </Button>
                                         </div>
-                                        <div className="p-6 bg-card border border-border/60 rounded-[2rem] flex items-center justify-between group hover:border-sky-500/30 transition-all shadow-sm">
+                                        <div className="p-5 bg-card border border-border/60 rounded-[2rem] flex items-center justify-between group hover:border-emerald-500/30 transition-all shadow-sm">
+                                            <div className="flex items-center gap-5">
+                                                <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-inner">
+                                                    <Fingerprint size={20} />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-[15px] font-black text-foreground uppercase tracking-tight">Payment PIN</h4>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1 opacity-70">Status: <span className={user?.hasPaymentPin ? "text-emerald-500" : "text-red-500"}>{user?.hasPaymentPin ? "ACTIVE" : "MISSING"}</span></p>
+                                                </div>
+                                            </div>
+                                            <Button variant="ghost" size="sm" onClick={() => navigate('/setup-pin')} className="h-10 px-5 text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-500/10 rounded-xl transition-all">
+                                                {user?.hasPaymentPin ? "Configure" : "Enroll Now"}
+                                            </Button>
+                                        </div>
+                                        <div className="p-5 bg-card border border-border/60 rounded-[2rem] flex items-center justify-between group hover:border-sky-500/30 transition-all shadow-sm">
                                             <div className="flex items-center gap-5">
                                                 <div className="h-12 w-12 rounded-2xl bg-sky-500/10 flex items-center justify-center text-sky-500 border border-sky-500/20 shadow-inner">
                                                     <Smartphone size={20} />

@@ -75,14 +75,17 @@ export default function PaymentPage() {
         }
 
         setLoading(true);
+        const startTime = Date.now();
         try {
-            // Simulation
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            const res = await axios.post(`${API_URL}/wallet/admin/add-coins`, {
+            const apiCall = axios.post(`${API_URL}/wallet/admin/add-coins`, {
                 userId: user?.id,
                 amount: finalAmount
             });
+
+            const [res] = await Promise.all([
+                apiCall,
+                new Promise(resolve => setTimeout(resolve, 1000)) // Ensure minimum 1s loading
+            ]);
 
             if (res.data.success) {
                 toast.success(`Successfully refilled ₹${finalAmount}!`);

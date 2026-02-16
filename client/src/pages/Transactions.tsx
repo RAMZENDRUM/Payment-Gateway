@@ -62,7 +62,11 @@ export default function Transactions() {
         setLoading(true);
         try {
             const res = await axios.get(`${API_URL}/wallet/transactions`);
-            setTransactions(res.data);
+            setTransactions(res.data.map((t: any) => ({
+                ...t,
+                amount: parseFloat(t.amount),
+                balance_after: t.balance_after ? parseFloat(t.balance_after) : undefined
+            })));
         } catch (err) {
             console.error('Failed to fetch transactions', err);
             toast.error('Could not load transactions');
@@ -102,7 +106,14 @@ export default function Transactions() {
     const groupedTransactions = useMemo(() => {
         const groups: { [key: string]: Transaction[] } = {};
         filteredTransactions.forEach(tx => {
-            const date = new Date(tx.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            let date = 'Unknown Date';
+            try {
+                if (tx.created_at) {
+                    date = new Date(tx.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                }
+            } catch (e) {
+                console.error("Date parse error for tx:", tx, e);
+            }
             if (!groups[date]) groups[date] = [];
             groups[date].push(tx);
         });
@@ -112,18 +123,28 @@ export default function Transactions() {
     const exportToExcel = () => {
         setIsExporting(true);
         try {
-            const data = filteredTransactions.map(tx => ({
-                'Date': new Date(tx.created_at).toLocaleDateString('en-IN'),
-                'Time': new Date(tx.created_at).toLocaleTimeString('en-IN', { hour12: false }),
-                'Transaction ID': tx.id,
-                'Reference': tx.reference_id || 'N/A',
-                'Type': tx.type,
-                'Context': tx.sender_id === user?.id ? `Paid to ${tx.receiver_name}` : `Received from ${tx.sender_name}`,
-                'Amount (INR)': tx.amount,
-                'Sign': tx.sender_id === user?.id ? '-' : '+',
-                'Balance After': tx.balance_after || 'N/A',
-                'Status': tx.status
-            }));
+            const data = filteredTransactions.map(tx => {
+                let dateStr = 'N/A';
+                let timeStr = 'N/A';
+                try {
+                    const d = new Date(tx.created_at);
+                    dateStr = d.toLocaleDateString('en-IN');
+                    timeStr = d.toLocaleTimeString('en-IN', { hour12: false });
+                } catch (e) { /* ignore */ }
+
+                return {
+                    'Date': dateStr,
+                    'Time': timeStr,
+                    'Transaction ID': tx.id,
+                    'Reference': tx.reference_id || 'N/A',
+                    'Type': tx.type,
+                    'Context': tx.sender_id === user?.id ? `Paid to ${tx.receiver_name}` : `Received from ${tx.sender_name}`,
+                    'Amount (INR)': tx.amount,
+                    'Sign': tx.sender_id === user?.id ? '-' : '+',
+                    'Balance After': tx.balance_after || 'N/A',
+                    'Status': tx.status
+                }
+            });
 
             const worksheet = XLSX.utils.json_to_sheet(data);
             const workbook = XLSX.utils.book_new();

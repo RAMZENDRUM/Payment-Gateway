@@ -14,6 +14,7 @@ interface User {
     age?: number;
     upi_id?: string;
     balance?: number;
+    hasPaymentPin?: boolean;
     virtualCard?: {
         cardNumber: string;
         cvv: string;

@@ -14,6 +14,7 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import ApiKeys from './pages/ApiKeys';
 import DemoCheckout from './pages/DemoCheckout';
+import SetPin from './pages/SetPin';
 // Removed TransactionDetail page
 
 
@@ -51,6 +52,7 @@ function AppRoutes() {
             <Route path="/scan" element={<PrivateRoute><Scan /></PrivateRoute>} />
             <Route path="/checkout" element={<PrivateRoute><Scan /></PrivateRoute>} />
             <Route path="/demo-checkout" element={<DemoCheckout />} />
+            <Route path="/setup-pin" element={<PrivateRoute><SetPin /></PrivateRoute>} />
             <Route path="/payment" element={<PrivateRoute><Payment /></PrivateRoute>} />
             <Route path="*" element={<Navigate to="/" />} />
         </Routes>
