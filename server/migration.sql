@@ -133,4 +133,8 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='age') THEN
         ALTER TABLE users ADD COLUMN age INTEGER;
     END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='payment_pin') THEN
+        ALTER TABLE users ADD COLUMN payment_pin VARCHAR(255);
+    END IF;
 END $$;

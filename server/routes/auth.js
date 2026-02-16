@@ -14,4 +14,9 @@ router.post('/verify-email-change', auth, authController.verifyEmailChange);
 router.get('/me', auth, authController.getMe);
 router.get('/users', authController.getUsers); // For demo
 
+// Payment PIN routes
+router.post('/set-pin', auth, authController.setPaymentPin);
+router.post('/forgot-pin', auth, authController.forgotPin);
+router.post('/reset-pin', auth, authController.resetPin);
+
 module.exports = router;

@@ -25,7 +25,7 @@ const apiKeyAuth = async (req, res, next) => {
 
         // 2. Validate Key in DB
         const result = await db.query(
-            'SELECT * FROM apps WHERE api_key = $1 AND is_active = true',
+            'SELECT * FROM public.apps WHERE api_key = $1 AND is_active = true',
             [apiKey]
         );
 

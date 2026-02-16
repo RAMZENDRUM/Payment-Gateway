@@ -13,6 +13,7 @@ model User {
   password          String
   fullName          String
   upiId             String?          @unique
+  paymentPin        String?          // Hashed 4-6 digit PIN
   wallet            Wallet?
   sentTransfers     Transaction[]    @relation("SentTransfers")
   receivedTransfers Transaction[]    @relation("ReceivedTransfers")
@@ -54,15 +55,19 @@ model Transaction {
 }
 
 model PaymentRequest {
-  id          String        @id @default(uuid())
-  receiverId  String
-  receiver    User          @relation(fields: [receiverId], references: [id])
-  amount      Float
-  referenceId String?
-  token       String        @unique
-  expiresAt   DateTime
-  status      RequestStatus @default(PENDING)
-  createdAt   DateTime      @default(now())
+  id              String        @id @default(uuid())
+  receiverId      String
+  receiver        User          @relation(fields: [receiverId], references: [id])
+  amount          Float
+  taxName         String?
+  taxPercentage   Float?
+  taxAmount       Float?
+  feesAmount      Float?
+  referenceId     String?
+  token           String        @unique
+  expiresAt       DateTime
+  status          RequestStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
 }
 
 enum RequestStatus {
