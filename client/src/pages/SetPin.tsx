@@ -13,6 +13,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function SetPin() {
     const { user, fetchUser } = useAuth();
     const [pin, setPin] = useState('');
+
+    useEffect(() => {
+        console.log('🛡️ SetPin component mounted');
+        console.log('👤 Current User state:', user);
+    }, [user]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const hiddenInputRef = useRef<HTMLInputElement>(null);

@@ -198,10 +198,11 @@ export default function Dashboard() {
                                 <p className="text-xs text-zinc-500 font-medium italic">You must establish a Payment PIN to authorize transfers, withdrawals, and merchant payments.</p>
                             </div>
                         </div>
-                        <Link to="/setup-pin" className="w-full md:w-auto">
-                            <Button className="w-full px-10 h-11 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl">
-                                Setup PIN Now <ArrowRight size={16} className="ml-2" />
-                            </Button>
+                        <Link
+                            to="/setup-pin"
+                            className="w-full md:w-auto px-10 h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl shadow-emerald-500/10 uppercase tracking-tight text-sm"
+                        >
+                            Setup PIN Now <ArrowRight size={16} />
                         </Link>
                     </div>
                 )}
