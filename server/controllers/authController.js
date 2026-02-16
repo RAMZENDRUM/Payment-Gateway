@@ -262,6 +262,7 @@ exports.login = async (req, res) => {
                 email: user.email,
                 full_name: user.full_name,
                 upi_id: user.upi_id,
+                hasPaymentPin: !!user.payment_pin,
                 virtualCard: virtualCardData
             }
         });
