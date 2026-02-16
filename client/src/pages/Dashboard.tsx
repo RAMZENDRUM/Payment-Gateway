@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useWalletStats } from '@/hooks/useWalletStats';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer
@@ -198,9 +198,11 @@ export default function Dashboard() {
                                 <p className="text-xs text-zinc-500 font-medium italic">You must establish a Payment PIN to authorize transfers, withdrawals, and merchant payments.</p>
                             </div>
                         </div>
-                        <Button onClick={() => navigate('/setup-pin')} className="w-full md:w-auto px-10 h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl">
-                            Setup PIN Now <ArrowRight size={16} className="ml-2" />
-                        </Button>
+                        <Link to="/setup-pin" className="w-full md:w-auto">
+                            <Button className="w-full px-10 h-11 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl">
+                                Setup PIN Now <ArrowRight size={16} className="ml-2" />
+                            </Button>
+                        </Link>
                     </div>
                 )}
 
