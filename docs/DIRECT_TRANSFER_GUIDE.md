@@ -49,7 +49,7 @@ Frontend sends user selection to backend:
 ### **STEP 2: Website calls Wallet Backend**
 
 ```http
-POST http://localhost:5000/api/external/transfer
+POST https://payment-gateway-production-2f82.up.railway.app/api/external/transfer
 Headers:
   x-api-key: default-merchant-key
   Content-Type: application/json

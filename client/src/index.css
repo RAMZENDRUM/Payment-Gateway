@@ -62,7 +62,11 @@
     height: 100%;
     width: 100%;
     overflow-x: hidden;
+    font-size: 110%;
+    /* Scale up UI */
   }
+
+  /* No custom font scaling - use browser defaults */
 
   /* Hide default browser password reveal button */
   input[type="password"]::-ms-reveal,

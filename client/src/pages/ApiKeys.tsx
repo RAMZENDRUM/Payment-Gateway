@@ -104,32 +104,26 @@ export default function ApiKeys() {
         <AppLayout title="Developer API" subtitle="Manage your API keys and integrate ZenWallet into your applications.">
             <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
 
-                {/* Streamlined Generate Section */}
+                {/* Simplified Generate Section (Top) */}
                 <div className="space-y-6">
-                    <div>
-                        <h3 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">Connect Application</h3>
-                        <p className="text-muted-foreground text-sm font-medium">Link a new store or platform to your node instance.</p>
-                    </div>
-
-                    <div className="dashboard-card p-8 bg-card/10 backdrop-blur-sm border-border/40">
-                        <div className="flex flex-col sm:flex-row gap-5 items-end max-w-2xl">
-                            <div className="space-y-2.5 w-full flex-1">
-                                <Label htmlFor="appName" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">Application Identifier</Label>
+                    <div className="p-4 bg-muted/5 rounded-2xl border border-border/10">
+                        <div className="flex flex-col sm:flex-row gap-4 items-center max-w-3xl">
+                            <div className="w-full relative">
                                 <Input
                                     id="appName"
                                     value={newAppName}
                                     onChange={(e) => setNewAppName(e.target.value)}
-                                    placeholder="e.g. Acme Global Store"
-                                    className="h-12 bg-muted/40 border-border text-base font-bold rounded-2xl focus-visible:ring-violet-500/20 shadow-sm"
+                                    placeholder="Enter new application name..."
+                                    className="h-12 bg-muted/40 border-border text-sm font-medium rounded-2xl focus-visible:ring-0 focus-visible:ring-offset-0 outline-none shadow-sm pl-4"
                                 />
                             </div>
 
                             <Button
                                 onClick={createKey}
                                 disabled={generating}
-                                className="h-12 px-8 bg-foreground text-background hover:bg-foreground/90 font-bold text-xs uppercase tracking-wider rounded-2xl transition-all active:scale-95 shadow-xl shadow-foreground/5"
+                                className="h-12 px-8 bg-foreground text-background hover:bg-foreground/90 font-bold text-xs uppercase tracking-wider rounded-2xl transition-all whitespace-nowrap shadow-xl focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
                             >
-                                {generating ? "Generating..." : "Generate Key"}
+                                {generating ? "Creating..." : "Create Application"}
                             </Button>
 
                             <IntegrationGuideModal />
@@ -139,8 +133,8 @@ export default function ApiKeys() {
 
                 {/* Compact List Section */}
                 <div className="space-y-6 pt-4">
-                    <div className="flex items-center justify-between border-b border-border/40 pb-5 px-1">
-                        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Active Up-links</h3>
+                    <div className="flex items-center justify-between px-1">
+                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">Active Up-links</h3>
                         <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider bg-muted px-3 py-1 rounded-md">{apps.length} Total</span>
                     </div>
 
@@ -205,7 +199,7 @@ export default function ApiKeys() {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => setViewingTransactions(app.id)}
-                                                        className="h-8 px-3 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-lg font-semibold text-xs uppercase"
+                                                        className="h-8 px-3 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-lg font-semibold text-xs uppercase focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
                                                     >
                                                         <Sparkles size={13} className="mr-1" /> History
                                                     </Button>
@@ -213,9 +207,9 @@ export default function ApiKeys() {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => setKeyToDelete(app.id)}
-                                                        className="h-8 px-3 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg font-semibold text-xs uppercase"
+                                                        className="h-8 px-3 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg font-semibold text-xs uppercase focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
                                                     >
-                                                        <Trash2 size={13} className="mr-1" /> Revoke
+                                                        <Trash2 size={13} className="mr-1" /> Delete
                                                     </Button>
                                                 </td>
                                             </tr>
@@ -235,9 +229,9 @@ export default function ApiKeys() {
                         <div className="mx-auto h-16 w-16 rounded-[1.5rem] bg-red-500/10 flex items-center justify-center mb-8 border border-red-500/20">
                             <AlertTriangle className="text-red-500" size={28} />
                         </div>
-                        <DialogTitle className="text-2xl font-bold text-center text-foreground tracking-tight">Revoke Protocol?</DialogTitle>
+                        <DialogTitle className="text-2xl font-bold text-center text-foreground tracking-tight">Delete Application?</DialogTitle>
                         <DialogDescription className="text-center text-muted-foreground pt-4 text-sm font-medium leading-relaxed">
-                            This will immediately de-authorize <span className="text-foreground font-semibold">"{apps.find(a => a.id === keyToDelete)?.name}"</span>.
+                            This will immediately delete <span className="text-foreground font-semibold">"{apps.find(a => a.id === keyToDelete)?.name}"</span>.
                             Active transmissions will fail permanently.
                         </DialogDescription>
                     </DialogHeader>
@@ -254,7 +248,7 @@ export default function ApiKeys() {
                             onClick={confirmDelete}
                             className="h-14 bg-red-600 hover:bg-red-500 text-white rounded-2xl font-bold text-xs uppercase tracking-wide shadow-lg shadow-red-500/20 active:scale-95 transition-all"
                         >
-                            Revoke Key
+                            Delete Key
                         </Button>
                     </div>
                 </DialogContent>
@@ -321,7 +315,7 @@ Write clean, robust code to handle this flow. specific to my tech stack.`;
         <>
             <Button
                 onClick={() => setOpen(true)}
-                className="h-11 px-6 rounded-xl border-2 border-dashed border-zinc-700 bg-transparent text-zinc-400 hover:text-white hover:border-zinc-500 hover:bg-zinc-800 transition-all font-bold text-xs flex items-center gap-2"
+                className="h-11 px-6 rounded-xl bg-transparent text-muted-foreground hover:text-foreground transition-all font-bold text-xs flex items-center gap-2 focus-visible:ring-0 focus-visible:ring-offset-0 outline-none border-none"
             >
                 <Terminal size={14} />
                 Integration Guide

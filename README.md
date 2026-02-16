@@ -243,7 +243,7 @@ See `SYSTEM_COMPARISON.md` for detailed comparison.
 
 ```bash
 # Test transfer API
-curl -X POST http://localhost:5000/api/external/transfer \
+curl -X POST https://payment-gateway-production-2f82.up.railway.app/api/external/transfer \
   -H "x-api-key: default-merchant-key" \
   -H "Content-Type: application/json" \
   -d '{

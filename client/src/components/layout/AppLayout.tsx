@@ -118,8 +118,8 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             </AnimatePresence>
 
             {/* Left Sidebar */}
-            <aside className="w-64 flex-shrink-0 bg-transparent flex flex-col z-20 transition-all border-r border-border/10">
-                <div className="px-8 py-10">
+            <aside className="w-56 flex-shrink-0 bg-transparent flex flex-col z-20 transition-all border-r border-border/10">
+                <div className="px-5 py-6">
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-8 bg-foreground text-background rounded-xl flex items-center justify-center shadow-2xl transition-all">
                             <Wallet size={16} strokeWidth={2.5} />
@@ -128,13 +128,13 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                     </div>
                 </div>
 
-                <nav className="flex-1 px-4 space-y-1 mt-4">
+                <nav className="flex-1 px-3 space-y-1 mt-3">
                     {navItems.map((item) => (
                         <button
                             key={item.path}
                             onClick={() => navigate(item.path)}
                             className={`
-                                w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-medium transition-all
+                                w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-[13px] font-medium transition-all
                                 ${location.pathname === item.path
                                     ? 'bg-primary/10 text-primary shadow-sm'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
@@ -167,15 +167,16 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             {/* Main Content Area */}
             <main className="flex-1 overflow-auto bg-transparent flex flex-col relative custom-scrollbar z-10">
                 {title && (
-                    <header className="px-10 pt-6 pb-4 sticky top-0 bg-background/60 backdrop-blur-md z-20 transition-all border-b border-border/50">
+                    <header className="px-5 pt-4 pb-3 sticky top-0 bg-background/60 backdrop-blur-md z-20 transition-all border-b border-border/50">
                         <div className="flex flex-col gap-0.5">
-                            <h2 className="text-2xl font-bold text-foreground tracking-tight uppercase">{title}</h2>
+                            <h2 className="text-xl font-bold text-foreground tracking-tight uppercase">{title}</h2>
                             {subtitle && <p className="text-sm font-medium text-muted-foreground mt-1 italic">{subtitle}</p>}
                         </div>
                     </header>
                 )}
-                <div className="flex-1 px-10 py-8">
-                    <div className="max-w-7xl animate-in fade-in duration-500">
+                <div className="flex-1 px-4 md:px-8 py-6 h-full">
+                    <div className="w-full h-full animate-in fade-in duration-500">
+
                         {children}
                     </div>
                 </div>

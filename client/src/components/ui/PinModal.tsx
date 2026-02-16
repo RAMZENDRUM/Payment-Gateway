@@ -70,12 +70,12 @@ export const PinModal = ({ isOpen, onVerify, onCancel, amount, title, descriptio
                             <Fingerprint size={36} className="stroke-[1.5]" />
                         </div>
                         <div className="space-y-1">
-                            <h3 className="text-xl font-bold text-white tracking-tight">{title || 'Authorization'}</h3>
-                            <p className="text-xs text-zinc-500 font-medium">Please verify your identity</p>
+                            <h3 className="text-xl font-black text-white italic uppercase tracking-tight">{title || 'Authorization'}</h3>
+                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest opacity-60">Security Payload Confirmation</p>
                         </div>
                     </div>
 
-                    <p className="text-sm text-zinc-400 font-medium leading-relaxed max-w-[240px] mx-auto">
+                    <p className="text-xs text-zinc-400 font-medium leading-relaxed max-w-[240px] mx-auto italic">
                         {description || (amount ? `Authorize settlement of ₹${amount.toLocaleString()}.` : 'Identity verification required.')}
                     </p>
 
@@ -100,7 +100,7 @@ export const PinModal = ({ isOpen, onVerify, onCancel, amount, title, descriptio
                                     <motion.div
                                         key={idx}
                                         animate={isActive ? { borderColor: 'rgba(16, 185, 129, 0.5)', scale: 1.05 } : { borderColor: 'rgba(255, 255, 255, 0.1)', scale: 1 }}
-                                        className={`w-11 h-14 bg-white/[0.03] border-2 rounded-2xl flex items-center justify-center text-xl font-bold transition-all ${digit ? 'text-white' : 'text-zinc-800'}`}
+                                        className={`w-11 h-14 bg-white/[0.03] border-2 rounded-2xl flex items-center justify-center text-xl font-black transition-all ${digit ? 'text-white' : 'text-zinc-800'}`}
                                     >
                                         <AnimatePresence mode="wait">
                                             {digit ? (
@@ -128,29 +128,30 @@ export const PinModal = ({ isOpen, onVerify, onCancel, amount, title, descriptio
                     <div className="flex flex-col gap-3 pt-4">
                         <Button
                             variant="ghost"
-                            className="h-10 text-xs font-medium text-emerald-500 hover:text-emerald-400 border border-emerald-500/10 hover:bg-emerald-500/5 rounded-xl transition-all"
+                            className="h-10 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-500 hover:text-emerald-400 border border-emerald-500/10 hover:bg-emerald-500/5 rounded-xl transition-all"
                             onClick={handleForgotPin}
                             disabled={forgotLoading}
                         >
-                            {forgotLoading ? 'Sending OTP...' : 'Forgot PIN?'}
+                            {forgotLoading ? 'Establishing Uplink...' : 'Recovery Protocol (Forgot PIN)'}
                         </Button>
                         <Button
                             variant="ghost"
-                            className="h-10 text-xs font-medium text-zinc-500 hover:text-white rounded-xl transition-all"
+                            className="h-10 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 hover:text-white rounded-xl transition-all"
                             onClick={onCancel}
                         >
-                            Cancel
+                            Decline Session
                         </Button>
                     </div>
                 </div>
 
                 {/* Secure Badge Footer */}
                 <div className="bg-zinc-950/50 py-3 flex items-center justify-center gap-3 border-t border-white/5">
-                    <div className="flex items-center gap-1.5 opacity-50">
-                        <Lock size={12} className="text-emerald-500" />
-                        <span className="text-[10px] font-medium text-zinc-400">Secure Input</span>
+                    <div className="flex items-center gap-1.5 opacity-30">
+                        <Lock size={10} className="text-emerald-500" />
+                        <span className="text-[8px] font-black uppercase tracking-widest text-white">Encrypted Input</span>
                     </div>
                 </div>
+
             </DialogContent>
         </Dialog>
     );

@@ -13,8 +13,11 @@ import {
     QrCode,
     Shield,
     Wallet,
-    Send as SendIcon
+    Send as SendIcon,
+    Fingerprint,
+    ArrowRight
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/AuthContext';
 import { useTheme } from '@/ThemeContext';
@@ -76,19 +79,19 @@ const AnimatedNumber = ({ value, decimals = 2 }: { value: number; decimals?: num
 };
 
 const MetricCard = ({ title, value, unit = '', icon, description, decimals = 2 }: MetricCardProps) => (
-    <div className="p-6 dashboard-card group bg-card/50 border-border/40 hover:border-primary/20 transition-all rounded-[2rem]">
-        <div className="flex items-center gap-3 mb-4">
+    <div className="p-5 dashboard-card group bg-card/50 border-border/40 hover:border-primary/20 transition-all rounded-xl">
+        <div className="flex items-center gap-2.5 mb-3">
             <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                 {icon}
             </div>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</span>
         </div>
         <div>
-            <div className="text-3xl font-bold text-foreground tabular-nums tracking-tight flex items-baseline">
-                <span className="text-xl font-medium text-muted-foreground mr-1.5 opacity-60">{unit}</span>
+            <div className="text-[28px] font-bold text-foreground tabular-nums tracking-tight flex items-baseline">
+                <span className="text-lg font-medium text-muted-foreground mr-1 opacity-60">{unit}</span>
                 <AnimatedNumber value={value} decimals={decimals} />
             </div>
-            {description && <p className="text-xs text-muted-foreground mt-2 font-medium">{description}</p>}
+            {description && <p className="text-[10px] text-muted-foreground mt-1.5 font-medium">{description}</p>}
         </div>
     </div>
 );
@@ -100,12 +103,12 @@ const MoneyFlowChart = React.memo(({ data }: { data: any[] }) => {
 
     return (
         <div className="flex-1 bg-card/30 rounded-[2rem] border border-border/40 overflow-hidden backdrop-blur-sm">
-            <div className="px-8 pt-8 pb-2">
+            <div className="px-6 pt-6 pb-2">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider opacity-60">Flow Analysis</h3>
                 <p className="text-lg font-bold text-foreground mt-1">Capital Velocity</p>
             </div>
-            <div className="p-8">
-                <div style={{ width: '100%', height: '260px' }}>
+            <div className="p-6">
+                <div style={{ width: '100%', height: '200px' }}>
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#27272a" : "#e4e4e7"} vertical={false} />
@@ -141,12 +144,12 @@ const TransactionQualityChart = React.memo(({ data }: { data: any[] }) => {
 
     return (
         <div className="flex-1 bg-card/30 rounded-[2rem] border border-border/40 overflow-hidden backdrop-blur-sm">
-            <div className="px-8 pt-8 pb-2">
+            <div className="px-6 pt-6 pb-2">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider opacity-60">Transaction Volume</h3>
                 <p className="text-lg font-bold text-foreground mt-1">Activity Intensity</p>
             </div>
-            <div className="p-8">
-                <div style={{ width: '100%', height: '260px' }}>
+            <div className="p-6">
+                <div style={{ width: '100%', height: '200px' }}>
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#27272a" : "#e4e4e7"} vertical={false} />
@@ -182,28 +185,47 @@ export default function Dashboard() {
     return (
         <AppLayout title="Overview" subtitle={`Welcome back, ${user?.full_name?.split(' ')[0] || 'User'}`}>
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+
+                {/* PIN Setup Alert */}
+                {user && !user.hasPaymentPin && (
+                    <div className="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-emerald-500/5">
+                        <div className="flex items-center gap-5">
+                            <div className="w-14 h-14 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-500 shrink-0">
+                                <Fingerprint size={28} />
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="text-sm font-black uppercase tracking-tight">Financial Security Required</h3>
+                                <p className="text-xs text-zinc-500 font-medium italic">You must establish a Payment PIN to authorize transfers, withdrawals, and merchant payments.</p>
+                            </div>
+                        </div>
+                        <Button onClick={() => navigate('/setup-pin')} className="w-full md:w-auto px-10 h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl">
+                            Setup PIN Now <ArrowRight size={16} className="ml-2" />
+                        </Button>
+                    </div>
+                )}
+
                 {/* Metrics */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <MetricCard title="Settlement Balance" value={totalRevenue || 0} unit="₹" icon={<DollarSign size={16} />} description="Liquid in ZenWallet" />
                     <MetricCard title="Total Transactions" value={salesCount || 0} decimals={0} icon={<Repeat2 size={16} />} description="Lifetime activity" />
                     <MetricCard title="Avg Transaction" value={averageSale || 0} unit="₹" icon={<TrendingUp size={16} />} description="Per transaction avg" />
-                    <div className="p-6 bg-card/50 border-border/40 rounded-[2rem] group hover:border-emerald-500/20 transition-all">
-                        <div className="flex items-center gap-3 mb-4">
+                    <div className="p-5 bg-card/50 border-border/40 rounded-xl group hover:border-emerald-500/20 transition-all">
+                        <div className="flex items-center gap-2.5 mb-3">
                             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
                                 <Activity size={16} />
                             </div>
                             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Status</span>
                         </div>
-                        <div className="flex items-center gap-2.5 text-3xl font-bold text-foreground tracking-tight">
+                        <div className="flex items-center gap-2.5 text-[28px] font-bold text-foreground tracking-tight">
                             Operational
                         </div>
-                        <p className="text-xs text-muted-foreground mt-2 font-medium">Linked & Verified</p>
+                        <p className="text-[10px] text-muted-foreground mt-1.5 font-medium">Linked & Verified</p>
                     </div>
                 </div>
 
                 {/* Profile Link Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-8 bg-card/30 border border-border/40 rounded-[2.5rem] relative group cursor-pointer hover:bg-card/50 transition-all" onClick={() => navigate('/profile')}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-6 bg-card/30 border border-border/40 rounded-[2rem] relative group cursor-pointer hover:bg-card/50 transition-all" onClick={() => navigate('/profile')}>
                         <h3 className="text-foreground text-lg font-bold flex items-center gap-3 mb-2">
                             <Shield className="text-primary" size={20} />
                             Security & Profile
@@ -214,7 +236,7 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    <div className="p-8 bg-card/30 border border-border/40 rounded-[2.5rem] relative group cursor-pointer hover:bg-card/50 transition-all" onClick={() => navigate('/wallet')}>
+                    <div className="p-6 bg-card/30 border border-border/40 rounded-[2rem] relative group cursor-pointer hover:bg-card/50 transition-all" onClick={() => navigate('/wallet')}>
                         <h3 className="text-foreground text-lg font-bold flex items-center gap-3 mb-2">
                             <Wallet className="text-primary" size={20} />
                             Wallet & Assets
@@ -227,14 +249,14 @@ export default function Dashboard() {
                 </div>
 
                 {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <MoneyFlowChart data={moneyFlowData} />
                     <TransactionQualityChart data={transactionQualityData} />
                 </div>
 
                 {/* Table */}
-                <div className="pt-8">
-                    <div className="flex items-center justify-between mb-6 px-1">
+                <div className="pt-6">
+                    <div className="flex items-center justify-between mb-4 px-1">
                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">Recent Transactions</h3>
                     </div>
 
@@ -278,7 +300,7 @@ export default function Dashboard() {
 
             {/* Float Actions */}
             {/* Float Actions */}
-            <div className="fixed bottom-12 right-12 flex flex-col gap-4 z-50">
+            <div className="fixed bottom-8 right-8 flex flex-col gap-3 z-50">
                 <button
                     onClick={() => navigate('/send')}
                     className="h-16 w-16 bg-primary text-primary-foreground rounded-[2rem] flex items-center justify-center shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all group relative overflow-hidden"

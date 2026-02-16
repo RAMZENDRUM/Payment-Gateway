@@ -53,14 +53,15 @@ export default function SetPin() {
                     <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-3xl flex items-center justify-center mx-auto text-emerald-500">
                         <ShieldCheck size={32} />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight uppercase">Setup PIN</h1>
-                    <p className="text-zinc-500 text-sm font-medium">Create your 6-digit Security PIN to authorize future transfers and payments.</p>
+                    <h1 className="text-3xl font-black tracking-tight uppercase">Security Enrollment</h1>
+                    <p className="text-zinc-500 text-sm italic">Establish your 6-digit cryptographic Payment PIN to authorize transfers and withdrawals.</p>
                 </div>
 
-                <div className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl shadow-2xl">
+                <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
                     <div className="space-y-10">
                         <div className="space-y-6">
-                            <Label className="text-xs uppercase font-semibold tracking-wider text-zinc-500 text-center block">Set 6-Digit Payment PIN</Label>
+                            <Label className="text-[10px] uppercase font-black tracking-widest text-zinc-500 text-center block opacity-50">Set New 6-Digit Payment PIN</Label>
+
 
                             <div className="relative" onClick={() => hiddenInputRef.current?.focus()}>
                                 <input
@@ -82,7 +83,8 @@ export default function SetPin() {
                                             <motion.div
                                                 key={idx}
                                                 animate={isActive ? { borderColor: 'rgba(16, 185, 129, 0.5)', scale: 1.05 } : { borderColor: 'rgba(255, 255, 255, 0.1)', scale: 1 }}
-                                                className={`w-11 h-14 bg-black border rounded-2xl flex items-center justify-center text-xl font-bold transition-all ${digit ? 'text-white border-emerald-500/30' : 'text-zinc-800'}`}
+                                                className={`w-11 h-14 bg-black border-2 rounded-2xl flex items-center justify-center text-xl font-bold transition-all ${digit ? 'text-white border-emerald-500/30' : 'text-zinc-800'}`}
+
                                             >
                                                 <AnimatePresence mode="wait">
                                                     {digit ? (
@@ -109,25 +111,28 @@ export default function SetPin() {
                         </div>
 
                         <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex items-start gap-3">
-                            <ShieldCheck size={16} className="text-emerald-500 shrink-0 mt-0.5" />
-                            <p className="text-xs text-zinc-400 font-medium leading-relaxed">
-                                This PIN is independent of your password. It is required for all payments and withdrawals. Keep it confidential.
+                            <Info size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                            <p className="text-[10px] text-zinc-400 font-medium leading-relaxed opacity-60">
+                                This PIN is independent of your account password. It is required for all high-priority financial operations. Keep it confidential.
+
                             </p>
                         </div>
 
                         <Button
                             onClick={handleSetPin}
                             disabled={loading || pin.length < 6}
-                            className="w-full h-15 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl shadow-xl shadow-emerald-500/10 transition-all active:scale-95"
+                            className="w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-2xl shadow-xl shadow-emerald-500/10 uppercase tracking-widest text-xs"
                         >
-                            {loading ? <Loader2 className="animate-spin" /> : 'Confirm Security PIN'}
+                            {loading ? <Loader2 className="animate-spin" /> : 'Activate Security PIN'}
+
                         </Button>
                     </div>
                 </div>
 
                 <div className="text-center">
-                    <Button variant="ghost" onClick={() => navigate(-1)} className="text-xs font-semibold text-zinc-500 hover:text-white transition-colors">
-                        Cancel
+                    <Button variant="ghost" onClick={() => navigate(-1)} className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest hover:text-white transition-colors">
+                        Cancel Enrollment
+
                     </Button>
                 </div>
             </div>
