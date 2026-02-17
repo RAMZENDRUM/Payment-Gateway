@@ -16,8 +16,12 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// Middleware (CORS - ALLOW ALL)
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key']
+}));
 app.use(express.json());
 // Serve static files from the React app build directory
 app.use(express.static(path.join(__dirname, '../client/dist')));
