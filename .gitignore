@@ -19,3 +19,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+push_*.txt
+test-payment.js
+test-*.js
+schema_dump.txt
+payment-link.txt
+*.log
