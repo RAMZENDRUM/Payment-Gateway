@@ -53,3 +53,11 @@ app.get('/api/health', (req, res) => {
 
 // Export for Vercel Serverless
 module.exports = app;
+
+// Start server locally if run directly
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Local Server running on port ${PORT}`);
+        console.log(`🔌 API initialized without websockets (Delegated to Supabase Realtime)`);
+    });
+}

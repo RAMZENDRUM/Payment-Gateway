@@ -60,27 +60,33 @@ export const PinModal = ({ isOpen, onVerify, onCancel, amount, title, descriptio
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
-            <DialogContent className="bg-[#08080a] border border-white/10 shadow-2xl max-w-sm p-0 overflow-hidden rounded-[2.5rem] outline-none">
-                <div className="p-8 text-center space-y-6 relative">
-                    {/* Decorative background elements */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-emerald-500/5 rounded-full blur-[40px] pointer-events-none" />
+            <DialogContent className="bg-[#000000] border border-[#1a1a1c] shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-[380px] p-0 overflow-hidden rounded-[2.5rem] outline-none">
+                <div className="p-10 text-center space-y-8 relative overflow-hidden">
+                    {/* Luxurious background layers */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-emerald-500/5 rounded-full blur-[45px] pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
 
-                    <div className="relative z-10 flex flex-col items-center gap-4">
-                        <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-[2rem] flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-500/5">
-                            <Fingerprint size={36} className="stroke-[1.5]" />
-                        </div>
-                        <div className="space-y-1">
-                            <h3 className="text-xl font-black text-white italic uppercase tracking-tight">{title || 'Authorization'}</h3>
-                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest opacity-60">Security Payload Confirmation</p>
+                    <div className="relative z-10 space-y-6">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="w-16 h-16 bg-[#041d13] border border-[#0a3825] shadow-[0_0_25px_rgba(16,185,129,0.1)] rounded-[1.25rem] flex items-center justify-center mx-auto text-emerald-400"
+                        >
+                            <Fingerprint size={32} strokeWidth={1.5} />
+                        </motion.div>
+
+                        <div className="space-y-2">
+                            <h3 className="text-2xl font-bold text-white tracking-[-0.02em] uppercase">
+                                {title || 'Verify PIN'}
+                            </h3>
+                            <p className="text-[#888888] text-[13px] font-medium leading-relaxed max-w-[260px] mx-auto italic">
+                                {description || (amount ? `Authorize settlement of ₹${amount.toLocaleString()}.` : 'Identity verification required.')}
+                            </p>
                         </div>
                     </div>
 
-                    <p className="text-xs text-zinc-400 font-medium leading-relaxed max-w-[240px] mx-auto italic">
-                        {description || (amount ? `Authorize settlement of ₹${amount.toLocaleString()}.` : 'Identity verification required.')}
-                    </p>
-
-                    {/* PIN Boxes Area */}
-                    <div className="relative pt-4 pb-2" onClick={() => hiddenInputRef.current?.focus()}>
+                    {/* PIN Entry Area */}
+                    <div className="relative py-2" onClick={() => hiddenInputRef.current?.focus()}>
                         <input
                             ref={hiddenInputRef}
                             type="tel"
@@ -89,18 +95,26 @@ export const PinModal = ({ isOpen, onVerify, onCancel, amount, title, descriptio
                             value={pin}
                             onChange={handleInputChange}
                             onBlur={() => isOpen && hiddenInputRef.current?.focus()}
-                            className="absolute opacity-0 pointer-events-none"
+                            className="absolute opacity-0 pointer-events-none w-full h-full"
                             maxLength={6}
                         />
-                        <div className="flex justify-center gap-3">
+                        <div className="flex justify-center gap-2.5">
                             {[0, 1, 2, 3, 4, 5].map((idx) => {
                                 const digit = pin[idx];
                                 const isActive = pin.length === idx;
                                 return (
                                     <motion.div
                                         key={idx}
-                                        animate={isActive ? { borderColor: 'rgba(16, 185, 129, 0.5)', scale: 1.05 } : { borderColor: 'rgba(255, 255, 255, 0.1)', scale: 1 }}
-                                        className={`w-11 h-14 bg-white/[0.03] border-2 rounded-2xl flex items-center justify-center text-xl font-black transition-all ${digit ? 'text-white' : 'text-zinc-800'}`}
+                                        animate={isActive ? {
+                                            borderColor: 'rgba(52, 211, 153, 0.4)',
+                                            backgroundColor: 'rgba(52, 211, 153, 0.03)',
+                                            y: -2
+                                        } : {
+                                            borderColor: 'rgba(255, 255, 255, 0.05)',
+                                            backgroundColor: 'rgba(10, 10, 11, 1)',
+                                            y: 0
+                                        }}
+                                        className={`w-11 h-14 border-[1.5px] rounded-[1rem] flex items-center justify-center transition-all ${digit ? 'border-emerald-500/20 bg-[#0a1510]' : ''}`}
                                     >
                                         <AnimatePresence mode="wait">
                                             {digit ? (
@@ -108,14 +122,14 @@ export const PinModal = ({ isOpen, onVerify, onCancel, amount, title, descriptio
                                                     key="dot"
                                                     initial={{ scale: 0, opacity: 0 }}
                                                     animate={{ scale: 1, opacity: 1 }}
-                                                    className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                                                    className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)]"
                                                 />
                                             ) : (
                                                 <motion.div
                                                     key="placeholder"
                                                     initial={{ opacity: 0 }}
                                                     animate={{ opacity: 1 }}
-                                                    className="w-1 h-3 bg-zinc-800 rounded-full"
+                                                    className="w-1.5 h-3.5 bg-[#1a1a1c] rounded-full"
                                                 />
                                             )}
                                         </AnimatePresence>
@@ -125,30 +139,30 @@ export const PinModal = ({ isOpen, onVerify, onCancel, amount, title, descriptio
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 pt-4">
+                    {/* Action Area */}
+                    <div className="flex flex-col gap-4 pt-4 relative z-10">
                         <Button
                             variant="ghost"
-                            className="h-10 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-500 hover:text-emerald-400 border border-emerald-500/10 hover:bg-emerald-500/5 rounded-xl transition-all"
+                            className="h-12 text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-500 hover:text-white border border-emerald-500/10 hover:bg-emerald-500/10 rounded-[1.25rem] transition-all duration-300"
                             onClick={handleForgotPin}
                             disabled={forgotLoading}
                         >
                             {forgotLoading ? 'Establishing Uplink...' : 'Recovery Protocol (Forgot PIN)'}
                         </Button>
-                        <Button
-                            variant="ghost"
-                            className="h-10 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 hover:text-white rounded-xl transition-all"
+                        <button
+                            className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#555555] hover:text-white transition-colors py-2"
                             onClick={onCancel}
                         >
                             Decline Session
-                        </Button>
+                        </button>
                     </div>
                 </div>
 
-                {/* Secure Badge Footer */}
-                <div className="bg-zinc-950/50 py-3 flex items-center justify-center gap-3 border-t border-white/5">
-                    <div className="flex items-center gap-1.5 opacity-30">
-                        <Lock size={10} className="text-emerald-500" />
-                        <span className="text-[8px] font-black uppercase tracking-widest text-white">Encrypted Input</span>
+                {/* Secure Badge */}
+                <div className="bg-[#050506] py-4 flex items-center justify-center gap-3 border-t border-[#1a1a1c]">
+                    <div className="flex items-center gap-2 opacity-40">
+                        <Lock size={12} className="text-emerald-500" />
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white">Cryptographic Security Active</span>
                     </div>
                 </div>
 
