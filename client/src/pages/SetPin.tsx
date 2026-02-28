@@ -52,10 +52,10 @@ export default function SetPin() {
     };
 
     return (
-        <div className="min-h-screen bg-[#000000] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
-            {/* Subtle luxurious background glows */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[600px] h-[400px] bg-emerald-900/10 blur-[150px] rounded-full pointer-events-none" />
+        <div className="min-h-screen bg-[#020202] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            {/* Royal Obsidian & Gold background glows */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-amber-500/5 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[600px] h-[400px] bg-zinc-900/20 blur-[150px] rounded-full pointer-events-none" />
 
             <div className="w-full max-w-md space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10">
 
@@ -65,7 +65,7 @@ export default function SetPin() {
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 20 }}
-                        className="w-16 h-16 bg-[#041d13] border border-[#0a3825] shadow-[0_0_30px_rgba(16,185,129,0.1)] rounded-[1.25rem] flex items-center justify-center mx-auto text-emerald-400"
+                        className="w-16 h-16 bg-[#1a1408] border border-[#3d2f10] shadow-[0_0_30px_rgba(245,158,11,0.1)] rounded-[1.25rem] flex items-center justify-center mx-auto text-amber-500"
                     >
                         <ShieldCheck strokeWidth={1.5} size={32} />
                     </motion.div>
@@ -117,15 +117,15 @@ export default function SetPin() {
                                             <motion.div
                                                 key={idx}
                                                 animate={isActive ? {
-                                                    borderColor: 'rgba(16, 185, 129, 0.4)',
-                                                    backgroundColor: 'rgba(16, 185, 129, 0.03)',
+                                                    borderColor: 'rgba(245, 158, 11, 0.4)',
+                                                    backgroundColor: 'rgba(245, 158, 11, 0.03)',
                                                     y: -2
                                                 } : {
                                                     borderColor: 'rgba(255, 255, 255, 0.03)',
                                                     backgroundColor: 'rgba(5, 5, 5, 1)',
                                                     y: 0
                                                 }}
-                                                className={`w-12 h-16 sm:w-14 sm:h-16 border-[1.5px] rounded-[1.25rem] flex items-center justify-center transition-all ${digit ? 'border-[#10b981]/20 bg-[#0a1510]' : ''}`}
+                                                className={`w-12 h-16 sm:w-14 sm:h-16 border-[1.5px] rounded-[1.25rem] flex items-center justify-center transition-all ${digit ? 'border-[#f59e0b]/20 bg-[#141108]' : ''}`}
                                             >
                                                 <AnimatePresence mode="wait">
                                                     {digit ? (
@@ -133,7 +133,7 @@ export default function SetPin() {
                                                             key="dot"
                                                             initial={{ scale: 0, opacity: 0 }}
                                                             animate={{ scale: 1, opacity: 1 }}
-                                                            className="w-2.5 h-2.5 bg-emerald-400 rounded-full shadow-[0_0_12px_rgba(52,211,153,0.6)]"
+                                                            className="w-2.5 h-2.5 bg-amber-500 rounded-full shadow-[0_0_12px_rgba(245,158,11,0.6)]"
                                                         />
                                                     ) : (
                                                         <motion.div
@@ -152,8 +152,8 @@ export default function SetPin() {
                         </div>
 
                         {/* Info Alert */}
-                        <div className="p-5 bg-[#05140e] border border-[#0d2a1d] rounded-[1.25rem] flex items-start gap-4">
-                            <Info size={18} className="text-emerald-500 shrink-0 mt-0.5" />
+                        <div className="p-5 bg-[#141108] border border-[#2e260d] rounded-[1.25rem] flex items-start gap-4">
+                            <Info size={18} className="text-amber-500 shrink-0 mt-0.5" />
                             <p className="text-[12px] text-[#888888] font-medium leading-relaxed">
                                 This PIN is independent of your account password. It is required for all high-priority financial operations. Keep it confidential.
                             </p>
@@ -163,7 +163,7 @@ export default function SetPin() {
                         <Button
                             onClick={handleSetPin}
                             disabled={loading || pin.length < 6}
-                            className="w-full h-16 bg-[#135f3e] hover:bg-[#18754c] disabled:bg-[#1a1a1c] disabled:text-[#444444] text-[#05140e] hover:text-[#000000] font-black rounded-[1.25rem] shadow-[0_8px_30px_rgba(19,95,62,0.2)] hover:shadow-[0_8px_30px_rgba(24,117,76,0.4)] disabled:shadow-none uppercase tracking-[0.15em] text-[13px] transition-all duration-300 relative overflow-hidden group"
+                            className="w-full h-16 bg-[#d97706] hover:bg-[#f59e0b] disabled:bg-[#1a1a1c] disabled:text-[#444444] text-[#000000] font-black rounded-[1.25rem] shadow-[0_8px_30px_rgba(217,119,6,0.2)] hover:shadow-[0_8px_30px_rgba(245,158,11,0.4)] disabled:shadow-none uppercase tracking-[0.15em] text-[13px] transition-all duration-300 relative overflow-hidden group"
                         >
                             <span className="relative z-10 flex items-center justify-center gap-2">
                                 {loading ? <Loader2 className="animate-spin" /> : 'Activate Security PIN'}
