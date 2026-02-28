@@ -60,8 +60,9 @@ exports.deleteApp = async (req, res) => {
             throw new Error('App not found or unauthorized');
         }
 
-        // 2. Delete related transactions
+        // 2. Delete related historical data (Cascade)
         await client.query('DELETE FROM transactions WHERE app_id = $1', [id]);
+        await client.query('DELETE FROM payment_requests WHERE app_id = $1', [id]);
 
         // 3. Delete related webhook logs
         await client.query(
@@ -78,7 +79,7 @@ exports.deleteApp = async (req, res) => {
         await client.query('DELETE FROM apps WHERE id = $1', [id]);
 
         await client.query('COMMIT');
-        res.json({ message: 'App and all related historical data deleted successfully' });
+        res.json({ message: 'App and all related historical session data deleted successfully' });
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Delete App Error:', err);
