@@ -25,3 +25,5 @@ test-*.js
 schema_dump.txt
 payment-link.txt
 *.log
+.vercel
+.env*.local

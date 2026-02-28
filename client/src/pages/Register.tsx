@@ -192,11 +192,11 @@ export default function Register() {
 
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-30 mix-blend-screen pointer-events-none dark:opacity-50" />
 
-            <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-6 py-4 border-b border-border/50 z-50 bg-background/20 backdrop-blur-md">
+            <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-6 py-4 z-50 bg-transparent">
                 <span className="text-xs font-bold tracking-[0.14em] uppercase text-zinc-500">
                     ZENWALLET
                 </span>
-                <Button variant="link" asChild className="text-zinc-500 hover:text-foreground relative z-[51] font-bold">
+                <Button variant="link" asChild className="text-zinc-500 hover:text-foreground relative z-[51] font-bold bg-transparent">
                     <Link to="/login">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back to Login

@@ -171,16 +171,16 @@ export default function Login() {
                 className="absolute inset-0 w-full h-full opacity-30 mix-blend-screen pointer-events-none dark:opacity-50"
             />
 
-            <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-8 py-6 border-b border-border/50 z-10 bg-background/20 backdrop-blur-md">
+            <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-8 py-6 z-10 bg-transparent">
                 <span className="text-sm font-bold tracking-[0.14em] uppercase text-zinc-500">
                     ZENWALLET
                 </span>
                 <Button
                     variant="outline"
-                    className="h-10 rounded-lg border-border bg-card text-zinc-500 hover:text-foreground hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
+                    className="h-10 rounded-lg border-border text-zinc-500 hover:text-foreground hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors bg-transparent border-none"
                 >
-                    <span className="mr-2 text-sm">Contact Support</span>
-                    <ArrowRight className="h-4 w-4" />
+                    Contact Support
+                    <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
             </header>
 

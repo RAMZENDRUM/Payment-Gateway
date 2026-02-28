@@ -1,33 +1,27 @@
-const axios = require('axios');
+const nodemailer = require('nodemailer');
 
-/**
- * Sends an email using Brevo's HTTP API.
- * This is more reliable than SMTP on cloud platforms like Railway
- * because it uses standard HTTPS (port 443).
- */
-const sendBrevoEmail = async (toEmail, subject, htmlContent) => {
-    const apiKey = (process.env.EMAIL_PASS || 'bskI3S7veUfefE7').trim();
-    // Use the verified sender from Brevo. If not set, use a fallback.
-    const senderEmail = (process.env.EMAIL_USER || 'a105fc001@smtp-brevo.com').trim();
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER || 'eventbooking.otp@gmail.com',
+        pass: process.env.EMAIL_PASS || 'wexj uicx fmwm oloc'
+    }
+});
 
+const sendEmail = async (toEmail, subject, htmlContent) => {
     try {
-        const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
-            sender: { name: "ZenWallet Auth", email: senderEmail },
-            to: [{ email: toEmail }],
+        const info = await transporter.sendMail({
+            from: `"ZenWallet Auth" <${process.env.EMAIL_USER || 'eventbooking.otp@gmail.com'}>`,
+            to: toEmail,
             subject: subject,
-            htmlContent: htmlContent
-        }, {
-            headers: {
-                'api-key': apiKey,
-                'Content-Type': 'application/json'
-            }
+            html: htmlContent
         });
 
-        console.log('✅ Email sent via Brevo API:', response.data.messageId);
-        return response.data;
+        console.log('✅ Email sent via Gmail:', info.messageId);
+        return info;
     } catch (error) {
-        console.error('❌ Brevo API Error:', error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Failed to send email via API');
+        console.error('❌ Gmail SMTP Error:', error.message);
+        throw new Error('Failed to send email via SMTP');
     }
 };
 
@@ -61,7 +55,7 @@ exports.sendOTP = async (email, otp) => {
         </div>
     `;
 
-    return sendBrevoEmail(email, 'ZenWallet Verification OTP', html);
+    return sendEmail(email, 'ZenWallet Verification OTP', html);
 };
 
 exports.sendForgotPasswordOTP = async (email, otp) => {
@@ -85,7 +79,7 @@ exports.sendForgotPasswordOTP = async (email, otp) => {
         </div>
     `;
 
-    return sendBrevoEmail(email, 'Reset Your ZenWallet Password', html);
+    return sendEmail(email, 'Reset Your ZenWallet Password', html);
 };
 
 exports.sendEmailChangeOTP = async (email, otp) => {
@@ -109,5 +103,5 @@ exports.sendEmailChangeOTP = async (email, otp) => {
         </div>
     `;
 
-    return sendBrevoEmail(email, 'Verify Your New Email Address', html);
+    return sendEmail(email, 'Verify Your New Email Address', html);
 };

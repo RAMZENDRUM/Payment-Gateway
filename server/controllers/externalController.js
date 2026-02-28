@@ -124,7 +124,7 @@ exports.directWalletTransfer = async (req, res) => {
         const transactionTime = transaction.rows[0].created_at;
 
         // 5. Get Socket.IO instance and emit real-time updates
-        const io = req.app.get('io');
+        const io = null;
 
         // Notify the merchant website (Website A)
         io.to(orderId).emit('payment-success', {
@@ -200,7 +200,7 @@ exports.directWalletTransfer = async (req, res) => {
         }
 
         // Emit failure event
-        const io = req.app.get('io');
+        const io = null;
         io.to(orderId).emit('payment-failed', {
             orderId,
             status: 'FAILED',
@@ -311,7 +311,7 @@ exports.fulfillExternalPayment = async (req, res) => {
         await client.query('COMMIT');
 
         // 6. Notify merchant via WebSocket
-        const io = req.app.get('io');
+        const io = null;
         io.to(reference_id).emit('payment-success', {
             referenceId: reference_id,
             amount,

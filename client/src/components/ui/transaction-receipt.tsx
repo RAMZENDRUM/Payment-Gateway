@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BankingReceipt, TransactionData } from "./banking-receipt";
+export type { TransactionData };
 
 
 

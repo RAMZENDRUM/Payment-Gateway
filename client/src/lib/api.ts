@@ -1,6 +1,9 @@
 export const getApiUrl = () => {
-    // Return the Railway production URL
-    return 'https://payment-gateway-production-2f82.up.railway.app/api';
+    if (import.meta.env.MODE === 'development') {
+        return 'http://localhost:5000/api';
+    }
+    // Return the Vercel Serverless production URL
+    return 'https://payment-via-zenwallet.vercel.app/api';
 };
 
 export const API_URL = getApiUrl();

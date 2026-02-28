@@ -55,7 +55,7 @@ exports.sendGlobalMessage = async (req, res) => {
         );
 
         // Notify all connected users via socket
-        const io = req.app.get('io');
+        const io = null;
         if (io) {
             io.emit('new-broadcast', result.rows[0]);
         }

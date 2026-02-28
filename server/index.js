@@ -1,18 +1,9 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const http = require('http');
-const { Server } = require('socket.io');
 require('dotenv').config();
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: '*', // In production, specify exact origins
-        methods: ['GET', 'POST']
-    }
-});
 
 const PORT = process.env.PORT || 5000;
 
@@ -29,30 +20,6 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 app.use((req, res, next) => {
     console.log(`[REQ] ${req.method} ${req.url}`);
     next();
-});
-
-// Make io accessible to routes
-app.set('io', io);
-
-// Socket.IO connection handling
-io.on('connection', (socket) => {
-    console.log('✅ Client connected:', socket.id);
-
-    // Join room for specific order/reference
-    socket.on('join-order', (orderId) => {
-        socket.join(orderId);
-        console.log(`📦 Client ${socket.id} joined order room: ${orderId}`);
-    });
-
-    // Join room for specific user notifications
-    socket.on('join-user', (userId) => {
-        socket.join(`user_${userId}`);
-        console.log(`👤 User ${userId} connected as ${socket.id}`);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('❌ Client disconnected:', socket.id);
-    });
 });
 
 // Routes
@@ -81,7 +48,7 @@ app.use((err, req, res, next) => {
 app.get('/api/health', (req, res) => {
     res.json({
         message: 'ZenWallet API is running...',
-        websocket: 'enabled',
+        websocket: 'disabled (using Supabase Realtime instead)',
         timestamp: new Date().toISOString()
     });
 });
@@ -91,7 +58,5 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
-server.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🔌 WebSocket enabled for real-time updates`);
-});
+// Export for Vercel Serverless
+module.exports = app;

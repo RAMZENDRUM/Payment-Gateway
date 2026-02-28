@@ -154,7 +154,7 @@ exports.sendCoins = async (req, res) => {
 
         await client.query('COMMIT');
         // Emit Socket Events
-        const io = req.app.get('io');
+        const io = null;
         if (io) {
             // Notify receiver
             io.to(`user_${receiverId}`).emit('payment-received', {
@@ -320,7 +320,7 @@ exports.fulfillPayment = async (req, res) => {
         const receiver = await client.query('SELECT full_name FROM public.users WHERE id::text = $1', [receiver_id]);
 
         // Emit Socket Events
-        const io = req.app.get('io');
+        const io = null;
         if (io) {
             // Notify receiver
             io.to(`user_${receiver_id}`).emit('payment-received', {
