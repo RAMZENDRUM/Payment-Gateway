@@ -14,8 +14,6 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key']
 }));
 app.use(express.json());
-// Serve static files from the React app build directory
-app.use(express.static(path.join(__dirname, '../client/dist')));
 
 app.use((req, res, next) => {
     console.log(`[REQ] ${req.method} ${req.url}`);
@@ -51,11 +49,6 @@ app.get('/api/health', (req, res) => {
         websocket: 'disabled (using Supabase Realtime instead)',
         timestamp: new Date().toISOString()
     });
-});
-
-// SPA Fallback: Serve index.html for any unknown routes (e.g., /scan)
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
 // Export for Vercel Serverless

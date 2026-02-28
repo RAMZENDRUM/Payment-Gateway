@@ -52,21 +52,50 @@ export default function SetPin() {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_50%_40%,rgba(16,185,129,0.05)_0%,transparent_50%)]">
-            <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-3xl flex items-center justify-center mx-auto text-emerald-500">
-                        <ShieldCheck size={32} />
+        <div className="min-h-screen bg-[#000000] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            {/* Subtle luxurious background glows */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[600px] h-[400px] bg-emerald-900/10 blur-[150px] rounded-full pointer-events-none" />
+
+            <div className="w-full max-w-md space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10">
+
+                {/* Header Section */}
+                <div className="text-center space-y-5">
+                    <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 20 }}
+                        className="w-16 h-16 bg-[#041d13] border border-[#0a3825] shadow-[0_0_30px_rgba(16,185,129,0.1)] rounded-[1.25rem] flex items-center justify-center mx-auto text-emerald-400"
+                    >
+                        <ShieldCheck strokeWidth={1.5} size={32} />
+                    </motion.div>
+
+                    <div className="space-y-3">
+                        <h1 className="text-4xl font-bold tracking-[-0.03em] uppercase drop-shadow-sm text-white">
+                            Security Enrollment
+                        </h1>
+                        <p className="text-[#888888] text-[15px] italic max-w-[320px] mx-auto leading-relaxed">
+                            Establish your 6-digit cryptographic Payment PIN to authorize transfers and withdrawals.
+                        </p>
                     </div>
-                    <h1 className="text-3xl font-black tracking-tight uppercase">Security Enrollment</h1>
-                    <p className="text-zinc-500 text-sm italic">Establish your 6-digit cryptographic Payment PIN to authorize transfers and withdrawals.</p>
                 </div>
 
-                <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
-                    <div className="space-y-10">
-                        <div className="space-y-6">
-                            <Label className="text-[10px] uppercase font-black tracking-widest text-zinc-500 text-center block opacity-50">Set New 6-Digit Payment PIN</Label>
+                {/* Main Card */}
+                <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                    className="bg-[#0a0a0b] border border-[#1a1a1c] shadow-2xl rounded-[2.5rem] p-8 sm:p-10 relative overflow-hidden"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
 
+                    <div className="space-y-12 relative z-10">
+
+                        {/* PIN Inputs */}
+                        <div className="space-y-6">
+                            <Label className="text-[11px] uppercase font-bold tracking-[0.2em] text-[#555555] text-center block">
+                                Set New 6-Digit Payment PIN
+                            </Label>
 
                             <div className="relative" onClick={() => hiddenInputRef.current?.focus()}>
                                 <input
@@ -77,34 +106,41 @@ export default function SetPin() {
                                     value={pin}
                                     onChange={handleInputChange}
                                     onBlur={() => hiddenInputRef.current?.focus()}
-                                    className="absolute opacity-0 pointer-events-none"
+                                    className="absolute opacity-0 pointer-events-none w-full h-full"
                                     maxLength={6}
                                 />
-                                <div className="flex justify-center gap-3">
+                                <div className="flex justify-center gap-2 sm:gap-3">
                                     {[0, 1, 2, 3, 4, 5].map((idx) => {
                                         const digit = pin[idx];
                                         const isActive = pin.length === idx;
                                         return (
                                             <motion.div
                                                 key={idx}
-                                                animate={isActive ? { borderColor: 'rgba(16, 185, 129, 0.5)', scale: 1.05 } : { borderColor: 'rgba(255, 255, 255, 0.1)', scale: 1 }}
-                                                className={`w-11 h-14 bg-black border-2 rounded-2xl flex items-center justify-center text-xl font-bold transition-all ${digit ? 'text-white border-emerald-500/30' : 'text-zinc-800'}`}
-
+                                                animate={isActive ? {
+                                                    borderColor: 'rgba(16, 185, 129, 0.4)',
+                                                    backgroundColor: 'rgba(16, 185, 129, 0.03)',
+                                                    y: -2
+                                                } : {
+                                                    borderColor: 'rgba(255, 255, 255, 0.03)',
+                                                    backgroundColor: 'rgba(5, 5, 5, 1)',
+                                                    y: 0
+                                                }}
+                                                className={`w-12 h-16 sm:w-14 sm:h-16 border-[1.5px] rounded-[1.25rem] flex items-center justify-center transition-all ${digit ? 'border-[#10b981]/20 bg-[#0a1510]' : ''}`}
                                             >
                                                 <AnimatePresence mode="wait">
                                                     {digit ? (
                                                         <motion.div
                                                             key="dot"
-                                                            initial={{ scale: 0 }}
-                                                            animate={{ scale: 1 }}
-                                                            className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                                                            initial={{ scale: 0, opacity: 0 }}
+                                                            animate={{ scale: 1, opacity: 1 }}
+                                                            className="w-2.5 h-2.5 bg-emerald-400 rounded-full shadow-[0_0_12px_rgba(52,211,153,0.6)]"
                                                         />
                                                     ) : (
                                                         <motion.div
                                                             key="placeholder"
                                                             initial={{ opacity: 0 }}
                                                             animate={{ opacity: 1 }}
-                                                            className="w-1 h-3 bg-zinc-800 rounded-full"
+                                                            className="w-1.5 h-4 bg-[#222222] rounded-full"
                                                         />
                                                     )}
                                                 </AnimatePresence>
@@ -115,30 +151,35 @@ export default function SetPin() {
                             </div>
                         </div>
 
-                        <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex items-start gap-3">
-                            <Info size={16} className="text-emerald-500 shrink-0 mt-0.5" />
-                            <p className="text-[10px] text-zinc-400 font-medium leading-relaxed opacity-60">
+                        {/* Info Alert */}
+                        <div className="p-5 bg-[#05140e] border border-[#0d2a1d] rounded-[1.25rem] flex items-start gap-4">
+                            <Info size={18} className="text-emerald-500 shrink-0 mt-0.5" />
+                            <p className="text-[12px] text-[#888888] font-medium leading-relaxed">
                                 This PIN is independent of your account password. It is required for all high-priority financial operations. Keep it confidential.
-
                             </p>
                         </div>
 
+                        {/* Submit Button */}
                         <Button
                             onClick={handleSetPin}
                             disabled={loading || pin.length < 6}
-                            className="w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-2xl shadow-xl shadow-emerald-500/10 uppercase tracking-widest text-xs"
+                            className="w-full h-16 bg-[#135f3e] hover:bg-[#18754c] disabled:bg-[#1a1a1c] disabled:text-[#444444] text-[#05140e] hover:text-[#000000] font-black rounded-[1.25rem] shadow-[0_8px_30px_rgba(19,95,62,0.2)] hover:shadow-[0_8px_30px_rgba(24,117,76,0.4)] disabled:shadow-none uppercase tracking-[0.15em] text-[13px] transition-all duration-300 relative overflow-hidden group"
                         >
-                            {loading ? <Loader2 className="animate-spin" /> : 'Activate Security PIN'}
-
+                            <span className="relative z-10 flex items-center justify-center gap-2">
+                                {loading ? <Loader2 className="animate-spin" /> : 'Activate Security PIN'}
+                            </span>
                         </Button>
                     </div>
-                </div>
+                </motion.div>
 
-                <div className="text-center">
-                    <Button variant="ghost" onClick={() => navigate(-1)} className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest hover:text-white transition-colors">
+                {/* Cancel Link */}
+                <div className="text-center pt-2">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="text-[11px] font-bold text-[#666666] uppercase tracking-[0.2em] hover:text-white transition-colors"
+                    >
                         Cancel Enrollment
-
-                    </Button>
+                    </button>
                 </div>
             </div>
         </div>
