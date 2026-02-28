@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import TransactionReceipt from '@/components/ui/transaction-receipt';
+import PageLoader from '@/components/ui/page-loader';
 
 
 import { API_URL } from '@/lib/api';
@@ -238,10 +239,7 @@ export default function Transactions() {
 
                     <div>
                         {loading ? (
-                            <div className="py-24 flex flex-col items-center justify-center space-y-4">
-                                <div className="h-8 w-8 border-2 border-violet-500/20 border-t-violet-500 rounded-full animate-spin"></div>
-                                <p className="text-zinc-600 text-[11px] font-medium">Synchronizing ledger...</p>
-                            </div>
+                            <PageLoader />
                         ) : filteredTransactions.length === 0 ? (
                             <div className="py-24 text-center">
                                 <div className="h-12 w-12 bg-zinc-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-zinc-800/50">

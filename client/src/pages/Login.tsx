@@ -256,8 +256,12 @@ export default function Login() {
                                 </Link>
                             </div>
 
-                            <Button disabled={loading} type="submit" className="w-full h-12 text-base font-bold rounded-xl bg-violet-600 text-white hover:bg-violet-500 transition-all shadow-lg shadow-violet-600/20 border-none">
-                                {loading ? 'Signing in...' : 'Sign in to account'}
+                            <Button
+                                loading={loading}
+                                type="submit"
+                                className="w-full h-12 text-base font-bold rounded-xl bg-violet-600 text-white hover:bg-violet-500 transition-all shadow-lg shadow-violet-600/20 border-none"
+                            >
+                                {loading ? 'Establishing Session...' : 'Sign in to account'}
                             </Button>
                         </form>
 

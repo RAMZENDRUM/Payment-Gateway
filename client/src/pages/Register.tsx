@@ -295,8 +295,12 @@ export default function Register() {
                                             </div>
                                         </div>
 
-                                        <Button disabled={loading} type="submit" className="w-full h-12 mt-4 rounded-xl bg-violet-600 text-white hover:bg-violet-500 font-bold transition-all shadow-lg shadow-violet-600/20 border-none">
-                                            {loading ? 'Processing...' : 'Create Account'}
+                                        <Button
+                                            loading={loading}
+                                            type="submit"
+                                            className="w-full h-12 mt-4 rounded-xl bg-violet-600 text-white hover:bg-violet-500 font-bold transition-all shadow-lg shadow-violet-600/20 border-none"
+                                        >
+                                            {loading ? 'Initializing Account...' : 'Create Account'}
                                             {!loading && <ArrowRight className="h-4 w-4 ml-2" />}
                                         </Button>
                                     </form>

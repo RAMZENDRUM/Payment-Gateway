@@ -177,10 +177,20 @@ const TransactionQualityChart = React.memo(({ data }: { data: any[] }) => {
     );
 });
 
+import PageLoader from '@/components/ui/page-loader';
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { totalRevenue, salesCount, averageSale, moneyFlowData, transactionQualityData, latestPayments } = useWalletStats();
+    const { totalRevenue, salesCount, averageSale, moneyFlowData, transactionQualityData, latestPayments, loading } = useWalletStats();
+
+    if (loading) {
+        return (
+            <AppLayout title="Overview" subtitle="Connecting to Financial Nodes...">
+                <PageLoader />
+            </AppLayout>
+        );
+    }
 
     return (
         <AppLayout title="Overview" subtitle={`Welcome back, ${user?.full_name?.split(' ')[0] || 'User'}`}>

@@ -17,6 +17,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from '@/components/ui/scroll-area';
+import PageLoader from '@/components/ui/page-loader';
 
 interface AppData {
     id: string;
@@ -139,11 +140,7 @@ export default function ApiKeys() {
                     </div>
 
                     {loading ? (
-                        <div className="space-y-3">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="h-16 bg-white/[0.01] animate-pulse rounded-xl border border-zinc-400/10" />
-                            ))}
-                        </div>
+                        <PageLoader />
                     ) : apps.length === 0 ? (
                         <div className="text-center py-16 border border-dashed border-zinc-400/10 rounded-2xl bg-white/[0.01]">
                             <Globe className="text-zinc-800 mx-auto mb-4" size={24} />
