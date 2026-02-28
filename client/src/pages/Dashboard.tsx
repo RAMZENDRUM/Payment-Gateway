@@ -195,10 +195,10 @@ export default function Dashboard() {
     return (
         <AppLayout title="Overview" subtitle={`Welcome back, ${user?.full_name?.split(' ')[0] || 'User'}`}>
             {/* Desktop View (Unchanged) */}
-            <div className="hidden md:block space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+            <div className="hidden lg:block space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
                 {/* PIN Setup Alert */}
                 {user && !user.hasPaymentPin && (
-                    <div className="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-emerald-500/5">
+                    <div className="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-[2rem] flex flex-col lg:flex-row items-center justify-between gap-6 shadow-2xl shadow-emerald-500/5">
                         <div className="flex items-center gap-5">
                             <div className="w-14 h-14 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-500 shrink-0">
                                 <Fingerprint size={28} />
@@ -326,7 +326,7 @@ export default function Dashboard() {
             </div>
 
             {/* Mobile View (Completely Redesigned) */}
-            <div className="block md:hidden space-y-6 pb-20">
+            <div className="block lg:hidden space-y-6 pb-20">
                 {/* 1. Header (Already in MobileLayout) */}
 
                 {/* 2. Hero Section - Primary Balance Card */}

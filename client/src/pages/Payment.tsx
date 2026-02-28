@@ -105,7 +105,7 @@ export default function PaymentPage() {
     return (
         <AppLayout title="Refill INR" subtitle="Instant INR top-up with secure encryption">
             {/* Desktop View (Unchanged) */}
-            <div className="hidden md:block max-w-6xl mx-auto px-4 py-8 md:px-8 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="hidden lg:block max-w-6xl mx-auto px-4 py-8 lg:px-8 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
 
                     {/* Left Column: Amount Selection */}
@@ -273,7 +273,7 @@ export default function PaymentPage() {
             </div>
 
             {/* Mobile View (Completely Redesigned) */}
-            <div className="block md:hidden space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="block lg:hidden space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* 1. Hero Balance Card (Small) */}
                 <div className="bg-gradient-to-br from-primary/20 to-transparent border border-white/5 rounded-3xl p-6 flex flex-col gap-1">
                     <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Active Settlement Node</p>

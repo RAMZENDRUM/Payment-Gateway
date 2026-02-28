@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -14,31 +14,6 @@ import {
 import { useAuth } from '@/AuthContext';
 import { useTheme } from '@/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import MobileLayout from './MobileLayout';
-
-interface NavItemProps {
-    icon: React.ReactNode;
-    label: string;
-    path: string;
-    isActive: boolean;
-    onClick: () => void;
-}
-
-const NavItem = ({ icon, label, path, isActive, onClick }: NavItemProps) => (
-    <button
-        onClick={onClick}
-        className={`
-            w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all
-            ${isActive
-                ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/10'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
-            }
-        `}
-    >
-        {icon}
-        <span>{label}</span>
-    </button>
-);
 
 interface AppLayoutProps {
     children: React.ReactNode;
@@ -51,39 +26,28 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
     const location = useLocation();
     const { logout, user } = useAuth();
     const { isTransitioning } = useTheme();
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     const navItems = [
-        { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
-        { icon: <QrCode size={20} />, label: 'Scan to Pay', path: '/scan' },
-        { icon: <ArrowUpDown size={20} />, label: 'History', path: '/transactions' },
-        { icon: <Wallet size={20} />, label: 'Wallet', path: '/wallet' },
-        { icon: <UserIcon size={20} />, label: 'Profile', path: '/profile' },
-        { icon: <Code size={20} />, label: 'APIs', path: '/developers' },
-        { icon: <Settings size={20} />, label: 'Settings', path: '/settings' },
+        { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard', mobileLabel: 'Home' },
+        { icon: <QrCode size={20} />, label: 'Scan to Pay', path: '/scan', mobileLabel: 'Scan' },
+        { icon: <ArrowUpDown size={20} />, label: 'History', path: '/transactions', mobileLabel: 'History' },
+        { icon: <Wallet size={20} />, label: 'Wallet', path: '/wallet', mobileLabel: 'Wallet' },
+        { icon: <UserIcon size={20} />, label: 'Profile', path: '/profile', mobileLabel: 'Profile' }
     ];
 
-    if (isMobile) {
-        return (
-            <MobileLayout title={title} subtitle={subtitle}>
-                {children}
-            </MobileLayout>
-        );
-    }
+    const allNavItems = [
+        ...navItems,
+        { icon: <Code size={20} />, label: 'APIs', path: '/developers' },
+        { icon: <Settings size={20} />, label: 'Settings', path: '/settings' }
+    ];
 
     return (
-        <div className="flex h-screen w-screen bg-background text-foreground overflow-hidden font-sans transition-colors duration-500">
+        <div className="flex h-screen w-screen bg-background text-foreground overflow-hidden font-sans transition-colors duration-500 selection:bg-primary/20">
             {/* Background flares */}
             <div className="fixed top-[-10%] right-[-5%] w-[40%] h-[50%] bg-violet-600/[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
             <div className="fixed bottom-[-10%] left-[-5%] w-[30%] h-[40%] bg-purple-600/[0.02] blur-[120px] rounded-full pointer-events-none z-0" />
 
-            {/* Digital Shutter Transition */}
+            {/* Shutter Transition Overlay */}
             <AnimatePresence>
                 {isTransitioning && (
                     <motion.div
@@ -92,7 +56,6 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[9999] flex flex-col pointer-events-none"
                     >
-                        {/* Upper Shutter */}
                         <motion.div
                             initial={{ y: '-100%' }}
                             animate={{ y: '0%' }}
@@ -100,23 +63,9 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                             transition={{ duration: 0.4, ease: "circIn" }}
                             className="h-1/2 w-full bg-foreground flex items-end justify-center pb-8"
                         >
-                            <motion.div
-                                animate={{ opacity: [0, 1, 0] }}
-                                transition={{ duration: 0.8, repeat: Infinity }}
-                                className="h-[2px] w-48 bg-background/20 rounded-full"
-                            />
+                            <motion.div animate={{ opacity: [0, 1, 0] }} transition={{ duration: 0.8, repeat: Infinity }} className="h-[2px] w-48 bg-background/20 rounded-full" />
                         </motion.div>
-
-                        {/* Shutter Mid-line Flash */}
-                        <motion.div
-                            initial={{ scaleX: 0, opacity: 0 }}
-                            animate={{ scaleX: 1, opacity: 1 }}
-                            exit={{ scaleX: 0, opacity: 0 }}
-                            transition={{ duration: 0.2, delay: 0.3 }}
-                            className="h-[1px] w-full bg-primary shadow-[0_0_20px_rgba(139,92,246,0.5)] z-10"
-                        />
-
-                        {/* Lower Shutter */}
+                        <motion.div initial={{ scaleX: 0, opacity: 0 }} animate={{ scaleX: 1, opacity: 1 }} exit={{ scaleX: 0, opacity: 0 }} transition={{ duration: 0.2, delay: 0.3 }} className="h-[1px] w-full bg-primary shadow-[0_0_20px_rgba(139,92,246,0.5)] z-10" />
                         <motion.div
                             initial={{ y: '100%' }}
                             animate={{ y: '0%' }}
@@ -125,16 +74,31 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                             className="h-1/2 w-full bg-foreground flex items-start justify-center pt-8"
                         >
                             <div className="flex items-center gap-2 text-background/40 font-black text-[10px] uppercase tracking-[0.5em]">
-                                <Zap size={12} className="fill-current" />
-                                Frequency Shift
+                                <Zap size={12} className="fill-current" /> Frequency Shift
                             </div>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Left Sidebar */}
-            <aside className="w-56 flex-shrink-0 bg-transparent flex flex-col z-20 transition-all border-r border-border/10">
+            {/* Mobile-Only Top Header */}
+            <header className="fixed top-0 left-0 right-0 h-14 bg-background/80 backdrop-blur-xl z-[60] border-b border-white/5 flex lg:hidden items-center justify-between px-6">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
+                        <Wallet size={14} strokeWidth={3} />
+                    </div>
+                    <span className="font-black text-xs uppercase tracking-[0.2em] text-foreground">ZenWallet</span>
+                </div>
+                <button
+                    onClick={() => navigate('/profile')}
+                    className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden active:scale-90 transition-transform"
+                >
+                    <div className="text-[10px] font-black text-primary">{user?.full_name?.charAt(0).toUpperCase() || 'U'}</div>
+                </button>
+            </header>
+
+            {/* Desktop Left Sidebar (Hidden on Mobile/Tablet) */}
+            <aside className="hidden lg:flex w-56 flex-shrink-0 bg-transparent flex-col z-20 transition-all border-r border-border/10">
                 <div className="px-5 py-6">
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-8 bg-foreground text-background rounded-xl flex items-center justify-center shadow-2xl transition-all">
@@ -145,7 +109,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                 </div>
 
                 <nav className="flex-1 px-3 space-y-1 mt-3">
-                    {navItems.map((item) => (
+                    {allNavItems.map((item) => (
                         <button
                             key={item.path}
                             onClick={() => navigate(item.path)}
@@ -182,20 +146,50 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-auto bg-transparent flex flex-col relative custom-scrollbar z-10">
+                {/* Desktop Header */}
                 {title && (
-                    <header className="px-5 pt-4 pb-3 sticky top-0 bg-background/60 backdrop-blur-md z-20 transition-all border-b border-border/50">
+                    <header className="hidden lg:flex px-5 pt-4 pb-3 sticky top-0 bg-background/60 backdrop-blur-md z-20 transition-all border-b border-border/50">
                         <div className="flex flex-col gap-0.5">
                             <h2 className="text-xl font-bold text-foreground tracking-tight uppercase">{title}</h2>
                             {subtitle && <p className="text-sm font-medium text-muted-foreground mt-1 italic">{subtitle}</p>}
                         </div>
                     </header>
                 )}
-                <div className="flex-1 px-4 md:px-8 py-6 h-full">
-                    <div className="w-full h-full animate-in fade-in duration-500">
+
+                {/* Content Container (Responsive Padding) */}
+                <div className="flex-1 pt-20 lg:pt-6 pb-28 lg:pb-6 px-5 md:px-8 h-full">
+                    <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-700">
                         {children}
                     </div>
                 </div>
             </main>
+
+            {/* Mobile-Only Bottom Navigation Bar */}
+            <nav className="fixed bottom-0 left-0 right-0 h-[72px] bg-background/90 backdrop-blur-2xl z-[50] border-t border-white/5 flex lg:hidden items-center justify-around px-2 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+                {navItems.map((item) => {
+                    const isActive = location.pathname === item.path;
+                    return (
+                        <button
+                            key={item.path}
+                            onClick={() => navigate(item.path)}
+                            className="relative flex flex-col items-center justify-center gap-1.5 w-16 group"
+                        >
+                            <div className={`transition-all duration-300 ${isActive ? 'text-primary scale-110' : 'text-zinc-500'}`}>
+                                {item.icon}
+                            </div>
+                            <span className={`text-[9px] font-black uppercase tracking-widest ${isActive ? 'text-primary' : 'text-zinc-500'}`}>
+                                {item.mobileLabel}
+                            </span>
+                            {isActive && (
+                                <motion.div
+                                    layoutId="bottomNavIndicator"
+                                    className="absolute -top-3 w-8 h-[2px] bg-primary rounded-full shadow-[0_0_10px_rgba(51,150,255,0.5)]"
+                                />
+                            )}
+                        </button>
+                    );
+                })}
+            </nav>
         </div>
     );
 }

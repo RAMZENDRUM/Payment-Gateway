@@ -31,7 +31,7 @@ export default function Wallet() {
         <AppLayout>
             <div className="h-full w-full overflow-y-auto">
                 {/* Desktop View (Unchanged) */}
-                <div className="hidden md:block">
+                <div className="hidden lg:block">
                     <div className="px-6 py-4 bg-card/10 backdrop-blur-md border-b border-border/40">
                         <div className="flex items-center justify-between max-w-[1600px] mx-auto">
                             <div>
@@ -87,7 +87,7 @@ export default function Wallet() {
                 </div>
 
                 {/* Mobile View (Premium Refined) */}
-                <div className="block md:hidden px-6 pb-20 pt-4 space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                <div className="block lg:hidden px-6 pb-20 pt-4 space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
                     {/* Cloud Node Card */}
                     <div className="relative group">
                         <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full opacity-20 pointer-events-none" />
