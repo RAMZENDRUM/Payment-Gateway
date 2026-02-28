@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Checkout Demo | ZenWallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2rem;
+        }
+
+        .btn-pay {
+            background: #fff;
+            color: #000;
+            transition: all 0.3s ease;
+        }
+
+        .btn-pay:hover {
+            background: #e5e5e5;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-pay:disabled {
+            background: #1a1a1a;
+            color: #444;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-6">
+
+    <div class="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+
+        <!-- Header -->
+        <div class="text-center space-y-2">
+            <h1 class="text-xs uppercase tracking-[0.4em] text-zinc-500 font-bold">Checkout Demo</h1>
+            <p class="text-2xl font-light text-white/90">STORE_REFERENCE_72</p>
+        </div>
+
+        <!-- Checkout Card -->
+        <div class="glass-card p-10 space-y-10">
+
+            <div class="space-y-6">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-zinc-500 uppercase tracking-widest font-semibold">Product</span>
+                    <span class="text-white font-medium">Standard License</span>
+                </div>
+                <div class="flex justify-between items-end border-t border-white/5 pt-6">
+                    <span class="text-zinc-500 uppercase tracking-widest font-semibold pb-1">Amount</span>
+                    <div class="text-right">
+                        <span class="text-4xl font-light">₹</span>
+                        <input id="amountInput" type="number" value="1500"
+                            class="bg-transparent text-4xl font-light w-32 focus:outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6 pt-4">
+                <button id="payButton" onclick="initiatePayment()"
+                    class="w-full h-14 btn-pay rounded-full font-bold uppercase tracking-[0.2em] text-[11px]">
+                    Pay with ZenWallet
+                </button>
+
+                <p id="statusMsg"
+                    class="text-[10px] text-center text-zinc-600 uppercase tracking-widest leading-relaxed">
+                    Secure checkout powered by ZenWallet Cryptography.
+                </p>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="#"
+                class="text-[10px] text-zinc-700 uppercase tracking-widest hover:text-white transition-colors">Return to
+                Shop</a>
+        </div>
+    </div>
+
+    <script>
+        // Replace with your live API key for testing
+        const API_KEY = "sk_live_YOUR_KEY_HERE";
+
+        // Dynamically determine API URL
+        const getBaseUrl = () => {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:5000/api';
+            }
+            return 'https://payment-via-zenwallet.vercel.app/api';
+        };
+
+        async function initiatePayment() {
+            const btn = document.getElementById('payButton');
+            const msg = document.getElementById('statusMsg');
+            const amount = document.getElementById('amountInput').value;
+            const API_URL = `${getBaseUrl()}/external/create-request`;
+
+            if (!amount || amount <= 0) {
+                alert("Please enter a valid amount");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+            msg.innerText = "Creating Secure Session...";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify({
+                        amount: parseInt(amount),
+                        referenceId: "DEMO_REF_" + Math.floor(Math.random() * 100000),
+                        callbackUrl: window.location.href // Returns here after payment
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data.paymentUrl) {
+                    msg.innerText = "Redirecting to Zen-Vault...";
+                    setTimeout(() => {
+                        window.location.href = result.data.paymentUrl;
+                    }, 800);
+                } else {
+                    throw new Error(result.message || "Request failed");
+                }
+            } catch (error) {
+                console.error("Payment Error:", error);
+                btn.disabled = false;
+                btn.innerText = "Pay with ZenWallet";
+                msg.innerText = "Error: " + error.message;
+                msg.classList.remove('text-zinc-600');
+                msg.classList.add('text-red-500');
+            }
+        }
+    </script>
+</body>
+
+</html>

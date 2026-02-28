@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -14,6 +14,7 @@ import {
 import { useAuth } from '@/AuthContext';
 import { useTheme } from '@/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import MobileLayout from './MobileLayout';
 
 interface NavItemProps {
     icon: React.ReactNode;
@@ -49,7 +50,14 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
     const navigate = useNavigate();
     const location = useLocation();
     const { logout, user } = useAuth();
-    const { isTransitioning, theme } = useTheme();
+    const { isTransitioning } = useTheme();
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const navItems = [
         { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
@@ -60,6 +68,14 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
         { icon: <Code size={20} />, label: 'APIs', path: '/developers' },
         { icon: <Settings size={20} />, label: 'Settings', path: '/settings' },
     ];
+
+    if (isMobile) {
+        return (
+            <MobileLayout title={title} subtitle={subtitle}>
+                {children}
+            </MobileLayout>
+        );
+    }
 
     return (
         <div className="flex h-screen w-screen bg-background text-foreground overflow-hidden font-sans transition-colors duration-500">
@@ -176,7 +192,6 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                 )}
                 <div className="flex-1 px-4 md:px-8 py-6 h-full">
                     <div className="w-full h-full animate-in fade-in duration-500">
-
                         {children}
                     </div>
                 </div>

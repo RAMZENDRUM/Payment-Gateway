@@ -41,6 +41,7 @@ import { useAuth } from "@/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { API_URL } from '@/lib/api';
 
 interface OrderItem {
     id: string;
@@ -112,9 +113,30 @@ export default function Checkout() {
     useEffect(() => {
         const loadCheckout = async () => {
             setIsLoading(true);
-            // Simulate API call delay
-            await new Promise((resolve) => setTimeout(resolve, 800));
-            setOrderItems(sampleOrderItems);
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+
+            if (token) {
+                try {
+                    const res = await axios.get(`${API_URL}/external/status/${token}`);
+
+                    if (res.data) {
+                        setOrderItems([{
+                            id: res.data.reference_id || 'ext_pay',
+                            name: `Payment to ${res.data.merchant_name || 'ZenMerchant'}`,
+                            price: parseFloat(res.data.amount),
+                            image: "https://images.unsplash.com/photo-1556742049-139422cb0f5c?q=80&w=2070",
+                            quantity: 1,
+                        }]);
+                        setAppliedPromo(""); // No default promo for real payments
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch payment details:", err);
+                    setOrderItems(sampleOrderItems); // Fallback
+                }
+            } else {
+                setOrderItems(sampleOrderItems);
+            }
             setIsLoading(false);
         };
 
@@ -122,12 +144,16 @@ export default function Checkout() {
     }, []);
 
     const calculateSummary = (): CheckoutSummary => {
+        const params = new URLSearchParams(window.location.search);
+        const isExternal = !!params.get('token');
+
         const subtotal = orderItems.reduce(
             (sum, item) => sum + item.price * item.quantity,
             0
         );
         const discount = appliedPromo === "VIP20" ? subtotal * 0.1 : 0;
-        const tax = (subtotal - discount) * 0.08; // 8% tax
+        // Zero tax for external gateway payments to keep it predictable for the user
+        const tax = isExternal ? 0 : (subtotal - discount) * 0.08;
         const total = subtotal - discount + tax;
 
         return {
@@ -189,31 +215,68 @@ export default function Checkout() {
         if (!validateStep(2)) return;
 
         setIsProcessing(true);
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
         try {
-            if (selectedPaymentType === 'card' || selectedPaymentType === 'zenwallet') {
-                const { API_URL } = await import('@/lib/api');
-                const res = await axios.post(`${API_URL}/external/verify-card`, {
-                    cardNumber: paymentMethod.cardNumber,
-                    cvv: paymentMethod.cvv,
-                    expiryMonth: paymentMethod.expiryMonth,
-                    expiryYear: paymentMethod.expiryYear,
-                    amount: summary.total
+            if (token) {
+                // Real Payment Flow
+                const res = await axios.post(`${API_URL}/external/fulfill-payment`, {
+                    token,
+                    paymentMethod: selectedPaymentType,
+                    paymentDetails: {
+                        cardNumber: paymentMethod.cardNumber,
+                        cvv: paymentMethod.cvv,
+                        expiryMonth: paymentMethod.expiryMonth,
+                        expiryYear: paymentMethod.expiryYear,
+                        upiId
+                    }
                 });
 
-                if (!res.data.success) {
-                    toast.error(res.data.message || 'Card verification failed');
-                    setIsProcessing(false);
-                    return;
-                }
-            }
+                if (res.data.success) {
+                    toast.success('Transaction Finished!');
+                    // Redirect back if callbackUrl exists
+                    const statusRes = await axios.get(`${API_URL}/external/status/${token}`);
+                    const callbackUrl = statusRes.data.callback_url;
 
-            // Simulate gateway latency for actual transaction processing
-            await new Promise(resolve => setTimeout(resolve, 2500));
-            setIsProcessing(false);
-            setCurrentStep(3); // Go to success state
+                    setIsProcessing(false);
+                    setCurrentStep(3); // Success Screen
+
+                    if (callbackUrl) {
+                        setTimeout(() => {
+                            window.location.href = `${callbackUrl}${callbackUrl.includes('?') ? '&' : '?'}status=success&txn=${res.data.transactionId}&reference=${statusRes.data.reference_id}`;
+                        }, 3000);
+                    }
+                    return;
+                } else {
+                    throw new Error(res.data.message || 'Payment fulfillment failed');
+                }
+            } else {
+                // Original Demo/Local Flow
+                if (selectedPaymentType === 'card' || selectedPaymentType === 'zenwallet') {
+                    const res = await axios.post(`${API_URL}/external/verify-card`, {
+                        cardNumber: paymentMethod.cardNumber,
+                        cvv: paymentMethod.cvv,
+                        expiryMonth: paymentMethod.expiryMonth,
+                        expiryYear: paymentMethod.expiryYear,
+                        amount: summary.total
+                    });
+
+                    if (!res.data.success) {
+                        toast.error(res.data.message || 'Card verification failed');
+                        setIsProcessing(false);
+                        return;
+                    }
+                }
+
+                // Simulate gateway latency
+                await new Promise(resolve => setTimeout(resolve, 2500));
+                setIsProcessing(false);
+                setCurrentStep(3);
+            }
         } catch (err: any) {
             console.error('Payment Error:', err);
-            toast.error(err.response?.data?.message || 'Transaction failed. Please check your card details.');
+            toast.error(err.response?.data?.message || err.message || 'Transaction failed. Please check your card details.');
             setIsProcessing(false);
         }
     };

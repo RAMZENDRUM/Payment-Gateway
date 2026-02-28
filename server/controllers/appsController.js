@@ -49,15 +49,41 @@ exports.deleteApp = async (req, res) => {
     const userId = req.user.id;
     const { id } = req.params;
 
+    const { client, release } = await db.getTransaction();
+
     try {
-        await db.query(
-            'DELETE FROM apps WHERE id = $1 AND user_id = $2',
-            [id, userId]
+        await client.query('BEGIN');
+
+        // 1. Verify ownership and get app
+        const appRes = await client.query('SELECT id FROM apps WHERE id = $1 AND user_id = $2', [id, userId]);
+        if (appRes.rows.length === 0) {
+            throw new Error('App not found or unauthorized');
+        }
+
+        // 2. Delete related webhook logs
+        await client.query(
+            `DELETE FROM webhook_logs WHERE payment_id IN (
+                SELECT payment_id FROM external_payments WHERE app_id = $1
+            )`,
+            [id]
         );
-        res.json({ message: 'App deleted' });
+
+        // 3. Delete related external payments
+        await client.query('DELETE FROM external_payments WHERE app_id = $1', [id]);
+
+        // 4. Delete the app
+        await client.query('DELETE FROM apps WHERE id = $1', [id]);
+
+        await client.query('COMMIT');
+        res.json({ message: 'App and related data deleted successfully' });
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error('Delete App Error:', err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(err.message.includes('not found') ? 404 : 500).json({
+            error: err.message || 'Server error'
+        });
+    } finally {
+        release();
     }
 };
 

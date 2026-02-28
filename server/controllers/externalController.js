@@ -270,7 +270,7 @@ exports.fulfillExternalPayment = async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 1. Get and validate request
+        // 1. Get and validate payment request
         const request = await client.query('SELECT * FROM payment_requests WHERE token = $1 FOR UPDATE', [token]);
         if (request.rows.length === 0) throw new Error('Invalid payment token');
 
@@ -282,12 +282,39 @@ exports.fulfillExternalPayment = async (req, res) => {
         }
 
         const { amount, receiver_id, reference_id } = reqData;
+        let senderId = null;
 
-        // 2. Simulate external payment processing (Card/UPI/etc)
-        // In reality, you'd call Stripe/Razorpay here.
-        console.log(`Processing ${paymentMethod} payment for ${amount}...`);
+        // 2. Perform Real Debit if ZenWallet Card is used
+        if ((paymentMethod === 'card' || paymentMethod === 'zenwallet') && paymentDetails?.cardNumber) {
+            const rawCard = paymentDetails.cardNumber.replace(/\s/g, "");
 
-        // 2.5 Check receiver capacity
+            const cardCheck = await client.query(
+                `SELECT vc.user_id, w.balance 
+                 FROM virtual_cards vc
+                 JOIN wallets w ON vc.user_id = w.user_id
+                 WHERE vc.card_number = $1 AND vc.cvv = $2 AND vc.expiry_month = $3 AND vc.expiry_year = $4`,
+                [rawCard, paymentDetails.cvv, paymentDetails.expiryMonth, paymentDetails.expiryYear]
+            );
+
+            if (cardCheck.rows.length === 0) {
+                throw new Error('Transaction Rejected: Invalid ZenWallet Virtual Card details.');
+            }
+
+            const sender = cardCheck.rows[0];
+            if (parseFloat(sender.balance) < parseFloat(amount)) {
+                throw new Error(`Insufficient Funds: Card wallet is low (${sender.balance} C available).`);
+            }
+
+            senderId = sender.user_id;
+
+            // 2.1 Debit Sender
+            await client.query(
+                'UPDATE wallets SET balance = balance - $1, updated_at = NOW() WHERE user_id = $2',
+                [amount, senderId]
+            );
+        }
+
+        // 2.2 Check receiver capacity
         const receiverWallet = await client.query('SELECT balance FROM wallets WHERE user_id = $1 FOR UPDATE', [receiver_id]);
         if (parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount) > MAX_BALANCE) {
             throw new Error(`Merchant's wallet is at capacity (Max ${MAX_BALANCE} C).`);
@@ -296,13 +323,13 @@ exports.fulfillExternalPayment = async (req, res) => {
         // 3. Credit merchant's ZenWallet
         await client.query('UPDATE wallets SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2', [amount, receiver_id]);
 
-        // 4. Record transaction (sender_id is null for external payments)
+        // 4. Record transaction
         const receiverBalAfter = parseFloat(receiverWallet.rows[0].balance) + parseFloat(amount);
         const transaction = await client.query(
-            `INSERT INTO transactions (receiver_id, amount, type, status, reference_id, created_at, receiver_balance_after, app_id) 
+            `INSERT INTO transactions (sender_id, receiver_id, amount, type, status, reference_id, created_at, receiver_balance_after, app_id) 
              VALUES ($1, $2, $3, $4, $5, NOW(), $6, $7) 
              RETURNING id, created_at`,
-            [receiver_id, amount, 'PAYMENT', 'SUCCESS', reference_id, receiverBalAfter, reqData.app_id]
+            [senderId, receiver_id, amount, 'PAYMENT', 'SUCCESS', reference_id, receiverBalAfter, reqData.app_id]
         );
 
         // 5. Mark request as completed
@@ -311,17 +338,13 @@ exports.fulfillExternalPayment = async (req, res) => {
         await client.query('COMMIT');
 
         // 6. Notify merchant via WebSocket
-        const io = null;
-        io.to(reference_id).emit('payment-success', {
-            referenceId: reference_id,
-            amount,
-            status: 'SUCCESS',
-            timestamp: transaction.rows[0].created_at
-        });
+        const io = null; // IO placeholder
+        // io.to(reference_id).emit('payment-success', { referenceId: reference_id, amount, status: 'SUCCESS' });
 
         res.json({
             success: true,
-            message: 'External payment successful',
+            status: 'SUCCESS',
+            message: 'Payment processed successfully',
             transactionId: transaction.rows[0].id
         });
 
@@ -338,9 +361,16 @@ exports.checkPaymentStatus = async (req, res) => {
     const { token } = req.params;
 
     try {
-        const request = await db.query('SELECT status, amount, reference_id, created_at FROM payment_requests WHERE token = $1', [token]);
+        const request = await db.query(
+            `SELECT pr.status, pr.amount, pr.reference_id, pr.created_at, u.full_name as merchant_name 
+             FROM payment_requests pr
+             JOIN apps a ON pr.app_id = a.id
+             JOIN users u ON a.user_id = u.id
+             WHERE pr.token = $1`,
+            [token]
+        );
         if (request.rows.length === 0) {
-            return res.status(404).json({ message: 'Request not found' });
+            return res.status(404).json({ message: 'Payment request not found' });
         }
         res.json(request.rows[0]);
     } catch (err) {
