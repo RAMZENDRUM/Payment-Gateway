@@ -52,15 +52,15 @@ export default function SetPin() {
     };
 
     return (
-        <div className="min-h-screen bg-[#ffffff] text-black flex flex-col items-center justify-center p-6 font-sans tracking-tight">
+        <div className="min-h-screen bg-[#000000] text-white flex flex-col items-center justify-center p-6 font-sans tracking-tight">
             <div className="w-full max-w-sm space-y-16 animate-in fade-in duration-700">
 
                 {/* Understated Header */}
                 <div className="text-center space-y-3">
-                    <h1 className="text-2xl font-light tracking-[0.1em] text-black/90">
+                    <h1 className="text-2xl font-light tracking-[0.1em] text-white">
                         SECURITY
                     </h1>
-                    <div className="w-12 h-[1px] bg-black/10 mx-auto" />
+                    <div className="w-12 h-[1px] bg-white/20 mx-auto" />
                 </div>
 
                 {/* Minimalist Input Area */}
@@ -84,7 +84,7 @@ export default function SetPin() {
                                 return (
                                     <div
                                         key={idx}
-                                        className={`w-10 h-14 border-b transition-all duration-300 flex items-center justify-center ${isActive ? 'border-black' : digit ? 'border-black/40' : 'border-black/10'
+                                        className={`w-10 h-14 border-b transition-all duration-300 flex items-center justify-center ${isActive ? 'border-white' : digit ? 'border-white/60' : 'border-white/10'
                                             }`}
                                     >
                                         <AnimatePresence mode="wait">
@@ -93,7 +93,7 @@ export default function SetPin() {
                                                     key="dot"
                                                     initial={{ opacity: 0, scale: 0.5 }}
                                                     animate={{ opacity: 1, scale: 1 }}
-                                                    className="w-1.5 h-1.5 bg-black rounded-full"
+                                                    className="w-1.5 h-1.5 bg-white rounded-full"
                                                 />
                                             ) : null}
                                         </AnimatePresence>
@@ -108,14 +108,14 @@ export default function SetPin() {
                         <Button
                             onClick={handleSetPin}
                             disabled={loading || pin.length < 6}
-                            className="px-12 h-11 bg-black hover:bg-zinc-800 disabled:bg-zinc-100 disabled:text-zinc-400 text-white font-semibold rounded-full text-[11px] uppercase tracking-[0.2em] transition-all duration-200"
+                            className="px-12 h-11 bg-white hover:bg-zinc-200 disabled:bg-zinc-900 disabled:text-zinc-600 text-black font-semibold rounded-full text-[11px] uppercase tracking-[0.2em] transition-all duration-200"
                         >
                             {loading ? <Loader2 className="w-4 h-4" /> : 'CONFIRM'}
                         </Button>
 
                         <button
                             onClick={() => navigate(-1)}
-                            className="text-[9px] font-medium text-zinc-400 uppercase tracking-[0.2em] hover:text-black transition-colors"
+                            className="text-[9px] font-medium text-zinc-500 uppercase tracking-[0.2em] hover:text-white transition-colors"
                         >
                             BACK
                         </button>
