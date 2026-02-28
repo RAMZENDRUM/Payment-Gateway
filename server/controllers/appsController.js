@@ -54,38 +54,34 @@ exports.deleteApp = async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 1. Verify ownership and get app
+        // 1. Verify ownership
         const appRes = await client.query('SELECT id FROM apps WHERE id = $1 AND user_id = $2', [id, userId]);
         if (appRes.rows.length === 0) {
-            throw new Error('App not found or unauthorized');
+            return res.status(404).json({ error: 'App not found or unauthorized' });
         }
 
-        // 2. Delete related historical data (Cascade)
-        await client.query('DELETE FROM transactions WHERE app_id = $1', [id]);
-        await client.query('DELETE FROM payment_requests WHERE app_id = $1', [id]);
+        // 2. Delete related historical records in order of dependency
+        // Webhook logs first
+        await client.query('DELETE FROM webhook_logs WHERE app_id = $1', [id]);
 
-        // 3. Delete related webhook logs
-        await client.query(
-            `DELETE FROM webhook_logs WHERE payment_id IN (
-                SELECT payment_id FROM external_payments WHERE app_id = $1
-            )`,
-            [id]
-        );
-
-        // 4. Delete related external payments
+        // External payments metadata
         await client.query('DELETE FROM external_payments WHERE app_id = $1', [id]);
 
-        // 5. Delete the app
-        await client.query('DELETE FROM apps WHERE id = $1', [id]);
+        // Transactions associated with this app
+        await client.query('DELETE FROM transactions WHERE app_id = $1', [id]);
+
+        // Payment requests initiated by this app
+        await client.query('DELETE FROM payment_requests WHERE app_id = $1', [id]);
+
+        // 3. Finally delete the app itself
+        await client.query('DELETE FROM apps WHERE id = $1 AND user_id = $2', [id, userId]);
 
         await client.query('COMMIT');
-        res.json({ message: 'App and all related historical session data deleted successfully' });
+        res.json({ message: 'App and all associated data purged successfully' });
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error('Delete App Error:', err);
-        res.status(err.message.includes('not found') ? 404 : 500).json({
-            error: err.message || 'Server error'
-        });
+        console.error('CRITICAL: Delete App Error:', err);
+        res.status(500).json({ error: 'Failed to delete app due to database constraints or server error' });
     } finally {
         release();
     }

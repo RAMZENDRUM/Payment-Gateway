@@ -4,11 +4,48 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenWallet - Checkout</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+
+  <!-- Primary Meta Tags -->
+  <title>ZenWallet - Premium Crypto & Fiat Payment Gateway</title>
+  <meta name="title" content="ZenWallet - Premium Crypto & Fiat Payment Gateway" />
+  <meta name="description"
+    content="ZenWallet is a secure, high-performance checkout solution for digital businesses. Process payments via UPI, Cards, and Crypto with 256-bit SSL protection." />
+  <meta name="theme-color" content="#3396ff" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://payment-via-zenwallet.vercel.app/" />
+  <meta property="og:title" content="ZenWallet - Premium Payment Gateway" />
+  <meta property="og:description"
+    content="Secure, high-end checkout experience with ZenWallet. The ultimate settlement layer for the digital economy." />
+  <meta property="og:image" content="/og-image.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://payment-via-zenwallet.vercel.app/" />
+  <meta property="twitter:title" content="ZenWallet - Premium Payment Gateway" />
+  <meta property="twitter:description"
+    content="Secure, high-end checkout experience with ZenWallet. The ultimate settlement layer for the digital economy." />
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    /* Prevent layout shift - optional but good for performance */
+    #root {
+      min-height: 100vh;
+    }
+  </style>
 </head>
 
-<body class="bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
+<body
+  class="bg-[#f5f7f8] dark:bg-[#050505] text-[#0f1923] dark:text-[#f5f7f8] antialiased selection:bg-[#3396ff]/20 selection:text-[#3396ff]">
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

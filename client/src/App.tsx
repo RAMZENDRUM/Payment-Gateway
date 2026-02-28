@@ -1,23 +1,24 @@
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import ForgotPassword from './pages/ForgotPassword';
-import Send from './pages/Send';
-import Receive from './pages/Receive';
-import Scan from './pages/Scan';
-import Payment from './pages/Payment';
-import Transactions from './pages/Transactions';
-import WalletPage from './pages/WalletPage';
-import Settings from './pages/Settings';
-import Profile from './pages/Profile';
-import ApiKeys from './pages/ApiKeys';
-import DemoCheckout from './pages/DemoCheckout';
-import SetPin from './pages/SetPin';
 import PageLoader from './components/ui/page-loader';
-// Removed TransactionDetail page
 
+// Lazy load components for performance
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const Send = lazy(() => import('./pages/Send'));
+const Receive = lazy(() => import('./pages/Receive'));
+const Scan = lazy(() => import('./pages/Scan'));
+const Payment = lazy(() => import('./pages/Payment'));
+const Transactions = lazy(() => import('./pages/Transactions'));
+const WalletPage = lazy(() => import('./pages/WalletPage'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Profile = lazy(() => import('./pages/Profile'));
+const ApiKeys = lazy(() => import('./pages/ApiKeys'));
+const DemoCheckout = lazy(() => import('./pages/DemoCheckout'));
+const SetPin = lazy(() => import('./pages/SetPin'));
 
 interface PrivateRouteProps {
     children: React.ReactNode;
@@ -29,13 +30,12 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center">
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center">
                 <PageLoader />
             </div>
         );
     }
 
-    // Redirect to login but save the attempted location
     return user ? (children as React.ReactElement) : <Navigate to="/login" state={{ from: location }} replace />;
 };
 
@@ -43,26 +43,32 @@ function AppRoutes() {
     const { user } = useAuth();
 
     return (
-        <Routes>
-            <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-            <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
-            <Route path="/wallet" element={<PrivateRoute><WalletPage /></PrivateRoute>} />
-            <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-            <Route path="/developers" element={<PrivateRoute><ApiKeys /></PrivateRoute>} />
-            <Route path="/send" element={<PrivateRoute><Send /></PrivateRoute>} />
-            <Route path="/receive" element={<PrivateRoute><Receive /></PrivateRoute>} />
-            <Route path="/scan" element={<PrivateRoute><Scan /></PrivateRoute>} />
-            <Route path="/checkout" element={<PrivateRoute><DemoCheckout /></PrivateRoute>} />
-            <Route path="/demo-checkout" element={<PrivateRoute><DemoCheckout /></PrivateRoute>} />
-            <Route path="/setup-pin" element={<PrivateRoute><SetPin /></PrivateRoute>} />
-            <Route path="/payment" element={<PrivateRoute><Payment /></PrivateRoute>} />
-            <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+                <PageLoader />
+            </div>
+        }>
+            <Routes>
+                <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+                <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
+                <Route path="/wallet" element={<PrivateRoute><WalletPage /></PrivateRoute>} />
+                <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+                <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+                <Route path="/developers" element={<PrivateRoute><ApiKeys /></PrivateRoute>} />
+                <Route path="/send" element={<PrivateRoute><Send /></PrivateRoute>} />
+                <Route path="/receive" element={<PrivateRoute><Receive /></PrivateRoute>} />
+                <Route path="/scan" element={<PrivateRoute><Scan /></PrivateRoute>} />
+                <Route path="/checkout" element={<PrivateRoute><DemoCheckout /></PrivateRoute>} />
+                <Route path="/demo-checkout" element={<PrivateRoute><DemoCheckout /></PrivateRoute>} />
+                <Route path="/setup-pin" element={<PrivateRoute><SetPin /></PrivateRoute>} />
+                <Route path="/payment" element={<PrivateRoute><Payment /></PrivateRoute>} />
+                <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+        </Suspense>
     );
 }
 

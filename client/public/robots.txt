@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://payment-via-zenwallet.vercel.app/sitemap.xml

@@ -194,8 +194,8 @@ export default function Dashboard() {
 
     return (
         <AppLayout title="Overview" subtitle={`Welcome back, ${user?.full_name?.split(' ')[0] || 'User'}`}>
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
-
+            {/* Desktop View (Unchanged) */}
+            <div className="hidden md:block space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
                 {/* PIN Setup Alert */}
                 {user && !user.hasPaymentPin && (
                     <div className="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-emerald-500/5">
@@ -210,7 +210,7 @@ export default function Dashboard() {
                         </div>
                         <Link
                             to="/setup-pin"
-                            className="w-full md:w-auto px-10 h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl shadow-emerald-500/10 uppercase tracking-tight text-sm"
+                            className="px-10 h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl shadow-emerald-500/10 uppercase tracking-tight text-sm"
                         >
                             Setup PIN Now <ArrowRight size={16} />
                         </Link>
@@ -218,7 +218,7 @@ export default function Dashboard() {
                 )}
 
                 {/* Metrics */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <MetricCard title="Settlement Balance" value={totalRevenue || 0} unit="₹" icon={<DollarSign size={16} />} description="Liquid in ZenWallet" />
                     <MetricCard title="Total Transactions" value={salesCount || 0} decimals={0} icon={<Repeat2 size={16} />} description="Lifetime activity" />
                     <MetricCard title="Avg Transaction" value={averageSale || 0} unit="₹" icon={<TrendingUp size={16} />} description="Per transaction avg" />
@@ -236,8 +236,7 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Profile Link Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                     <div className="p-6 bg-card/30 border border-border/40 rounded-[2rem] relative group cursor-pointer hover:bg-card/50 transition-all" onClick={() => navigate('/profile')}>
                         <h3 className="text-foreground text-lg font-bold flex items-center gap-3 mb-2">
                             <Shield className="text-primary" size={20} />
@@ -261,13 +260,11 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Charts */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <MoneyFlowChart data={moneyFlowData} />
                     <TransactionQualityChart data={transactionQualityData} />
                 </div>
 
-                {/* Table */}
                 <div className="pt-6">
                     <div className="flex items-center justify-between mb-4 px-1">
                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">Recent Transactions</h3>
@@ -309,24 +306,149 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
+
+                {/* Desktop Float Actions */}
+                <div className="fixed bottom-8 right-8 flex flex-col gap-3 z-50">
+                    <button
+                        onClick={() => navigate('/send')}
+                        className="h-16 w-16 bg-primary text-primary-foreground rounded-[2rem] flex items-center justify-center shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all group relative overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
+                        <SendIcon size={26} className="relative z-10 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform stroke-[2.5px]" />
+                    </button>
+                    <button
+                        onClick={() => navigate('/receive')}
+                        className="h-16 w-16 bg-card/80 backdrop-blur-xl text-foreground rounded-[2rem] border border-white/10 flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all group"
+                    >
+                        <QrCode size={26} className="text-primary group-hover:rotate-12 transition-transform stroke-[2.5px]" />
+                    </button>
+                </div>
             </div>
 
-            {/* Float Actions */}
-            {/* Float Actions */}
-            <div className="fixed bottom-8 right-8 flex flex-col gap-3 z-50">
-                <button
-                    onClick={() => navigate('/send')}
-                    className="h-16 w-16 bg-primary text-primary-foreground rounded-[2rem] flex items-center justify-center shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all group relative overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
-                    <SendIcon size={26} className="relative z-10 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform stroke-[2.5px]" />
-                </button>
-                <button
-                    onClick={() => navigate('/receive')}
-                    className="h-16 w-16 bg-card/80 backdrop-blur-xl text-foreground rounded-[2rem] border border-white/10 flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all group"
-                >
-                    <QrCode size={26} className="text-primary group-hover:rotate-12 transition-transform stroke-[2.5px]" />
-                </button>
+            {/* Mobile View (Completely Redesigned) */}
+            <div className="block md:hidden space-y-6 pb-20">
+                {/* 1. Header (Already in MobileLayout) */}
+
+                {/* 2. Hero Section - Primary Balance Card */}
+                <div className="relative group">
+                    <div className="absolute inset-0 bg-primary/20 blur-[50px] rounded-full opacity-30 pointer-events-none" />
+                    <div className="relative overflow-hidden bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-white/10 rounded-[2rem] p-8 shadow-2xl">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Available Balance</span>
+                            <div className="flex items-baseline gap-1 text-[#f5f7f8]">
+                                <span className="text-2xl font-bold opacity-40">₹</span>
+                                <div className="text-5xl font-black tracking-tighter">
+                                    <AnimatedNumber value={totalRevenue || 0} decimals={2} />
+                                </div>
+                            </div>
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest mt-2">Liquid in ZenWallet</span>
+                        </div>
+                        <div className="absolute -bottom-8 -right-8 opacity-[0.03] scale-150 rotate-12">
+                            <Wallet size={120} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Quick Actions Section */}
+                <div className="grid grid-cols-2 gap-4">
+                    <button
+                        onClick={() => navigate('/send')}
+                        className="h-16 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg shadow-primary/20"
+                    >
+                        <SendIcon size={18} strokeWidth={3} />
+                        Send
+                    </button>
+                    <button
+                        onClick={() => navigate('/scan')}
+                        className="h-16 bg-white/5 border border-white/10 text-foreground rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                    >
+                        <QrCode size={18} strokeWidth={3} className="text-primary" />
+                        Scan
+                    </button>
+                </div>
+
+                {/* PIN Alert for Mobile */}
+                {user && !user.hasPaymentPin && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="p-5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-4"
+                    >
+                        <div className="size-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
+                            <Fingerprint size={24} />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="text-[10px] font-black uppercase tracking-tight text-emerald-500">Security Warning</h4>
+                            <p className="text-[11px] font-medium text-zinc-400 leading-tight mt-0.5">Setup Payment PIN to enable transfers.</p>
+                        </div>
+                        <Link to="/setup-pin" className="p-2 text-emerald-500">
+                            <ArrowRight size={20} />
+                        </Link>
+                    </motion.div>
+                )}
+
+                {/* 4. Stats Section (Vertical Stack) */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between px-2">
+                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Insights</span>
+                    </div>
+
+                    <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-5 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="size-10 rounded-xl bg-violet-500/10 text-violet-500 flex items-center justify-center">
+                                <Repeat2 size={20} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total Volume</p>
+                                <p className="text-base font-bold text-[#f5f7f8]">{salesCount || 0}</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-tighter">Lifetime Activity</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-5 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                                <TrendingUp size={20} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Efficiency</p>
+                                <p className="text-base font-bold text-[#f5f7f8]">₹{(averageSale || 0).toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-tighter">Average Per Move</p>
+                        </div>
+                    </div>
+
+                    {/* Recent Stream for Mobile */}
+                    <div className="pt-2">
+                        <div className="flex items-center justify-between px-2 mb-4">
+                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Recent Stream</span>
+                            <button onClick={() => navigate('/transactions')} className="text-[9px] font-black text-primary uppercase tracking-widest">View All</button>
+                        </div>
+                        <div className="space-y-3">
+                            {latestPayments?.slice(0, 4).map((p) => (
+                                <div key={p.id} className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between active:bg-white/[0.05] transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="size-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-bold text-xs">
+                                            {p.product.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-foreground">{p.product}</p>
+                                            <p className="text-[9px] text-zinc-600 font-medium uppercase mt-0.5">{p.time}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm font-black text-foreground">₹{p.amount.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
         </AppLayout>
     );

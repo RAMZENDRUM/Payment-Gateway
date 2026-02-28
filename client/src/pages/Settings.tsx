@@ -371,53 +371,96 @@ export default function Settings() {
                             ) : activeTab === 'notifications' ? (
                                 <motion.div key="notifications" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
                                     {user?.email === 'ramzendrum@gmail.com' && (
-                                        <div className="p-6 bg-violet-500/5 border border-violet-500/10 rounded-2xl space-y-4">
-                                            <div className="flex items-center gap-2 text-violet-500">
-                                                <Send size={18} />
-                                                <h3 className="text-sm font-bold uppercase tracking-widest">Global Broadcast</h3>
+                                        <div className="bg-foreground/[0.03] border border-border rounded-[2rem] overflow-hidden shadow-inner">
+                                            <div className="px-8 py-6 border-b border-border/40 flex items-center justify-between bg-gradient-to-r from-violet-500/5 to-transparent">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="size-10 rounded-2xl bg-violet-600/10 flex items-center justify-center text-violet-500 border border-violet-500/20">
+                                                        <Send size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Command Console</h3>
+                                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Global Broadcast Uplink</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="size-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Node Online</span>
+                                                </div>
                                             </div>
-                                            <form onSubmit={handleBroadcast} className="space-y-4">
-                                                <Input
-                                                    placeholder="Broadcast Title"
-                                                    value={broadcastTitle}
-                                                    onChange={(e) => setBroadcastTitle(e.target.value)}
-                                                    className="bg-background border-border"
-                                                    required
-                                                />
-                                                <Input
-                                                    placeholder="Short summary message"
-                                                    value={broadcastShort}
-                                                    onChange={(e) => setBroadcastShort(e.target.value)}
-                                                    className="bg-background border-border"
-                                                    required
-                                                />
-                                                <textarea
-                                                    placeholder="Full detailed message (Markdown supported)"
-                                                    value={broadcastFull}
-                                                    onChange={(e) => setBroadcastFull(e.target.value)}
-                                                    className="w-full min-h-[100px] p-4 bg-transparent border border-border rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/20 text-foreground"
-                                                />
-                                                <Button loading={broadcastLoading} className="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold h-11 rounded-xl border-none">
+
+                                            <form onSubmit={handleBroadcast} className="p-8 space-y-6">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">Signal Title</label>
+                                                        <Input
+                                                            placeholder="Broadcast Title"
+                                                            value={broadcastTitle}
+                                                            onChange={(e) => setBroadcastTitle(e.target.value)}
+                                                            className="bg-background/40 border-border h-12 rounded-xl text-sm font-bold shadow-sm"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">Short Signature</label>
+                                                        <Input
+                                                            placeholder="Short summary message"
+                                                            value={broadcastShort}
+                                                            onChange={(e) => setBroadcastShort(e.target.value)}
+                                                            className="bg-background/40 border-border h-12 rounded-xl text-sm font-bold shadow-sm"
+                                                            required
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">Full Payload (Markdown)</label>
+                                                    <textarea
+                                                        placeholder="Full detailed message (Markdown supported)..."
+                                                        value={broadcastFull}
+                                                        onChange={(e) => setBroadcastFull(e.target.value)}
+                                                        className="w-full min-h-[140px] p-6 bg-background/40 border border-border rounded-[2rem] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-500/20 text-foreground transition-all resize-none shadow-inner"
+                                                    />
+                                                </div>
+
+                                                <Button
+                                                    loading={broadcastLoading}
+                                                    className="w-full bg-foreground text-background hover:bg-foreground/90 font-black h-14 rounded-2xl border-none shadow-xl shadow-foreground/10 text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3"
+                                                >
+                                                    <Send size={18} />
                                                     Broadcast to All Users
                                                 </Button>
                                             </form>
                                         </div>
                                     )}
 
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.25em] px-1 opacity-70">Event Stream</h3>
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between px-2">
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="size-1.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+                                                    <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.3em]">Event Stream</h3>
+                                                </div>
+                                                <div className="h-4 w-px bg-border/40" />
+                                                <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">
+                                                    <Search size={10} />
+                                                    Activity Sense
+                                                </div>
+                                            </div>
+
                                             <div className="flex items-center gap-4">
                                                 {notifications.some(n => !n.is_read) && (
                                                     <button
                                                         onClick={handleMarkAllRead}
-                                                        className="text-[10px] font-bold text-violet-500 hover:text-violet-400 uppercase tracking-wider transition-colors"
+                                                        className="text-[9px] font-black text-violet-500 hover:text-violet-400 uppercase tracking-widest transition-colors py-1 px-3 bg-violet-500/5 rounded-full border border-violet-500/10"
                                                     >
-                                                        Mark all as read
+                                                        Purge Alerts
                                                     </button>
                                                 )}
-                                                <button onClick={fetchNotifications} className="text-zinc-500 hover:text-violet-400 p-1">
-                                                    <RefreshCw size={14} className={notifLoading ? 'animate-spin' : ''} />
+                                                <button
+                                                    onClick={fetchNotifications}
+                                                    className="size-8 flex items-center justify-center rounded-xl bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                                                >
+                                                    <RefreshCw size={12} className={notifLoading ? 'animate-spin' : ''} />
                                                 </button>
                                             </div>
                                         </div>
@@ -428,53 +471,67 @@ export default function Settings() {
                                                 <p className="text-sm font-medium">No alerts found</p>
                                             </div>
                                         ) : (
-                                            notifications.map((n) => (
-                                                <motion.div
-                                                    key={n.id}
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    className={`p-4 border rounded-2xl transition-all cursor-pointer relative overflow-hidden ${expandedNotif === n.id
-                                                        ? 'bg-violet-500/5 border-violet-500/30'
-                                                        : 'bg-card border-border hover:border-violet-500/20'
-                                                        }`}
-                                                    onClick={() => {
-                                                        setExpandedNotif(expandedNotif === n.id ? null : n.id);
-                                                        if (!n.is_read) markAsRead(n.id);
-                                                    }}
-                                                >
-                                                    {!n.is_read && (
-                                                        <div className="absolute top-4 right-4 h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse z-10" />
-                                                    )}
-                                                    <div className="flex items-start gap-4">
-                                                        <div className={`mt-1 h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${n.type === 'BROADCAST'
-                                                            ? 'bg-purple-500/10 text-purple-500'
-                                                            : 'bg-violet-500/10 text-violet-500'
-                                                            }`}>
-                                                            {n.type === 'BROADCAST' ? <MessageSquare size={16} /> : <AlertCircle size={16} />}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center justify-between gap-4">
-                                                                <h4 className={`text-[13px] font-black uppercase tracking-tight ${n.is_read ? 'text-muted-foreground/60' : 'text-foreground'}`}>{n.title}</h4>
-                                                                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest bg-muted px-2 py-0.5 rounded-md">{new Date(n.created_at).toLocaleDateString()}</span>
-                                                            </div>
-                                                            <p className="text-[11px] text-muted-foreground font-medium mt-1.5 italic opacity-80">{n.short_message}</p>
+                                            notifications.map((n) => {
+                                                const isPayment = n.title.toLowerCase().includes('payment') || n.short_message.toLowerCase().includes('received');
 
-                                                            <AnimatePresence>
-                                                                {expandedNotif === n.id && n.full_message && (
-                                                                    <motion.div
-                                                                        initial={{ opacity: 0, height: 0 }}
-                                                                        animate={{ opacity: 1, height: 'auto' }}
-                                                                        exit={{ opacity: 0, height: 0 }}
-                                                                        className="mt-4 pt-4 border-t border-border text-xs text-zinc-400 leading-relaxed overflow-hidden"
-                                                                    >
-                                                                        {n.full_message}
-                                                                    </motion.div>
-                                                                )}
-                                                            </AnimatePresence>
+                                                return (
+                                                    <motion.div
+                                                        key={n.id}
+                                                        initial={{ opacity: 0, scale: 0.98 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        className={`p-6 border rounded-[2rem] transition-all cursor-pointer relative overflow-hidden group ${expandedNotif === n.id
+                                                            ? 'bg-foreground/[0.04] border-foreground/20'
+                                                            : 'bg-card border-border/60 hover:border-foreground/20 shadow-sm'
+                                                            }`}
+                                                        onClick={() => {
+                                                            setExpandedNotif(expandedNotif === n.id ? null : n.id);
+                                                            if (!n.is_read) markAsRead(n.id);
+                                                        }}
+                                                    >
+                                                        {!n.is_read && (
+                                                            <div className="absolute top-6 right-6 h-2 w-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse z-10" />
+                                                        )}
+                                                        <div className="flex items-start gap-6">
+                                                            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 ${n.type === 'BROADCAST'
+                                                                ? 'bg-purple-500/10 text-purple-500 border-purple-500/20'
+                                                                : isPayment
+                                                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                                                    : 'bg-violet-500/10 text-violet-500 border-violet-500/20'
+                                                                }`}>
+                                                                {n.type === 'BROADCAST' ? <MessageSquare size={24} /> : isPayment ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                                    <h4 className={`text-[15px] font-black uppercase tracking-tight ${n.is_read ? 'text-muted-foreground/60' : 'text-foreground'}`}>{n.title}</h4>
+                                                                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest bg-muted/50 px-3 py-1 rounded-full w-fit">{new Date(n.created_at).toLocaleDateString()}</span>
+                                                                </div>
+                                                                <p className={`text-[12px] font-medium mt-2 italic leading-relaxed ${isPayment ? 'text-emerald-500/80' : 'text-muted-foreground'}`}>{n.short_message}</p>
+
+                                                                <AnimatePresence>
+                                                                    {expandedNotif === n.id && n.full_message && (
+                                                                        <motion.div
+                                                                            initial={{ opacity: 0, height: 0 }}
+                                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                                            exit={{ opacity: 0, height: 0 }}
+                                                                            className="mt-6 pt-6 border-t border-border/40 text-[13px] text-muted-foreground leading-relaxed overflow-hidden font-medium"
+                                                                        >
+                                                                            <div className="prose prose-sm prose-invert max-w-none">
+                                                                                {n.full_message}
+                                                                            </div>
+                                                                        </motion.div>
+                                                                    )}
+                                                                </AnimatePresence>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </motion.div>
-                                            ))
+
+                                                        {expandedNotif !== n.id && (
+                                                            <div className="mt-4 flex justify-end">
+                                                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 group-hover:text-foreground/40 transition-colors">Tap to expand signal</span>
+                                                            </div>
+                                                        )}
+                                                    </motion.div>
+                                                );
+                                            })
                                         )}
                                     </div>
                                 </motion.div>
