@@ -60,33 +60,22 @@ export const PinModal = ({ isOpen, onVerify, onCancel, amount, title, descriptio
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
-            <DialogContent className="bg-[#000000] border border-[#1a1a1c] shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-[380px] p-0 overflow-hidden rounded-[2.5rem] outline-none">
-                <div className="p-10 text-center space-y-8 relative overflow-hidden">
-                    {/* Luxurious background layers */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-emerald-500/5 rounded-full blur-[45px] pointer-events-none" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+            <DialogContent className="bg-[#000000] border-none shadow-[0_40px_100px_rgba(0,0,0,0.95)] max-w-[340px] p-0 overflow-hidden rounded-[2.5rem] outline-none">
+                <div className="p-12 text-center space-y-12">
 
-                    <div className="relative z-10 space-y-6">
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="w-16 h-16 bg-[#041d13] border border-[#0a3825] shadow-[0_0_25px_rgba(16,185,129,0.1)] rounded-[1.25rem] flex items-center justify-center mx-auto text-emerald-400"
-                        >
-                            <Fingerprint size={32} strokeWidth={1.5} />
-                        </motion.div>
-
-                        <div className="space-y-2">
-                            <h3 className="text-2xl font-bold text-white tracking-[-0.02em] uppercase">
-                                {title || 'Verify PIN'}
-                            </h3>
-                            <p className="text-[#888888] text-[13px] font-medium leading-relaxed max-w-[260px] mx-auto italic">
-                                {description || (amount ? `Authorize settlement of ₹${amount.toLocaleString()}.` : 'Identity verification required.')}
-                            </p>
-                        </div>
+                    {/* Minimalist Header */}
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-light text-white tracking-[0.1em] uppercase">
+                            SECURITY
+                        </h3>
+                        <div className="w-10 h-[1px] bg-white/20 mx-auto" />
+                        <p className="text-zinc-500 text-[10px] uppercase font-semibold tracking-[0.2em] leading-relaxed px-4">
+                            {description || (amount ? `Authorize settlement of ₹${amount.toLocaleString()}` : 'Identity verification')}
+                        </p>
                     </div>
 
                     {/* PIN Entry Area */}
-                    <div className="relative py-2" onClick={() => hiddenInputRef.current?.focus()}>
+                    <div className="relative" onClick={() => hiddenInputRef.current?.focus()}>
                         <input
                             ref={hiddenInputRef}
                             type="tel"
@@ -95,77 +84,55 @@ export const PinModal = ({ isOpen, onVerify, onCancel, amount, title, descriptio
                             value={pin}
                             onChange={handleInputChange}
                             onBlur={() => isOpen && hiddenInputRef.current?.focus()}
-                            className="absolute opacity-0 pointer-events-none w-full h-full"
+                            className="absolute opacity-0 pointer-events-none"
                             maxLength={6}
                         />
-                        <div className="flex justify-center gap-2.5">
+                        <div className="flex justify-center gap-4">
                             {[0, 1, 2, 3, 4, 5].map((idx) => {
                                 const digit = pin[idx];
                                 const isActive = pin.length === idx;
                                 return (
-                                    <motion.div
+                                    <div
                                         key={idx}
-                                        animate={isActive ? {
-                                            borderColor: 'rgba(52, 211, 153, 0.4)',
-                                            backgroundColor: 'rgba(52, 211, 153, 0.03)',
-                                            y: -2
-                                        } : {
-                                            borderColor: 'rgba(255, 255, 255, 0.05)',
-                                            backgroundColor: 'rgba(10, 10, 11, 1)',
-                                            y: 0
-                                        }}
-                                        className={`w-11 h-14 border-[1.5px] rounded-[1rem] flex items-center justify-center transition-all ${digit ? 'border-emerald-500/20 bg-[#0a1510]' : ''}`}
+                                        className={`w-10 h-14 border-b transition-all duration-300 flex items-center justify-center ${isActive ? 'border-white' : digit ? 'border-white/40' : 'border-white/10'
+                                            }`}
                                     >
                                         <AnimatePresence mode="wait">
                                             {digit ? (
                                                 <motion.div
                                                     key="dot"
-                                                    initial={{ scale: 0, opacity: 0 }}
+                                                    initial={{ scale: 0.5, opacity: 0 }}
                                                     animate={{ scale: 1, opacity: 1 }}
-                                                    className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)]"
+                                                    className="w-1.5 h-1.5 bg-white rounded-full"
                                                 />
-                                            ) : (
-                                                <motion.div
-                                                    key="placeholder"
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    className="w-1.5 h-3.5 bg-[#1a1a1c] rounded-full"
-                                                />
-                                            )}
+                                            ) : null}
                                         </AnimatePresence>
-                                    </motion.div>
+                                    </div>
                                 );
                             })}
                         </div>
                     </div>
 
                     {/* Action Area */}
-                    <div className="flex flex-col gap-4 pt-4 relative z-10">
-                        <Button
-                            variant="ghost"
-                            className="h-12 text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-500 hover:text-white border border-emerald-500/10 hover:bg-emerald-500/10 rounded-[1.25rem] transition-all duration-300"
+                    <div className="flex flex-col items-center gap-10">
+                        <button
+                            className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
                             onClick={handleForgotPin}
                             disabled={forgotLoading}
                         >
-                            {forgotLoading ? 'Establishing Uplink...' : 'Recovery Protocol (Forgot PIN)'}
-                        </Button>
-                        <button
-                            className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#555555] hover:text-white transition-colors py-2"
-                            onClick={onCancel}
-                        >
-                            Decline Session
+                            {forgotLoading ? 'TRANSMITTING...' : 'RECOVER PIN'}
                         </button>
+
+                        <div className="space-y-6 w-full">
+                            <Button
+                                onClick={onCancel}
+                                className="w-full h-11 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold rounded-full text-[10px] uppercase tracking-[0.2em] transition-all"
+                            >
+                                CANCEL
+                            </Button>
+                        </div>
                     </div>
                 </div>
-
-                {/* Secure Badge */}
-                <div className="bg-[#050506] py-4 flex items-center justify-center gap-3 border-t border-[#1a1a1c]">
-                    <div className="flex items-center gap-2 opacity-40">
-                        <Lock size={12} className="text-emerald-500" />
-                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white">Cryptographic Security Active</span>
-                    </div>
-                </div>
-
             </DialogContent>
         </Dialog>
     );
