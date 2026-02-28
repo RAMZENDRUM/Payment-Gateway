@@ -104,7 +104,8 @@ export default function PaymentPage() {
 
     return (
         <AppLayout title="Refill INR" subtitle="Instant INR top-up with secure encryption">
-            <div className="max-w-6xl mx-auto px-4 py-8 md:px-8 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            {/* Desktop View (Unchanged) */}
+            <div className="hidden md:block max-w-6xl mx-auto px-4 py-8 md:px-8 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
 
                     {/* Left Column: Amount Selection */}
@@ -266,17 +267,123 @@ export default function PaymentPage() {
                                     </Button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                            <div className="flex items-center gap-8 pt-4 text-xs font-medium text-muted-foreground uppercase tracking-wider opacity-60">
-                                <div className="flex items-center gap-2">
-                                    <ShieldCheck size={14} className="text-emerald-500" />
-                                    100% Secure
+            {/* Mobile View (Completely Redesigned) */}
+            <div className="block md:hidden space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* 1. Hero Balance Card (Small) */}
+                <div className="bg-gradient-to-br from-primary/20 to-transparent border border-white/5 rounded-3xl p-6 flex flex-col gap-1">
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Active Settlement Node</p>
+                    <div className="text-3xl font-black text-foreground tabular-nums">₹{user?.balance?.toLocaleString() || '0.00'}</div>
+                    <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter mt-1">Available for Liquidity</p>
+                </div>
+
+                {/* 2. Amount Selection Grid */}
+                <div className="space-y-4">
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] px-2">Inject Liquidity</p>
+                    <div className="grid grid-cols-3 gap-3">
+                        {AMOUNTS.map(amt => (
+                            <button
+                                key={amt}
+                                onClick={() => {
+                                    setSelectedAmount(amt);
+                                    setCustomAmount("");
+                                }}
+                                className={`h-16 flex flex-col items-center justify-center rounded-2xl transition-all border ${selectedAmount === amt && !customAmount
+                                    ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105'
+                                    : 'bg-white/[0.03] border-white/5 text-zinc-400'
+                                    }`}
+                            >
+                                <span className={`text-[9px] font-black uppercase tracking-tighter ${selectedAmount === amt ? 'text-primary-foreground/60' : 'text-zinc-600'}`}>₹</span>
+                                <span className="text-sm font-black">{amt}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* 3. Custom Input */}
+                <div className="relative group">
+                    <Input
+                        placeholder="Or enter custom INR amount..."
+                        value={customAmount}
+                        onChange={(e) => {
+                            setCustomAmount(e.target.value.replace(/\D/g, ''));
+                            setSelectedAmount(0);
+                        }}
+                        className="h-16 bg-white/[0.03] border-white/5 text-center text-lg font-black tracking-tight rounded-2xl focus-visible:ring-primary/20"
+                    />
+                </div>
+
+                {/* 4. Simple Form & Checkout */}
+                <div className="space-y-6 pt-2">
+                    <div className="bg-[#0a0a0a] border border-white/5 rounded-[2rem] p-6 space-y-6 shadow-2xl">
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">Funding Card Holder</Label>
+                                <Input
+                                    name="cardholderName"
+                                    placeholder="CARD HOLDER"
+                                    value={cardData.cardholderName}
+                                    onChange={handleInputChange}
+                                    className="h-14 bg-white/5 border-none text-sm font-black uppercase tracking-widest rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">Funding Account Number</Label>
+                                <Input
+                                    name="cardNumber"
+                                    placeholder="0000 0000 0000 0000"
+                                    value={cardData.cardNumber}
+                                    onChange={handleInputChange}
+                                    className="h-14 bg-white/5 border-none text-sm font-black tracking-[0.2em] rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">Expiry</Label>
+                                    <Input
+                                        name="expiryDate"
+                                        placeholder="MM/YY"
+                                        value={cardData.expiryDate}
+                                        onChange={handleInputChange}
+                                        className="h-14 bg-white/5 border-none text-sm font-black rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+                                    />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Lock size={14} className="text-primary" />
-                                    256-Bit Encryption
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">Protocol Key</Label>
+                                    <Input
+                                        name="cvv"
+                                        type="password"
+                                        placeholder="CVV"
+                                        value={cardData.cvv}
+                                        onChange={handleInputChange}
+                                        className="h-14 bg-white/5 border-none text-sm font-black rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+                                    />
                                 </div>
                             </div>
+                        </div>
+
+                        <Button
+                            onClick={handleCheckout}
+                            disabled={loading}
+                            className="w-full h-16 bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-[0.1em] rounded-2xl active:scale-95 transition-all shadow-xl shadow-primary/20"
+                        >
+                            {loading ? 'Settleing Node...' : `Settle ₹${finalAmount || 0} In Node`}
+                        </Button>
+                    </div>
+
+                    {/* Trust Signals Mobile */}
+                    <div className="flex items-center justify-center gap-6 py-4 opacity-40 grayscale">
+                        <div className="flex items-center gap-1.5 grayscale shrink-0">
+                            <ShieldCheck size={14} className="text-emerald-500" />
+                            <span className="text-[9px] font-black uppercase tracking-widest">Secure</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 grayscale shrink-0">
+                            <Lock size={14} className="text-primary" />
+                            <span className="text-[9px] font-black uppercase tracking-widest">AES-256</span>
                         </div>
                     </div>
                 </div>

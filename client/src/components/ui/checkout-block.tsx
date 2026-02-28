@@ -18,10 +18,11 @@ import {
     Lock,
     ShoppingBag,
     HelpCircle,
-    History,
     ArrowRight,
     Search,
-    ChevronLeft
+    ChevronLeft,
+    CreditCard,
+    QrCode
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/AuthContext";
@@ -161,34 +162,31 @@ export default function Checkout() {
 
     return (
         <section className="min-h-screen w-full bg-[#f5f7f8] font-['Inter'] antialiased text-slate-900 border-none">
-            {/* Header */}
-            <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 md:px-40 py-4 sticky top-0 z-50">
-                <div className="flex items-center gap-3 text-[#3396ff]">
+            {/* Optimized Header */}
+            <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 md:px-40 py-4 sticky top-0 z-50">
+                <div className="flex items-center gap-2 text-[#3396ff]">
                     <div className="size-8">
                         <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
                             <path clipRule="evenodd" d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z" fill="currentColor" fillRule="evenodd"></path>
                         </svg>
                     </div>
-                    <h2 className="text-slate-900 text-xl font-bold leading-tight tracking-tight">ZenWallet</h2>
+                    <h2 className="text-slate-900 text-lg md:text-xl font-bold leading-tight tracking-tight">ZenWallet</h2>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 md:gap-4">
                     <button className="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
                         <HelpCircle size={18} />
                     </button>
-                    <button className="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
-                        <History size={18} />
-                    </button>
-                    <div className="bg-[#3396ff]/20 flex items-center justify-center rounded-full size-10 border-2 border-[#3396ff]/10 overflow-hidden">
+                    <div className="hidden md:flex bg-[#3396ff]/20 flex items-center justify-center rounded-full size-10 border-2 border-[#3396ff]/10 overflow-hidden">
                         <div className="text-[#3396ff] font-black text-xs">{user?.full_name?.charAt(0) || 'U'}</div>
                     </div>
                 </div>
             </header>
 
-            <main className="flex justify-center py-8 md:py-12 px-4 md:px-0">
-                <div className="max-w-[1000px] w-full flex flex-col md:flex-row gap-8">
+            <main className="flex justify-center py-4 md:py-12 px-2 md:px-0">
+                <div className="max-w-[1000px] w-full flex flex-col md:flex-row gap-4 md:gap-8">
 
-                    {/* Sidebar */}
-                    <aside className="w-full md:w-[320px] shrink-0">
+                    {/* Desktop Sidebar (Hidden on Mobile) */}
+                    <aside className="hidden md:block w-full md:w-[320px] shrink-0">
                         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm sticky top-28">
                             <div className="mb-6">
                                 <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Order Details</h3>
@@ -212,40 +210,54 @@ export default function Checkout() {
                             <div className="mt-8 pt-6 border-t border-slate-100">
                                 <div className="flex items-center gap-2 text-slate-400">
                                     <Shield size={16} className="text-emerald-500" />
-                                    <p className="text-[10px] font-medium leading-tight">Secured by ZenWallet 256-bit encryption. PCI-DSS Compliant node.</p>
+                                    <p className="text-[10px] font-medium leading-tight">Secured by ZenWallet 256-bit encryption.</p>
                                 </div>
                             </div>
                         </div>
                     </aside>
 
+                    {/* Mobile Order Summary (Block on Mobile Only) */}
+                    <div className="block md:hidden bg-white border border-slate-200 rounded-xl p-5 mb-2">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Paying To</p>
+                                <p className="text-sm font-black text-slate-900 line-clamp-1">{paymentRequest?.merchant_name || 'ZenPay Merchant'}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Amount</p>
+                                <p className="text-xl font-black text-[#3396ff]">₹{parseFloat(paymentRequest?.amount || 0).toLocaleString('en-IN')}</p>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Form Area */}
                     <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                         {currentStep === 1 ? (
                             <>
-                                <div className="p-8 border-b border-slate-100">
-                                    <h2 className="text-2xl font-bold text-slate-900">Complete Payment</h2>
-                                    <p className="text-slate-500 text-sm mt-1">Choose your preferred settlement mode</p>
+                                <div className="p-6 md:p-8 border-b border-slate-100">
+                                    <h2 className="text-xl md:text-2xl font-bold text-slate-900">Complete Payment</h2>
+                                    <p className="text-slate-500 text-xs md:text-sm mt-1">Choose your preferred settlement mode</p>
                                 </div>
 
                                 {/* Tabs */}
-                                <div className="px-8 bg-slate-50/50 flex border-b border-slate-100">
+                                <div className="px-6 md:px-8 bg-slate-50/50 flex border-b border-slate-100">
                                     <button
                                         onClick={() => setSelectedTab('card')}
                                         className={`flex items-center gap-2 border-b-2 py-4 px-4 font-bold text-sm transition-all ${selectedTab === 'card' ? 'border-[#3396ff] text-[#3396ff]' : 'border-transparent text-slate-500'}`}
                                     >
-                                        <span className="material-symbols-outlined">credit_card</span>
+                                        <CreditCard size={18} />
                                         Card
                                     </button>
                                     <button
                                         onClick={() => setSelectedTab('upi')}
                                         className={`flex items-center gap-2 border-b-2 py-4 px-4 font-bold text-sm transition-all ${selectedTab === 'upi' ? 'border-[#3396ff] text-[#3396ff]' : 'border-transparent text-slate-500'}`}
                                     >
-                                        <span className="material-symbols-outlined">qr_code_2</span>
+                                        <QrCode size={18} />
                                         UPI
                                     </button>
                                 </div>
 
-                                <div className="p-8 flex-1 flex flex-col">
+                                <div className="p-6 md:p-8 flex-1 flex flex-col">
                                     <AnimatePresence mode="wait">
                                         {selectedTab === 'card' ? (
                                             <motion.div
@@ -256,17 +268,17 @@ export default function Checkout() {
                                                 className="space-y-6 max-w-md"
                                             >
                                                 <div className="space-y-2">
-                                                    <Label className="text-sm font-semibold text-slate-700">Cardholder Name</Label>
+                                                    <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cardholder Name</Label>
                                                     <Input
                                                         value={details.cardHolder}
                                                         onChange={(e) => setDetails({ ...details, cardHolder: e.target.value })}
                                                         placeholder="JOHN DOE"
-                                                        className="h-14 bg-slate-50 border-slate-200 text-lg uppercase font-bold text-slate-900"
+                                                        className="h-12 md:h-14 bg-slate-50 border-slate-200 text-base md:text-lg uppercase font-bold text-slate-900"
                                                     />
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label className="text-sm font-semibold text-slate-700">Card Number</Label>
+                                                    <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Card Number</Label>
                                                     <div className="relative">
                                                         <Input
                                                             value={details.cardNumber}
@@ -275,18 +287,17 @@ export default function Checkout() {
                                                                 setDetails({ ...details, cardNumber: val });
                                                             }}
                                                             placeholder="0605 0000 0000 2212"
-                                                            className="h-14 bg-slate-50 border-slate-200 text-lg font-mono font-bold tracking-widest text-[#3396ff]"
+                                                            className="h-12 md:h-14 bg-slate-50 border-slate-200 text-base md:text-lg font-mono font-bold tracking-widest text-[#3396ff]"
                                                         />
                                                         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                                            <span className="text-[10px] font-black text-slate-400 bg-slate-200 px-2 py-0.5 rounded">ZEN</span>
+                                                            <span className="text-[8px] font-black text-slate-400 bg-slate-200 px-1.5 py-0.5 rounded">ZEN</span>
                                                         </div>
                                                     </div>
-                                                    <p className="text-[10px] text-zinc-400 italic">Only ZenWallet Virtual Cards accepted for this checkout session.</p>
                                                 </div>
 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label className="text-sm font-semibold text-slate-700">Expiry (MM/YY)</Label>
+                                                        <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Expiry</Label>
                                                         <Input
                                                             value={`${details.expiryMonth}${details.expiryMonth ? '/' : ''}${details.expiryYear}`}
                                                             onChange={(e) => {
@@ -294,17 +305,17 @@ export default function Checkout() {
                                                                 setDetails({ ...details, expiryMonth: parts[0] || "", expiryYear: parts[1] || "" });
                                                             }}
                                                             placeholder="MM/YY"
-                                                            className="h-14 bg-slate-50 border-slate-200 text-lg font-bold"
+                                                            className="h-12 md:h-14 bg-slate-50 border-slate-200 text-base font-bold"
                                                         />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-sm font-semibold text-slate-700">CVV</Label>
+                                                        <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">CVV</Label>
                                                         <Input
                                                             type="password"
                                                             value={details.cvv}
                                                             onChange={(e) => setDetails({ ...details, cvv: e.target.value.slice(0, 4) })}
                                                             placeholder="•••"
-                                                            className="h-14 bg-slate-50 border-slate-200 text-lg font-bold"
+                                                            className="h-12 md:h-14 bg-slate-50 border-slate-200 text-base font-bold"
                                                         />
                                                     </div>
                                                 </div>
@@ -318,26 +329,23 @@ export default function Checkout() {
                                                 className="space-y-6 max-w-md"
                                             >
                                                 <div className="space-y-2">
-                                                    <Label className="text-sm font-semibold text-slate-700">UPI ID / VPA</Label>
+                                                    <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">UPI ID / VPA</Label>
                                                     <div className="relative group">
                                                         <Input
                                                             value={details.upiId}
                                                             onChange={(e) => setDetails({ ...details, upiId: e.target.value })}
                                                             placeholder="username@zenwallet"
-                                                            className="h-14 bg-slate-50 border-slate-200 text-lg font-medium text-slate-900"
+                                                            className="h-12 md:h-14 bg-slate-50 border-slate-200 text-base md:text-lg font-medium text-slate-900"
                                                         />
                                                         <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                                                            <span className="text-[10px] font-bold text-[#3396ff] bg-[#3396ff]/10 px-2 py-1 rounded uppercase tracking-tighter">Verified</span>
+                                                            <span className="text-[8px] font-bold text-[#3396ff] bg-[#3396ff]/10 px-1.5 py-0.5 rounded uppercase tracking-tighter">Verified</span>
                                                         </div>
                                                     </div>
-                                                    <p className="text-slate-400 text-xs mt-1 italic">
-                                                        Example: <span className="text-slate-600 font-medium">8888888888@zenwallet</span> or <span className="text-slate-600 font-medium">yourname@upi</span>
-                                                    </p>
                                                 </div>
 
-                                                <div className="grid grid-cols-4 gap-3">
+                                                <div className="grid grid-cols-4 gap-2">
                                                     {['GPay', 'PhonePe', 'Paytm', 'BHIM'].map(app => (
-                                                        <div key={app} className="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-100 bg-slate-50 cursor-pointer hover:border-[#3396ff]/50 transition-colors">
+                                                        <div key={app} className="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-100 bg-slate-50">
                                                             <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center mb-1 text-[8px] font-black">{app.charAt(0)}</div>
                                                             <span className="text-[8px] font-bold text-slate-500">{app}</span>
                                                         </div>
@@ -351,14 +359,11 @@ export default function Checkout() {
                                         <Button
                                             onClick={handlePay}
                                             loading={isProcessing}
-                                            className="w-full md:w-auto min-w-[240px] bg-[#3396ff] hover:bg-blue-600 text-white font-black py-6 px-10 rounded-xl flex items-center justify-center gap-3 shadow-xl shadow-blue-500/20 transition-all active:scale-[0.98] border-none"
+                                            className="w-full md:w-auto min-w-[240px] bg-[#3396ff] hover:bg-blue-600 text-white font-black py-6 px-10 rounded-xl flex items-center justify-center gap-3 shadow-xl shadow-blue-500/20 active:scale-[0.98] border-none"
                                         >
-                                            {isProcessing ? 'Settleing...' : `Verify and Pay ₹${parseFloat(paymentRequest?.amount || 0).toLocaleString('en-IN')}`}
+                                            {isProcessing ? 'Settleing...' : `Pay ₹${parseFloat(paymentRequest?.amount || 0).toLocaleString('en-IN')}`}
                                             {!isProcessing && <ArrowRight size={20} />}
                                         </Button>
-                                        <p className="text-slate-400 text-[10px] mt-4 max-w-sm leading-relaxed">
-                                            By continuing, you agree to ZenWallet's Terms of Service and Privacy Protocols. Transaction is non-reversible once settled.
-                                        </p>
                                     </div>
                                 </div>
                             </>
@@ -366,46 +371,34 @@ export default function Checkout() {
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="p-12 flex-1 flex flex-col items-center justify-center text-center space-y-6"
+                                className="p-8 md:p-12 flex-1 flex flex-col items-center justify-center text-center space-y-6"
                             >
                                 <div className="h-20 w-20 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20">
                                     <Check className="h-10 w-10 text-emerald-500" />
                                 </div>
                                 <div className="space-y-1">
-                                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">Payment Settled</h2>
-                                    <p className="text-slate-500 text-sm">Transaction has been authorized on the Zen node.</p>
-                                </div>
-                                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 w-full max-w-sm space-y-4">
-                                    <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                                        <span>Status</span>
-                                        <span className="text-emerald-500">SUCCESS</span>
-                                    </div>
-                                    <div className="flex justify-between text-lg font-black text-slate-900">
-                                        <span>Settled Amount</span>
-                                        <span>₹{parseFloat(paymentRequest?.amount || 0).toLocaleString('en-IN')}</span>
-                                    </div>
+                                    <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Payment Settled</h2>
+                                    <p className="text-slate-500 text-xs md:text-sm">Transaction has been authorized.</p>
                                 </div>
                                 <Button
                                     variant="outline"
                                     onClick={() => navigate('/dashboard')}
                                     className="h-12 px-8 border-slate-200 text-slate-600 font-bold rounded-xl"
                                 >
-                                    Return to Dashboard
+                                    Return to Home
                                 </Button>
                             </motion.div>
                         )}
 
                         {/* Footer trust */}
-                        <div className="bg-slate-50 p-6 flex items-center justify-between border-t border-slate-100">
+                        <div className="bg-slate-50 p-4 md:p-6 flex items-center justify-between border-t border-slate-100">
                             <div className="flex items-center gap-2">
-                                <div className="p-1 bg-white border border-slate-200 rounded">
-                                    <Shield size={14} className="text-slate-400" />
-                                </div>
-                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">PCI-DSS Security Node</span>
+                                <Shield size={14} className="text-slate-400" />
+                                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Secure Node</span>
                             </div>
                             <div className="flex items-center gap-1.5 text-slate-400">
                                 <Lock size={12} />
-                                <span className="text-xs font-semibold">ZenShield Secured</span>
+                                <span className="text-[10px] font-semibold">ZenShield</span>
                             </div>
                         </div>
                     </div>
@@ -413,14 +406,12 @@ export default function Checkout() {
                 </div>
             </main>
 
-            <footer className="mt-auto py-8 flex flex-col items-center gap-4 text-slate-400">
-                <div className="flex items-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all cursor-default scale-90">
-                    <span className="font-black text-xs">VISA</span>
-                    <span className="font-black text-xs">MASTERCARD</span>
-                    <span className="font-black text-xs">RUPAY</span>
-                    <span className="font-black text-xs">AMEX</span>
+            <footer className="mt-auto py-8 flex flex-col items-center gap-4 text-slate-400 mb-20 md:mb-0">
+                <div className="flex items-center gap-4 opacity-50 grayscale scale-90">
+                    <span className="font-black text-xs text-zinc-300">PCI-DSS</span>
+                    <span className="font-black text-xs text-zinc-300">AES-256</span>
                 </div>
-                <p className="text-[10px] font-medium tracking-tight">© 2026 ZenWallet Solutions Private Limited. All Node Rights Reserved.</p>
+                <p className="text-[10px] font-medium tracking-tight">© 2026 ZenWallet Solutions.</p>
             </footer>
         </section>
     );

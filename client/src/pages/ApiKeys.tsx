@@ -42,6 +42,12 @@ export default function ApiKeys() {
         fetchApps();
     }, []);
 
+    const maskKey = (key: string) => {
+        if (!key) return '';
+        const clean = key.replace('sk_live_', '');
+        return `••••••••${clean.slice(-8)}`;
+    };
+
     const fetchApps = async () => {
         try {
             const res = await axios.get(`${API_URL}/apps`, {
@@ -174,8 +180,9 @@ export default function ApiKeys() {
                                                 </td>
                                                 <td className="py-6 px-6">
                                                     <div className="flex items-center gap-3 max-w-[200px] lg:max-w-md">
-                                                        <code className="text-[11px] text-muted-foreground font-mono truncate bg-muted/20 px-3 py-1.5 rounded-xl border border-border/20 shadow-inner">
-                                                            {app.api_key}
+                                                        <code className="text-[11px] text-muted-foreground font-mono truncate bg-muted/20 px-3 py-1.5 rounded-xl border border-border/20 shadow-inner flex items-center gap-2">
+                                                            <span className="opacity-40">sk_live_</span>
+                                                            {maskKey(app.api_key)}
                                                         </code>
                                                         <button
                                                             onClick={() => copyToClipboard(app.api_key)}
